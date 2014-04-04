@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 require 'rubygems'
 require 'plist'
-require File.join(File.expand_path(File.dirname(__FILE__)), '/../../../libs/ios-here-sdk/Scripts/buildMachine/xcode_builder')
 
 ####################################################################################################
 # reads/writes plist at plistPath
