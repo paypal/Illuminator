@@ -30,8 +30,8 @@ doKillAfter = TRUE
 doCoverage = FALSE
 timeout = 30
 hardwareID = nil
-
-
+appName = nil
+testPath = ""
 
 ARGV.each do|parameter|
   argName, *rest = parameter.split('=' , 2)
@@ -72,14 +72,19 @@ ARGV.each do|parameter|
     doCoverage = TRUE
   elsif argName == '--timeout'
     timeout = argValue
+  elsif argName == '--appName'
+    appName = argValue
   elsif argName == '--hardwareID'
     hardwareID = argValue
+  elsif argName == '--testPath'
+    testPath = workspace + '/' + argValue
   elsif argName == '--help'
     puts 'Runs UIAutomation tests on iPhone target'
     puts '####################################################################################################'
     puts '== Usage'
     puts '####################################################################################################'
     puts 'ruby scripts/buildMachine/automationTests.rb  Runs all unit tests in tests folder'
+    puts '--testPath        path to all tests file'
     puts '--help             Shows this message'
     puts '--xcode            Sets path to default Xcode instalation               Defaults to /Applications/Xcode.app'
     puts '--report           Generate Xunit reports in UIAutomationReport folder'
@@ -116,7 +121,7 @@ tagsAll_arr = tagsAll.split(',') unless tagsAll.empty?
 tagsNone_arr = Array.new(0)
 tagsNone_arr = tagsNone.split(',') unless tagsNone.empty?
 
-plistConfig = AutomationConfig.new(device, stage, simVersion, tagsAny_arr, tagsAll_arr, tagsNone_arr, randomSeed, hardwareID)
+plistConfig = AutomationConfig.new(device, stage, simVersion, tagsAny_arr, tagsAll_arr, tagsNone_arr, randomSeed, hardwareID, testPath)
 
 
 
@@ -124,6 +129,6 @@ plistConfig = AutomationConfig.new(device, stage, simVersion, tagsAny_arr, tagsA
 # Script action
 ####################################################################################################
 
-runner = AutomationRunner.new(defaultXcode, device, doBuild, doCoverage, doSetSimulator, simDevice, simVersion, simLanguage, timeout, hardwareID, workspace)
+runner = AutomationRunner.new(defaultXcode, device, appName, doBuild, doCoverage, doSetSimulator, simDevice, simVersion, simLanguage, timeout, hardwareID, workspace)
 plistConfig.save() # must save AFTER automationRunner initializes
 runner.runAllTests(report, doKillAfter, pretty, hardwareID)

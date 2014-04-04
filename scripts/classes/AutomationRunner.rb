@@ -12,9 +12,10 @@ class AutomationBuilder
 
   def initialize
 
+    resultPath = File.dirname(__FILE__) + "/../../buildArtifacts/xcodeArtifacts"
     @builder = XcodeBuilder.new
     @builder.addParameter('configuration','Debug')
-    @builder.addParameter('resultBundlePath', File.dirname(__FILE__) + "/../../buildArtifacts")
+    @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR',resultPath)
     #TODO: add config
 
     @builder.clean
@@ -48,7 +49,7 @@ end
 
 class AutomationRunner
 
-  def initialize(path, scheme, doBuild, doCoverage, doSetSimulator, simDevice, simVersion, simLanguage, startupTimeout = 30, hardwareID = nil, workspace = nil)
+  def initialize(path, scheme, appName, doBuild, doCoverage, doSetSimulator, simDevice, simVersion, simLanguage, startupTimeout = 30, hardwareID = nil, workspace = nil)
     @xcodePath = path
     if doBuild
       directory = Dir.pwd
@@ -65,23 +66,23 @@ class AutomationRunner
       @simDevice = simDevice
       @simVersion = simVersion
       @simLanguage = simLanguage
-      @outputDirectory = "#{plist['objectDirectory']}/../../../../../Products/Debug-iphonesimulator"
     else 
       @doSetSimulator = FALSE
       @simDevice = nil
       @simVersion = nil
       @simLanguage = nil
-      @outputDirectory = "#{plist['objectDirectory']}/../../../../../Products/Debug-iphoneos"
     end
     
+    @outputDirectory = File.dirname(__FILE__) + "/../../buildArtifacts/xcodeArtifacts";
+    
     @startupTimeout = startupTimeout
-    @reportPath = "UIAutomationReport"
+    @reportPath = "buildArtifacts/UIAutomationReport"
     @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
     @crashReportsPath = "CrashReports"
     @xBuilder = XcodeBuilder.new
    
     puts @outputDirectory
-    @appName = "PPH Debug.app"
+    @appName = appName + ".app"
     self.cleanup
   end
 
@@ -101,7 +102,7 @@ class AutomationRunner
 
 
   def runAllTests (report, doKillAfter, pretty = FALSE, hardwareID = nil)
-    testFolder = "#{File.dirname(__FILE__)}/../../../UIAutomation/"
+    testFolder = "#{File.dirname(__FILE__)}/../../"
     self.runTestCase("#{testFolder}testAutomatically.js", report, doKillAfter, pretty, hardwareID)
     if @doCoverage
       self.generateCoverage
@@ -109,9 +110,9 @@ class AutomationRunner
   end
 
   def setSimulator()
-    command = "scripts/choose_sim_device.scpt '#{@simDevice}' '#{@simVersion}' '#{@xcodePath}/Contents/Developer'"
+    command = "#{File.dirname(__FILE__)}/../choose_sim_device.scpt '#{@simDevice}' '#{@simVersion}' '#{@xcodePath}/Contents/Developer'"
     self.runAnnotatedCommand(command)
-    command = "osascript scripts/buildMachine/resources/reset_simulator.applescript"
+    command = "osascript #{File.dirname(__FILE__)}/../reset_simulator.applescript"
     self.runAnnotatedCommand(command)
   end
 
@@ -130,7 +131,7 @@ class AutomationRunner
     end
 
     command = "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
-    command << "UIAutomation/contrib/tuneup_js/test_runner/run '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
+    command << File.dirname(__FILE__) + "/../../contrib/tuneup_js/test_runner/run '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
     unless hardwareID.nil?
       command << " -d #{hardwareID}"
     end

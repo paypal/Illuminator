@@ -3,7 +3,9 @@ require File.join(File.expand_path(File.dirname(__FILE__)), '/ParameterStorage.r
 
 class AutomationConfig
 
-  def initialize(device, stage, simVersion, tagsAny, tagsAll, tagsNone, randomSeed, hardwareID = nil)
+  def initialize(device, stage, simVersion, tagsAny, tagsAll, tagsNone, randomSeed, hardwareID = nil, testPath)
+    FileUtils.ln_s testPath, File.dirname(__FILE__)+"/../../buildArtifacts/testDefinitions.js"
+    
     @jsStorage = PLISTStorage.new
     @jsStorage.clearAtPath(self.configPath())
     @jsStorage.addParameterToStorage('device', device)
