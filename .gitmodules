@@ -1,0 +1,3 @@
+[submodule "contrib/tuneup_js"]
+	path = contrib/tuneup_js
+	url = https://github.com/ifreecarve/tuneup_js.git
