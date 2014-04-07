@@ -17,7 +17,11 @@ class AutomationConfig
     unless hardwareID.nil?
       @plistStorage.addParameterToStorage('hardwareID', hardwareID)
     end
-   # @plistStorage.addParameterToStorage('plistPath', stage)
+    
+    unless plistPath.nil?
+      @plistStorage.addParameterToStorage 'customConfig', plistPath
+    end
+    
     @plistStorage.addParameterToStorage('automatorDesiredSimVersion', simVersion)
 
     tagDefs = {'automatorTagsAny' => tagsAny, 'automatorTagsAll' => tagsAll, 'automatorTagsNone' => tagsNone}

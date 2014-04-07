@@ -51,7 +51,11 @@
     config.setTagsNone = function(tagsNone) {
         config.tagsNone = tagsNone;
     };
-
+    
+    config.setCustomConfig = function(customConfig) {
+        
+      config.customConfig = getPlistData(customConfig);  
+    };
     // setter for automatorSequenceRandomSeed
     config.setAutomatorSequenceRandomSeed = function(asrs) {
         if (asrs !== undefined) {
@@ -107,6 +111,14 @@
     } catch (e) {
         UIALogger.logMessage("Didn't read (optional) automatorSequenceRandomSeed from generated config");
     }
+
+
+    try {
+        config.setCustomConfig(jsonConfig.customConfig);
+    } catch (e) {
+    }
+
+
 
     // read config from json string
     config.readFromJSONString = function(stringJSON) {

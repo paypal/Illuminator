@@ -1,4 +1,5 @@
 require 'optparse'
+require 'pathname'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/AutomationRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/AutomationConfig.rb')
@@ -44,7 +45,7 @@ OptionParser.new do |opts|
     options["defaultXcode"] = path
   end
   opts.on("-p", "--testPath PATH", "Path to js file with all tests imported") do |path|
-    options["testPath"] = options["workspace"] + '/' + path
+    options["testPath"] = (Pathname.new path).realpath().to_s
   end
   opts.on("-a", "--appName APPNAME", "App name to run") do |v|
     options["appName"] = v
@@ -61,8 +62,8 @@ OptionParser.new do |opts|
   opts.on("-s", "--scheme SCHEME", "Build and run specific tests on given workspace scheme") do |v|
     options["scheme"] = v
   end
-  opts.on("-j", "--plistSettingsPath PATH", "path to settings plist") do |v|
-    options["plistSettingsPath"] = v
+  opts.on("-j", "--plistSettingsPath PATH", "path to settings plist") do |path|
+    options["plistSettingsPath"] = (Pathname.new path).realpath().to_s
   end
   opts.on("-i", "--hardwareID ID", "hardware id of device you run on") do |v|
     options["hardwareID"] = v
@@ -121,6 +122,7 @@ Dir.chdir(File.dirname(__FILE__) + "/../")
 ####################################################################################################
 # Storing parameters
 ####################################################################################################
+
 
 tagsAny_arr = Array.new(0)
 tagsAny_arr = options["tagsAny"].split(',') unless options["tagsAny"].nil?
