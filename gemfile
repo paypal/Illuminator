@@ -1,2 +1,5 @@
 gem 'plist'
 gem 'xcpretty'
+gem 'ocunit2junit'
+gem 'httparty'
+gem 'dnssd'
