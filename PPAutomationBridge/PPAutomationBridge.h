@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 @protocol PPAutomationBridgeDelegate <NSObject>
 
-- (NSDictionary *)automationBridge(PPAutomationBridge *)bridge receivedAction:(PPAutomationBridgeAction *)action;
+- (NSDictionary *)automationBridge:(PPAutomationBridge *)bridge receivedAction:(PPAutomationBridgeAction *)action;
 
 @end
 

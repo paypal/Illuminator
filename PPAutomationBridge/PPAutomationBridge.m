@@ -107,7 +107,7 @@ static PPAutomationBridge *bridgeInstance = nil;
                                                       error: nil];
     if ([NSJSONSerialization isValidJSONObject:jsonObject]) {
         NSMutableDictionary *returnDict = [NSMutableDictionary dictionary];
-        NSDictionary *result = [self.delegate automationBridgeself receivedAction:[PPAutomationBridgeAction actionWithDictionary:jsonObject]];
+        NSDictionary *result = [self.delegate automationBridge:self receivedAction:[PPAutomationBridgeAction actionWithDictionary:jsonObject]];
         if (result) {
             [returnDict setObject:result forKey:@"result"];
         }
