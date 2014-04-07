@@ -16,16 +16,16 @@
         config = root.config = {};
     }
 
-    config.device = 'iPhone';
+    config.implementation = 'iPhone';
     config.stage = 'fake';
     config.tagsAny = []; // run all by default
     config.tagsAll = []; // none by default
     config.tagsNone = [];
     config.automatorSequenceRandomSeed = undefined;
 
-    // setter for device
-    config.setDevice = function(device) {
-        config.device = device;
+    // setter for implementation
+    config.setImplementation = function(implementation) {
+        config.implementation = implementation;
     };
 
     // setter for hardwareID
@@ -72,9 +72,9 @@
 
     // attempt to read config -- look for VARIABLES IN GLOBAL SCOPE
     try {
-        config.setDevice(jsonConfig.device);
+        config.setImplementation(jsonConfig.implementation);
     } catch (e) {
-        UIALogger.logMessage("Couldn't read device from generated config");
+        UIALogger.logMessage("Couldn't read implementation from generated config");
     }
     
     try {
@@ -130,8 +130,8 @@
 
         for (var key in obj) {
             switch (key) {
-            case "device":
-            config.setDevice(obj[key]);
+            case "implementation":
+            config.setImplementation(obj[key]);
             break;
             case "stage":
             config.setStage(obj[key]);

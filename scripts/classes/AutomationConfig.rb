@@ -3,8 +3,8 @@ require File.join(File.expand_path(File.dirname(__FILE__)), '/ParameterStorage.r
 
 
 class AutomationConfig
-  @testPath = nil
-  def initialize(device, plistPath, simVersion, tagsAny, tagsAll, tagsNone, randomSeed, hardwareID = nil, testPath)
+  
+  def initialize(implementation, testPath)
     @testPath = testPath
     @automatorRoot = File.dirname(__FILE__) + "/../.."
     
@@ -13,17 +13,31 @@ class AutomationConfig
     
     @plistStorage = PLISTStorage.new
     @plistStorage.clearAtPath(self.configPath())
-    @plistStorage.addParameterToStorage('device', device)
-    unless hardwareID.nil?
-      @plistStorage.addParameterToStorage('hardwareID', hardwareID)
-    end
     
-    unless plistPath.nil?
-      @plistStorage.addParameterToStorage 'customConfig', plistPath
-    end
     
-    @plistStorage.addParameterToStorage('automatorDesiredSimVersion', simVersion)
+    #implementation
+    @plistStorage.addParameterToStorage('implementation', implementation)
 
+  end
+  
+  def setSimVersion simVersion 
+    @plistStorage.addParameterToStorage('automatorDesiredSimVersion', simVersion)
+  end
+  
+  def setHardwareID hardwareID
+    @plistStorage.addParameterToStorage('hardwareID', hardwareID)
+  end
+  
+  def setRandomSeed randomSeed
+    @plistStorage.addParameterToStorage('automatorSequenceRandomSeed', randomSeed)
+  end
+  
+  def setCustomConfig customConfig
+    @plistStorage.addParameterToStorage 'customConfig', customConfig
+  end
+  
+  def defineTags  tagsAny, tagsAll, tagsNone,
+    # tags
     tagDefs = {'automatorTagsAny' => tagsAny, 'automatorTagsAll' => tagsAll, 'automatorTagsNone' => tagsNone}
     tagDefs.each do |name, value|
       unless value.nil?
@@ -32,11 +46,6 @@ class AutomationConfig
         @plistStorage.addParameterToStorage(name, Array.new(0))
       end
     end
-
-    unless randomSeed.nil?
-      @plistStorage.addParameterToStorage('automatorSequenceRandomSeed', randomSeed)
-    end
-
   end
 
   def configPath

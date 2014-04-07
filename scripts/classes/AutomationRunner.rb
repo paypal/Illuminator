@@ -21,7 +21,9 @@ class AutomationBuilder
     @builder.killSim
   end
 
-  def runScheme (scheme, hardwareID = nil, workspace)
+  def buildScheme scheme, hardwareID = nil, workspace
+    
+    directory = Dir.pwd
     unless workspace.nil?
       Dir.chdir(workspace)
     end
@@ -36,7 +38,8 @@ class AutomationBuilder
     
     @builder.addParameter('scheme',scheme)
     @builder.run
-
+  
+    Dir.chdir(directory)
   end
 
 
@@ -48,47 +51,32 @@ end
 
 class AutomationRunner
 
-  def initialize(path, scheme, appName, doBuild, doCoverage, doSetSimulator, simDevice, simVersion, simLanguage, startupTimeout = 30, hardwareID = nil, workspace = nil)
+  def initialize(path, scheme, appName)
     @xcodePath = path
-    if doBuild
-      directory = Dir.pwd
-      self.build(scheme, hardwareID, workspace)
-      Dir.chdir(directory)
-    end
-    @doCoverage = doCoverage
-    
-    parameterStorage = PLISTStorage.new
-    plist = parameterStorage.readFromStorageAtPath('buildParameters.plist')
-    
-    if hardwareID.nil?
-      @doSetSimulator = doSetSimulator
-      @simDevice = simDevice
-      @simVersion = simVersion
-      @simLanguage = simLanguage
-    else 
-      @doSetSimulator = FALSE
-      @simDevice = nil
-      @simVersion = nil
-      @simLanguage = nil
-    end
-    
+  
     @outputDirectory = File.dirname(__FILE__) + "/../../buildArtifacts/xcodeArtifacts";
     
-    @startupTimeout = startupTimeout
     @reportPath = "buildArtifacts/UIAutomationReport"
     @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
-    @crashReportsPath = "CrashReports"
+    @crashReportsPath = "buildArtifacts/CrashReports"
     @xBuilder = XcodeBuilder.new
    
     puts @outputDirectory
     @appName = appName + ".app"
     self.cleanup
   end
-
-  def build(scheme, hardwareID, workspace)
-    builder = AutomationBuilder.new
-    builder.runScheme(scheme, hardwareID, workspace)
+  
+  def setupForSimulator doSetSimulator, simDevice, simVersion, simLanguage
+    @doSetSimulator = doSetSimulator
+    @simDevice = simDevice
+    @simVersion = simVersion
+    @simLanguage = simLanguage
   end
+  
+  def setHardwareID hardwareID
+    @hardwareID = hardwareID
+  end
+    
 
   def cleanup
     puts @crashPath
@@ -100,12 +88,36 @@ class AutomationRunner
   end
 
 
-  def runAllTests (report, doKillAfter, pretty = FALSE, hardwareID = nil)
-    testFolder = "#{File.dirname(__FILE__)}/../../buildArtifacts/"
-    self.runTestCase("#{testFolder}testAutomatically.js", report, doKillAfter, pretty, hardwareID)
-    if @doCoverage
-      self.generateCoverage
+  def runAllTests (report, doKillAfter, verbose = FALSE, startupTimeout = 30)
+    testCase = "#{File.dirname(__FILE__)}/../../buildArtifacts/testAutomatically.js"
+    if @doSetSimulator
+      setSimulator()
     end
+    command = "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
+    command << File.dirname(__FILE__) + "/../../contrib/tuneup_js/test_runner/run '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
+    unless @hardwareID.nil?
+      command << " -d #{hardwareID}"
+    end
+    unless @simLanguage.nil?
+      command << " -l '#{@simLanguage}'"
+    end
+    command << " --attempts=30"
+    command << " --startuptimeout=#{startupTimeout}"
+    if report
+      command << " --xunit"
+    end
+    if verbose
+      command << " -v"
+    else 
+      command << " -b"
+    end
+    command << " 1>&2"
+    self.runAnnotatedCommand(command)
+    self.reportCrash
+    if doKillAfter
+      @xBuilder.killSim
+    end
+
   end
 
   def setSimulator()
@@ -122,37 +134,6 @@ class AutomationRunner
         io.each {||}
     end
   end
-
-
-  def runTestCase(testCase, report, doKillAfter, pretty = FALSE, hardwareID = nil)
-    if @doSetSimulator
-      setSimulator()
-    end
-
-    command = "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
-    command << File.dirname(__FILE__) + "/../../contrib/tuneup_js/test_runner/run '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
-    unless hardwareID.nil?
-      command << " -d #{hardwareID}"
-    end
-    unless @simLanguage.nil?
-      command << " -l '#{@simLanguage}'"
-    end
-    if pretty
-      command << " -b"
-    end
-    command << " --attempts=30"
-    command << " --startuptimeout=#{@startupTimeout}"
-    if report
-      command << " --xunit -v"
-    end
-    command << " 1>&2"
-    self.runAnnotatedCommand(command)
-    self.reportCrash
-    if doKillAfter
-      @xBuilder.killSim
-    end
-  
-  end
   
   def reportCrash()
     unless File.directory?(@crashReportsPath)
@@ -167,7 +148,7 @@ class AutomationRunner
     end
 
     Dir.glob("#{@crashPath}/*.crash").each do |path|
-      outputFilename = "crashReport.txt"
+      outputFilename = "buildArtifacts/crashReport.txt"
       command =   "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
       command <<  "'#{symbolicatorPath}' "
       command <<  "-o '#{@crashReportsPath}/#{outputFilename}' '#{path}' '#{@outputDirectory}/#{@appName}.dSYM' 2>&1"
@@ -178,7 +159,7 @@ class AutomationRunner
   end
   
   def generateCoverage()
-    destinationFile = "coverage.xml"
+    destinationFile = "buildArtifacts/coverage.xml"
     puts "generating automation test coverage to #{destinationFile}".green
     sleep (3)
     parameterStorage = PLISTStorage.new

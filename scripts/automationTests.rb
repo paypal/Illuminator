@@ -12,27 +12,37 @@ options = {}
 ####################################################################################################
 
 options["workspace"] = Dir.pwd
-#TODO: use xcode-select xcode
+
 options["defaultXcode"] = '/Applications/Xcode.app'
+options["plistSettingsPath"] = ""
+options["implementation"] = "iPhone"
+
+
 options["report"] = FALSE
+options["verbose"] = FALSE
+
 options["tagsAny"] = nil
 options["tagsAll"] = nil
 options["tagsNone"] = nil
-options["simdevice"] = 'iPhone'
+
 options["randomSeed"] = nil
+
 options["skipBuild"] = FALSE
-options["pretty"] = FALSE
 options["doSetSimulator"] = TRUE
+options["doKillAfter"] = TRUE
+options["coverage"] = FALSE
+
+
+options["hardwareID"] = nil
+options["appName"] = ""
+options["testPath"] = ""
+
+
 options["simDevice"] = 'iPhone Retina (4-inch)'
 options["simVersion"] = 'iOS 7.0'
 options["simLanguage"] = 'en'
-options["doKillAfter"] = TRUE
-options["coverage"] = FALSE
+
 options["timeout"] = 30
-options["hardwareID"] = nil
-options["appName"] = nil
-options["testPath"] = ""
-options["settingsJsonPath"] = ""
 
 ####################################################################################################
 # parse arguments
@@ -65,17 +75,20 @@ OptionParser.new do |opts|
   opts.on("-j", "--plistSettingsPath PATH", "path to settings plist") do |path|
     options["plistSettingsPath"] = (Pathname.new path).realpath().to_s
   end
-  opts.on("-i", "--hardwareID ID", "hardware id of device you run on") do |v|
+  opts.on("-d", "--hardwareID ID", "hardware id of device you run on") do |v|
     options["hardwareID"] = v
+  end
+  opts.on("-i", "--implementation IMPL", "Device tests implementation (iPhone|iPad)") do |impl|
+    options["implementation"] = impl
   end
 
   
   opts.separator "######################################################################"
   
-  opts.on("-d", "--simdevice DEVICE", "Run on given simulated device           Defaults to \"iPhone Retina (4-inch)\"") do |v|
+  opts.on("-b", "--simdevice DEVICE", "Run on given simulated device           Defaults to \"iPhone Retina (4-inch)\"") do |v|
     options["simdevice"] = v
   end
-    opts.on("-v", "--simversion VERSION", "Run on given simulated iOS version     Defaults to \"iOS 7.0\"") do |v|
+    opts.on("-z", "--simversion VERSION", "Run on given simulated iOS version     Defaults to \"iOS 7.0\"") do |v|
     options["simversion"] = v
   end
   opts.on("-l", "--simlanguage LANGUAGE", "Run on given simulated iOS language     Defaults to \"en\"") do |v|
@@ -84,7 +97,7 @@ OptionParser.new do |opts|
   
   opts.separator "######################################################################"
   
-  opts.on("-b", "--skip-build", "Just automate; assume already built") do |v|
+  opts.on("-f", "--skip-build", "Just automate; assume already built") do |v|
     options["skipBuild"] = TRUE
   end
   opts.on("-e", "--skip-set-sim", "Assume that simulator has already been chosen and properly reset") do |v|
@@ -102,14 +115,14 @@ OptionParser.new do |opts|
   opts.on("-r", "--report", "Generate Xunit reports in buildArtifacts/UIAutomationReport folder") do |v|
     options["report"] = TRUE
   end
+  opts.on("-v", "--verbose", "Show verbose output") do |v|
+    options["verbose"] = TRUE
+  end
   opts.on("-m", "--timeout TIMEOUT", "startup timeout") do |v|
     options["timeout"] = v
   end
   opts.on("-w", "--random-seed SEED", "Randomize test order based on given integer seed") do |v|
     options["randomSeed"] = v
-  end
-  opts.on("-y", "--pretty", "nice and pretty output") do |v|
-    options["pretty"] = TRUE
   end
   opts.on_tail("-h", "--help", "Show this message") do
     puts opts
@@ -133,15 +146,22 @@ tagsAll_arr = options["tagsAll"].split(',') unless options["tagsAll"].nil?
 tagsNone_arr = Array.new(0)
 tagsNone_arr = options["tagsNone"].split(',') unless options["tagsNone"].nil?
 
-plistConfig = AutomationConfig.new(options["scheme"], 
-                                  options["plistSettingsPath"], 
-                                  options["simVersion"], 
-                                  tagsAny_arr, 
-                                  tagsAll_arr, 
-                                  tagsNone_arr, 
-                                  options["randomSeed"], 
-                                  options["hardwareID"], 
+
+
+plistConfig = AutomationConfig.new(options["implementation"], 
                                   options["testPath"])
+                                  
+if options["hardwareID"].nil?
+  plistConfig.setHardwareID options["hardwareID"]
+else 
+  plistConfig.setSimVersion options["simVersion"]
+end
+                                  
+unless options["plistSettingsPath"].nil?
+  plistConfig.setCustomConfig options["plistSettingsPath"]
+end   
+plistConfig.setRandomSeed options["randomSeed"]
+plistConfig.defineTags tagsAny_arr, tagsAll_arr, tagsNone_arr                               
 
 
 
@@ -149,17 +169,22 @@ plistConfig = AutomationConfig.new(options["scheme"],
 # Script action
 ####################################################################################################
 
+
+unless options["skipBuild"]
+  builder = AutomationBuilder.new()
+  builder.buildScheme(options["scheme"], options["hardwareID"], options["workspace"])
+
+end
+
 runner = AutomationRunner.new(options["defaultXcode"], 
                               options["scheme"], 
-                              options["appName"], 
-                              !options["skipBuild"], 
-                              options["doCoverage"], 
-                              options["doSetSimulator"], 
-                              options["simDevice"], 
-                              options["simVersion"], 
-                              options["simLanguage"], 
-                              options["timeout"], 
-                              options["hardwareID"], 
-                              options["workspace"])
+                              options["appName"])
+                            
+if options["hardwareID"].nil?
+  runner.setupForSimulator options["doSetSimulator"], options["simDevice"], options["simVersion"], options["simLanguage"] 
+else 
+  runner.setHardwareID options["hardwareID"]  
+end      
+                        
 plistConfig.save() # must save AFTER automationRunner initializes
-runner.runAllTests(options["report"], options["doKillAfter"], options["pretty"], options["hardwareID"])
+runner.runAllTests(options["report"], options["doKillAfter"], options["verbose"], options["timeout"])

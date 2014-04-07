@@ -138,7 +138,7 @@ var debugAutomator = false;
         // if any actions are neither defined for the current device nor "default"
         for (var i = 0; i < scenario.steps.length; ++i) {
             var s = scenario.steps[i];
-            if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.device] === undefined) return false;
+            if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) return false;
         }
 
         return false; // no tags matched
@@ -459,12 +459,12 @@ var debugAutomator = false;
                                       ].join(""));
 
                 // assert correct screen
-                if (!step.action.isCorrectScreen[config.device]()) {
+                if (!step.action.isCorrectScreen[config.implementation]()) {
                     throw ["Failed assertion that '", step.action.screenName, "' is active"].join("");
                 }
 
                 var actFn = step.action.actionFn["default"];
-                if (step.action.actionFn[config.device] !== undefined) actFn = step.action.actionFn[config.device];
+                if (step.action.actionFn[config.implementation] !== undefined) actFn = step.action.actionFn[config.implementation];
 
                 // call step action with or without parameters, as appropriate
                 if (parameters !== undefined) {
