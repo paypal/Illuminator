@@ -1,5 +1,5 @@
 //
-//  PPAutomatorBridge.m
+//  PPAutomationBridge.m
 //  PPHCore
 //
 //  Created by Erceg,Boris on 10/8/13.
@@ -8,20 +8,20 @@
 
 #ifdef DEBUG
 
-#import "PPAutomatorBridge.h"
+#import "PPAutomationBridge.h"
 #import "QServer.h"
 
 #define DOCUMENTS_FOLDER NSHomeDirectory()
 
 
-@interface PPAutomatorBridgeAction ()
+@interface PPAutomationBridgeAction ()
 
 + (instancetype)actionWithDictionary:(NSDictionary *)dictionary;
 
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@interface PPAutomatorBridge() <
+@interface PPAutomationBridge() <
 QServerDelegate,
 NSStreamDelegate>
 
@@ -35,18 +35,18 @@ NSStreamDelegate>
 @property (nonatomic) uint writtenBytes;
 
 
-@property (nonatomic, weak) id<PPAutomatorBridgeDelegate> delegate;
+@property (nonatomic, weak) id<PPAutomationBridgeDelegate> delegate;
 
 
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@implementation PPAutomatorBridge
+@implementation PPAutomationBridge
 
 #pragma mark -
 #pragma mark Init & Factory
 
-static PPAutomatorBridge *bridgeInstance = nil;
+static PPAutomationBridge *bridgeInstance = nil;
 
 + (instancetype)bridge {
     @synchronized(self) {
@@ -86,7 +86,7 @@ static PPAutomatorBridge *bridgeInstance = nil;
 
 
 
-- (void)startAutomationBridgeWithDelegate:(id<PPAutomatorBridgeDelegate>)delegate {
+- (void)startAutomationBridgeWithDelegate:(id<PPAutomationBridgeDelegate>)delegate {
     self.delegate = delegate;
     if (self.server) {
         [self.server start];
@@ -107,7 +107,7 @@ static PPAutomatorBridge *bridgeInstance = nil;
                                                       error: nil];
     if ([NSJSONSerialization isValidJSONObject:jsonObject]) {
         NSMutableDictionary *returnDict = [NSMutableDictionary dictionary];
-        NSDictionary *result = [self.delegate automationBridge:self receivedAction:[PPAutomatorBridgeAction actionWithDictionary:jsonObject]];
+        NSDictionary *result = [self.delegate automationBridgeself receivedAction:[PPAutomationBridgeAction actionWithDictionary:jsonObject]];
         if (result) {
             [returnDict setObject:result forKey:@"result"];
         }
@@ -244,10 +244,10 @@ static PPAutomatorBridge *bridgeInstance = nil;
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@implementation PPAutomatorBridgeAction
+@implementation PPAutomationBridgeAction
 
 + (instancetype)actionWithDictionary:(NSDictionary *)dictionary {
-    PPAutomatorBridgeAction *action = [PPAutomatorBridgeAction new];
+    PPAutomationBridgeAction *action = [PPAutomationBridgeAction new];
     [action setSelector:[dictionary objectForKey:@"selector"]];
     if ([dictionary objectForKey:@"argument"]) {
         [action setArguments:[dictionary objectForKey:@"argument"]];

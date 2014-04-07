@@ -1,5 +1,5 @@
 //
-//  PPAutomatorBridge.h
+//  PPAutomationBridge.h
 //  PPHCore
 //
 //  Created by Erceg,Boris on 10/8/13.
@@ -10,18 +10,18 @@
 
 #ifdef DEBUG
 
-@class PPAutomatorBridge;
-@class PPAutomatorBridgeAction;
+@class PPAutomationBridge;
+@class PPAutomationBridgeAction;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@protocol PPAutomatorBridgeDelegate <NSObject>
+@protocol PPAutomationBridgeDelegate <NSObject>
 
-- (NSDictionary *)automationBridge:(PPAutomatorBridge *)bridge receivedAction:(PPAutomatorBridgeAction *)action;
+- (NSDictionary *)automationBridge(PPAutomationBridge *)bridge receivedAction:(PPAutomationBridgeAction *)action;
 
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@interface PPAutomatorBridgeAction : NSObject
+@interface PPAutomationBridgeAction : NSObject
 @property (nonatomic, strong) NSString *selector;
 @property (nonatomic, strong) NSDictionary *arguments;
 - (NSDictionary *)resultFromTarget:(id)target;
@@ -29,12 +29,12 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@interface PPAutomatorBridge : NSObject {
+@interface PPAutomationBridge : NSObject {
 
 }
 + (instancetype)bridge;
 
-- (void)startAutomationBridgeWithDelegate:(id <PPAutomatorBridgeDelegate>)delegate;
+- (void)startAutomationBridgeWithDelegate:(id <PPAutomationBridgeDelegate>)delegate;
 - (void)stopAutomationBridge;
 - (NSDictionary *)receivedMessage:(NSString *)message;
 @property (nonatomic, assign) BOOL isActivated;
