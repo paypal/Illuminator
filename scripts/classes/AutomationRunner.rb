@@ -102,7 +102,7 @@ class AutomationRunner
 
 
   def runAllTests (report, doKillAfter, pretty = FALSE, hardwareID = nil)
-    testFolder = "#{File.dirname(__FILE__)}/../../"
+    testFolder = "#{File.dirname(__FILE__)}/../../buildArtifacts/"
     self.runTestCase("#{testFolder}testAutomatically.js", report, doKillAfter, pretty, hardwareID)
     if @doCoverage
       self.generateCoverage

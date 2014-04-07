@@ -2,6 +2,8 @@
 //
 // loads configuration from a generated file, provides sensible defaults
 
+#import "buildArtifacts/environment.js"
+
 (function() {
 
     var root = this,
@@ -52,47 +54,56 @@
 
     // setter for automatorSequenceRandomSeed
     config.setAutomatorSequenceRandomSeed = function(asrs) {
-        config.automatorSequenceRandomSeed = parseInt(asrs);
+        if (asrs !== undefined) {
+            config.automatorSequenceRandomSeed = parseInt(asrs);
+        }
     };
+
+    config.setAutomatorDesiredSimVersion = function(automatorDesiredSimVersion) {
+        config.automatorDesiredSimVersion = automatorDesiredSimVersion;
+    }
+
+    var jsonConfig = getPlistData(automatorRoot + "/buildArtifacts/generatedConfig.plist");
+
 
     // attempt to read config -- look for VARIABLES IN GLOBAL SCOPE
     try {
-        config.setDevice(device);
+        config.setDevice(jsonConfig.device);
     } catch (e) {
         UIALogger.logMessage("Couldn't read device from generated config");
     }
-
+    
     try {
-        config.setHardwareID(hardwareID)
+        config.setAutomatorDesiredSimVersion(jsonConfig.automatorDesiredSimVersion);
+    } catch (e) {
+        
+    }
+    
+    try {
+        config.setHardwareID(jsonConfig.hardwareID)
     } catch (e) {
     }
 
     try {
-        config.setStage(stage);
-    } catch (e) {
-        UIALogger.logMessage("Couldn't read stage from generated config");
-    }
-
-    try {
-        config.setTagsAny(automatorTagsAny);
+        config.setTagsAny(jsonConfig.automatorTagsAny);
     } catch (e) {
         UIALogger.logMessage("Couldn't read automatorTagsAny from generated config");
     }
 
     try {
-        config.setTagsAll(automatorTagsAll);
+        config.setTagsAll(jsonConfig.automatorTagsAll);
     } catch (e) {
         UIALogger.logMessage("Couldn't read automatorTagsAll from generated config");
     }
 
     try {
-        config.setTagsNone(automatorTagsNone);
+        config.setTagsNone(jsonConfig.automatorTagsNone);
     } catch (e) {
         UIALogger.logMessage("Couldn't read automatorTagsNone from generated config");
     }
 
     try {
-        config.setAutomatorSequenceRandomSeed(automatorSequenceRandomSeed);
+        config.setAutomatorSequenceRandomSeed(jsonConfig.automatorSequenceRandomSeed);
     } catch (e) {
         UIALogger.logMessage("Didn't read (optional) automatorSequenceRandomSeed from generated config");
     }

@@ -1,5 +1,6 @@
-#import "common/Common.js";
-#import "buildArtifacts/testDefinitions.js";
+#import "../Common.js";
+#import "<%= @testPath %>";
+
 
 // this file is for use with build machine testing.
 // its config settings should not be overwritten.
@@ -11,4 +12,3 @@ if (0 == (config.tagsAny.length + config.tagsAll.length + config.tagsNone.length
 } else {
     automator.runSupportedScenarios(config.tagsAny, config.tagsAll, config.tagsNone, config.automatorSequenceRandomSeed);
 }
-

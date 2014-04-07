@@ -1,13 +1,10 @@
 #import "contrib/tuneup_js/tuneup.js";
-#import "generated-environment.js";
-#import "generated-config.js";
-
+#import "buildArtifacts/environment.js"
 // these are here so that everything just imports from Common.js
+#import "Config.js";
 #import "AppMap.js";
 #import "Automator.js";
 #import "Bridge.js";
-#import "Config.js";
-
 var target = UIATarget.localTarget();
 var mainWindow = target.frontMostApp().mainWindow();
 
@@ -40,9 +37,9 @@ function isSimVersion(major, minor, rev) {
 
 function assertDesiredSimVersion() {
     var ver = target.systemVersion();
-    if (("iOS " + ver).indexOf(automatorDesiredSimVersion) == -1) {
+    if (("iOS " + ver).indexOf(config.automatorDesiredSimVersion) == -1) {
         throw "Simulator version " + ver + " is running, but generated-config.js " +
-            "specifies " + automatorDesiredSimVersion;
+            "specifies " + config.automatorDesiredSimVersion;
     }
 }
 
@@ -162,3 +159,21 @@ function mkActionForNavbarButton(navbar_name, button_name) {
         }
     }
 }
+
+
+function getPlistData(path) {
+    
+    var jsonOutput;
+    var scriptPath = automatorRoot + "/scripts/plist_to_json.sh";
+    UIALogger.logDebug("Running " + scriptPath + " '" + path + "'");
+
+    var output = target.host().performTaskWithPathArgumentsTimeout(scriptPath, [path], 30);
+    try {
+        jsonOutput = JSON.parse(output.stdout);
+    } catch(e) {
+        throw ("plist_to_json.sh gave bad JSON: ```" + output.stdout + "```");
+    }
+    
+    return jsonOutput;
+}
+

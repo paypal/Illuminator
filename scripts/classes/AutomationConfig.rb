@@ -1,31 +1,36 @@
+require 'erb'
 require File.join(File.expand_path(File.dirname(__FILE__)), '/ParameterStorage.rb')
 
 
 class AutomationConfig
-
-  def initialize(device, stage, simVersion, tagsAny, tagsAll, tagsNone, randomSeed, hardwareID = nil, testPath)
-    FileUtils.ln_s testPath, File.dirname(__FILE__)+"/../../buildArtifacts/testDefinitions.js"
+  @testPath = nil
+  def initialize(device, plistPath, simVersion, tagsAny, tagsAll, tagsNone, randomSeed, hardwareID = nil, testPath)
+    @testPath = testPath
+    @automatorRoot = File.dirname(__FILE__) + "/../.."
     
-    @jsStorage = PLISTStorage.new
-    @jsStorage.clearAtPath(self.configPath())
-    @jsStorage.addParameterToStorage('device', device)
+    self.renderTemplate "/../resources/testAutomatically.erb", "/../../buildArtifacts/testAutomatically.js"
+    self.renderTemplate "/../resources/environment.erb", "/../../buildArtifacts/environment.js"
+    
+    @plistStorage = PLISTStorage.new
+    @plistStorage.clearAtPath(self.configPath())
+    @plistStorage.addParameterToStorage('device', device)
     unless hardwareID.nil?
-      @jsStorage.addParameterToStorage('hardwareID', hardwareID)
+      @plistStorage.addParameterToStorage('hardwareID', hardwareID)
     end
-    @jsStorage.addParameterToStorage('stage', stage)
-    @jsStorage.addParameterToStorage('automatorDesiredSimVersion', simVersion)
+   # @plistStorage.addParameterToStorage('plistPath', stage)
+    @plistStorage.addParameterToStorage('automatorDesiredSimVersion', simVersion)
 
     tagDefs = {'automatorTagsAny' => tagsAny, 'automatorTagsAll' => tagsAll, 'automatorTagsNone' => tagsNone}
     tagDefs.each do |name, value|
       unless value.nil?
-        @jsStorage.addParameterToStorage(name, value)
+        @plistStorage.addParameterToStorage(name, value)
       else
-        @jsStorage.addParameterToStorage(name, Array.new(0))
+        @plistStorage.addParameterToStorage(name, Array.new(0))
       end
     end
 
     unless randomSeed.nil?
-      @jsStorage.addParameterToStorage('automatorSequenceRandomSeed', randomSeed)
+      @plistStorage.addParameterToStorage('automatorSequenceRandomSeed', randomSeed)
     end
 
   end
@@ -33,9 +38,24 @@ class AutomationConfig
   def configPath
     return 'buildArtifacts/generatedConfig.plist'
   end
+  
+  def renderTemplate sourceFile, destinationFile
+    
+    file = File.open(File.dirname(__FILE__) + sourceFile)
+    contents = ""
+    file.each {|line|
+      contents << line
+    }
+    
+    renderer = ERB.new(contents)
+    newFile = File.open(File.dirname(__FILE__) + destinationFile, "w")
+    newFile.write(renderer.result(binding))
+    newFile.close
 
+  end
+  
   def save
-    @jsStorage.saveToPath(self.configPath())
+    @plistStorage.saveToPath(self.configPath())
   end
 
 end

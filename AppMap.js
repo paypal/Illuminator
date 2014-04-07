@@ -6,8 +6,6 @@
 // actions have parameters
 // actions have device-specific implementations
 
-#import "../screens/AllScreens.js";
-
 var debugAppmap = false;
 
 (function() {

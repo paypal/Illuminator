@@ -7,7 +7,7 @@ config.setTagsAny(["smoke"]);
 config.setTagsAll(["fake"]);
 config.setTagsNone([]);
 
-#import "tests/AllTests.js";
+#import "<%= testPath %>";
 
 automator.logInfo();
 automator.runSupportedScenarios(config.tagsAny, config.tagsAll, config.tagsNone);
