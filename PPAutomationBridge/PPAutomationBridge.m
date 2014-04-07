@@ -46,15 +46,12 @@ NSStreamDelegate>
 #pragma mark -
 #pragma mark Init & Factory
 
-static PPAutomationBridge *bridgeInstance = nil;
-
 + (instancetype)bridge {
-    @synchronized(self) {
-        if (bridgeInstance == nil) {
-            bridgeInstance = [[self alloc] init];
-        }
-        return bridgeInstance;
-    }
+    static dispatch_once_t onceQueue;
+    static PPAutomationBridge *bridge = nil;
+    
+    dispatch_once(&onceQueue, ^{ bridge = [[self alloc] init]; });
+    return bridge;
 }
 
 
@@ -79,9 +76,7 @@ static PPAutomationBridge *bridgeInstance = nil;
 }
 
 - (void)dealloc {
-    if (self.server) {
-        [self.server stop];
-    }
+    [self stopAutomationBridge];
 }
 
 
