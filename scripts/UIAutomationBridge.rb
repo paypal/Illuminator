@@ -2,11 +2,9 @@
 # This must be
 require 'rubygems'
 require 'json'
-require 'eventmachine'
-require 'logger'
 require 'base64'
-require 'em-websocket-client'
 require 'dnssd'
+require 'socket'
 
 Dir.chdir(File.dirname(__FILE__) + "/../../")
 
@@ -29,26 +27,21 @@ ARGV.each do|parameter|
     callUID = argValue  
   elsif argName == '--hardwareID'
       hardwareID = argValue
-  elsif argName == '--expectsReturnValue'
-    expectsReturnValue = true;
   end
 end
-
-
 
 
 resultHash = Hash.new
 resultHash["selector"] = selector
 resultHash["callUID"] = callUID
-resultHash["expectsReturnValue"] = expectsReturnValue;
 unless argument.nil?
   resultHash["argument"] = JSON.parse argument
 end
 
 result = resultHash.to_json
 
-
-applicationAddress = "ws://localhost:4200"
+host = "localhost"
+port = "4200"
 
 unless hardwareID.nil?
   service = DNSSD::Service.new
@@ -57,8 +50,8 @@ unless hardwareID.nil?
       if result.name.eql? "UIAutomationBridge_#{hardwareID}"
         resolver = DNSSD::Service.new  
         resolver.resolve result do |r|  
-         target = r.target  
-         applicationAddress = "ws://#{r.target}:#{r.port}"
+         host = r.target
+         port = r.port
          break unless r.flags.more_coming?  
         end  
         break
@@ -67,49 +60,18 @@ unless hardwareID.nil?
   end
 end 
 
-
-
-def action
-  perform_external_call
-rescue Timeout::Error => e
-  @error = e
-  render :action => "error"
-end
-
 outputJson = Hash.new
 outputJson["ruby_check"] = true
 outputJson["status_check"] = "initialized"
 
-#TODO: try/catch this and print out JSON regardless.
-EM.run do
-  # TODO: Add ability to send requests to the device.  This just sends to the simulator.
-  conn = EventMachine::WebSocketClient.connect(applicationAddress)
-  message = ""
-  conn.callback do
-    if (result.length > 0)
-      conn.send_msg result
-    end
-  end
-
-  conn.errback do |e|
-    outputJson["status_check"] = "errbacked"
-    outputJson["error_message"] = e
-    puts "Got error: #{e}"
-  end
-
-  conn.stream do |msg|
-    outputJson["status_check"] = "streamed"
-    if msg.data == "done"
-      outputJson["response"] = JSON.parse message
-      conn.close_connection
-    else
-      message = message + msg.data
-    end
-  end
-
-  conn.disconnect do
-    EM::stop_event_loop
-  end
+socketStream = TCPSocket.new host, port
+socketStream.write(result)
+response = ""
+while line = socketStream.gets   
+  response = response + line
 end
+socketStream.close
+
+outputJson["response"] = JSON.parse response
 
 print outputJson.to_json

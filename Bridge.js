@@ -24,7 +24,7 @@ var debugBridge = false;
     // some structures to make function names less wordy
     bridge.nextNetworkRequest = {};
 
-    bridge.runNativeMethod = function(selector, arguments_obj, expectsReturnValue) {
+    bridge.runNativeMethod = function(selector, arguments_obj) {
 
         var arguments = undefined;
         if (arguments_obj !== undefined) arguments = JSON.stringify(arguments_obj);
@@ -56,10 +56,6 @@ var debugBridge = false;
 
         if (arguments !== undefined) {
             taskArguments.push("--b64argument=" + Base64.encode(arguments));
-        }
-
-        if (expectsReturnValue !== undefined) {
-            taskArguments.push("--expectsReturnValue");
         }
 
         UIALogger.logDebug("Bridge waiting for acknowledgment of UID '"
@@ -113,9 +109,9 @@ var debugBridge = false;
 
     };
 
-    bridge.makeActionFunction = function(selector, expectsReturnValue) {
+    bridge.makeActionFunction = function(selector) {
         return function(parm) {
-            bridge.runNativeMethod(selector, parm, expectsReturnValue);
+            bridge.runNativeMethod(selector, parm);
         };
     }
 
