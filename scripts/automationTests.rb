@@ -183,11 +183,11 @@ runner = AutomationRunner.new(options["defaultXcode"],
                               options["scheme"], 
                               options["appName"])
                             
-if options["hardwareID"].nil?
-  runner.setupForSimulator options["simDevice"], options["simVersion"], options["simLanguage"] 
-else 
+if !options["hardwareID"].nil?
   runner.setHardwareID options["hardwareID"]  
+elsif !options["skipSetSim"]
+  runner.setupForSimulator options["simDevice"], options["simVersion"], options["simLanguage"] 
 end      
                         
 config.save() # must save AFTER automationRunner initializes
-runner.runAllTests(options["report"], options["doKillAfter"], options["verbose"], options["timeout"])
+runner.runAllTests(options["report"], !options["skipKillAfter"], options["verbose"], options["timeout"])
