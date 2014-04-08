@@ -20,7 +20,6 @@ class AutomationRunner
     @crashReportsPath = "buildArtifacts/CrashReports"
     @xBuilder = XcodeBuilder.new
    
-    puts @outputDirectory
     @appName = appName + ".app"
     self.cleanup
   end
@@ -39,7 +38,6 @@ class AutomationRunner
     
 
   def cleanup
-    puts @crashPath
     FileUtils.rmtree @crashPath
     FileUtils.rmtree @reportPath
     FileUtils.rmtree @crashReportsPath
