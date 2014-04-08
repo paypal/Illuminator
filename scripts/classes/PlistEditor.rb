@@ -16,6 +16,10 @@ class PlistEditor
     @plistPath = path
   end
 
+  def setParameters parameters
+    @parameters = parameters
+  end
+
   def createAtPath
     empty = Hash.new
     Plist::Emit.save_plist(empty, @plistPath)
@@ -27,7 +31,6 @@ class PlistEditor
 
   def readFromPath
     plist = Plist::parse_xml(@plistPath)
-    puts plist
     return plist
   end
 

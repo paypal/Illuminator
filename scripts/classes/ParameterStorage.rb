@@ -16,6 +16,10 @@ class PLISTStorage
     end
   end
 
+  def setParameters parameters
+    @parameters = parameters
+  end
+  
   def clearAtPath(path)
     FileUtils.remove_file(path, TRUE)
   end
