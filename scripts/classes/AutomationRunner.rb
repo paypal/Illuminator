@@ -5,53 +5,12 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb')
 
 ####################################################################################################
-# Builder
-####################################################################################################
-
-class AutomationBuilder
-
-  def initialize
-
-    resultPath = File.dirname(__FILE__) + "/../../buildArtifacts/xcodeArtifacts"
-    @builder = XcodeBuilder.new
-    @builder.addParameter('configuration','Debug')
-    @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR',resultPath)
-
-    @builder.clean
-    @builder.killSim
-  end
-
-  def buildScheme scheme, hardwareID = nil, workspace
-    
-    directory = Dir.pwd
-    unless workspace.nil?
-      Dir.chdir(workspace)
-    end
-    
-    if hardwareID.nil?
-      @builder.addParameter('sdk','iphonesimulator7.0')
-      @builder.addParameter('arch','i386')
-    else 
-      @builder.addParameter('arch','armv7')
-      @builder.addEnvironmentVariable("AUTOMATION_UDID",hardwareID)
-    end
-    
-    @builder.addParameter('scheme',scheme)
-    @builder.run
-  
-    Dir.chdir(directory)
-  end
-
-
-end
-
-####################################################################################################
 # runner
 ####################################################################################################
 
 class AutomationRunner
 
-  def initialize(path, scheme, appName)
+  def initialize path, scheme, appName
     @xcodePath = path
   
     @outputDirectory = File.dirname(__FILE__) + "/../../buildArtifacts/xcodeArtifacts";
@@ -66,11 +25,12 @@ class AutomationRunner
     self.cleanup
   end
   
-  def setupForSimulator doSetSimulator, simDevice, simVersion, simLanguage
-    @doSetSimulator = doSetSimulator
-    @simDevice = simDevice
-    @simVersion = simVersion
+  def setupForSimulator simDevice, simVersion, simLanguage
     @simLanguage = simLanguage
+    command = "#{File.dirname(__FILE__)}/../choose_sim_device.scpt '#{simDevice}' '#{simVersion}' '#{@xcodePath}/Contents/Developer'"
+    self.runAnnotatedCommand(command)
+    command = "osascript #{File.dirname(__FILE__)}/../reset_simulator.applescript"
+    self.runAnnotatedCommand(command)
   end
   
   def setHardwareID hardwareID
@@ -84,15 +44,11 @@ class AutomationRunner
     FileUtils.rmtree @reportPath
     FileUtils.rmtree @crashReportsPath
     FileUtils.mkdir_p @reportPath
-    
   end
 
 
   def runAllTests (report, doKillAfter, verbose = FALSE, startupTimeout = 30)
     testCase = "#{File.dirname(__FILE__)}/../../buildArtifacts/testAutomatically.js"
-    if @doSetSimulator
-      setSimulator()
-    end
     command = "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
     command << File.dirname(__FILE__) + "/../../contrib/tuneup_js/test_runner/run '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
     unless @hardwareID.nil?
@@ -120,12 +76,6 @@ class AutomationRunner
 
   end
 
-  def setSimulator()
-    command = "#{File.dirname(__FILE__)}/../choose_sim_device.scpt '#{@simDevice}' '#{@simVersion}' '#{@xcodePath}/Contents/Developer'"
-    self.runAnnotatedCommand(command)
-    command = "osascript #{File.dirname(__FILE__)}/../reset_simulator.applescript"
-    self.runAnnotatedCommand(command)
-  end
 
   def runAnnotatedCommand(command)
     puts "\n"

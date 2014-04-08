@@ -2,6 +2,7 @@ require 'optparse'
 require 'pathname'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/AutomationRunner.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/AutomationBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/AutomationConfig.rb')
 
 
@@ -28,7 +29,6 @@ options["tagsNone"] = nil
 options["randomSeed"] = nil
 
 options["skipBuild"] = FALSE
-options["doSetSimulator"] = TRUE
 options["doKillAfter"] = TRUE
 options["coverage"] = FALSE
 
@@ -148,20 +148,23 @@ tagsNone_arr = options["tagsNone"].split(',') unless options["tagsNone"].nil?
 
 
 
-plistConfig = AutomationConfig.new(options["implementation"], 
+config = AutomationConfig.new(options["implementation"], 
                                   options["testPath"])
                                   
-if options["hardwareID"].nil?
-  plistConfig.setHardwareID options["hardwareID"]
+unless options["hardwareID"].nil?
+  config.setHardwareID options["hardwareID"]
 else 
-  plistConfig.setSimVersion options["simVersion"]
+  config.setSimVersion options["simVersion"]
 end
                                   
 unless options["plistSettingsPath"].nil?
-  plistConfig.setCustomConfig options["plistSettingsPath"]
-end   
-plistConfig.setRandomSeed options["randomSeed"]
-plistConfig.defineTags tagsAny_arr, tagsAll_arr, tagsNone_arr                               
+  config.setCustomConfig options["plistSettingsPath"]
+end
+   
+unless options["randomSeed"].nil?
+  config.setRandomSeed options["randomSeed"]
+end
+config.defineTags tagsAny_arr, tagsAll_arr, tagsNone_arr                               
 
 
 
@@ -181,10 +184,10 @@ runner = AutomationRunner.new(options["defaultXcode"],
                               options["appName"])
                             
 if options["hardwareID"].nil?
-  runner.setupForSimulator options["doSetSimulator"], options["simDevice"], options["simVersion"], options["simLanguage"] 
+  runner.setupForSimulator options["simDevice"], options["simVersion"], options["simLanguage"] 
 else 
   runner.setHardwareID options["hardwareID"]  
 end      
                         
-plistConfig.save() # must save AFTER automationRunner initializes
+config.save() # must save AFTER automationRunner initializes
 runner.runAllTests(options["report"], options["doKillAfter"], options["verbose"], options["timeout"])
