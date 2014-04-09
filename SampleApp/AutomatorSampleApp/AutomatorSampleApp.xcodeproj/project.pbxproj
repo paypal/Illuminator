@@ -17,25 +17,10 @@
 		88945DEB18F5AC4E00F02E4A /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 88945DE918F5AC4E00F02E4A /* Main_iPad.storyboard */; };
 		88945DEE18F5AC4E00F02E4A /* PPHAViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945DED18F5AC4E00F02E4A /* PPHAViewController.m */; };
 		88945DF018F5AC4E00F02E4A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 88945DEF18F5AC4E00F02E4A /* Images.xcassets */; };
-		88945DF718F5AC4E00F02E4A /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88945DF618F5AC4E00F02E4A /* XCTest.framework */; };
-		88945DF818F5AC4E00F02E4A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88945DD418F5AC4E00F02E4A /* Foundation.framework */; };
-		88945DF918F5AC4F00F02E4A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88945DD818F5AC4E00F02E4A /* UIKit.framework */; };
-		88945E0118F5AC4F00F02E4A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 88945DFF18F5AC4F00F02E4A /* InfoPlist.strings */; };
-		88945E0318F5AC4F00F02E4A /* AutomatorSampleAppTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E0218F5AC4F00F02E4A /* AutomatorSampleAppTests.m */; };
 		88945E1218F5ADC800F02E4A /* PPAutomationBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E0E18F5ADC800F02E4A /* PPAutomationBridge.m */; };
 		88945E1318F5ADC800F02E4A /* QServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E1118F5ADC800F02E4A /* QServer.m */; };
 		88945E1618F5AE3200F02E4A /* PPHABridgeDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E1518F5AE3200F02E4A /* PPHABridgeDelegate.m */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		88945DFA18F5AC4F00F02E4A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 88945DC918F5AC4E00F02E4A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 88945DD018F5AC4E00F02E4A;
-			remoteInfo = AutomatorSampleApp;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		88945DD118F5AC4E00F02E4A /* AutomatorSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AutomatorSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -53,11 +38,7 @@
 		88945DEC18F5AC4E00F02E4A /* PPHAViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PPHAViewController.h; sourceTree = "<group>"; };
 		88945DED18F5AC4E00F02E4A /* PPHAViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PPHAViewController.m; sourceTree = "<group>"; };
 		88945DEF18F5AC4E00F02E4A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		88945DF518F5AC4E00F02E4A /* AutomatorSampleAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AutomatorSampleAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		88945DF618F5AC4E00F02E4A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		88945DFE18F5AC4F00F02E4A /* AutomatorSampleAppTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "AutomatorSampleAppTests-Info.plist"; sourceTree = "<group>"; };
-		88945E0018F5AC4F00F02E4A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		88945E0218F5AC4F00F02E4A /* AutomatorSampleAppTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AutomatorSampleAppTests.m; sourceTree = "<group>"; };
 		88945E0D18F5ADC800F02E4A /* PPAutomationBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPAutomationBridge.h; sourceTree = "<group>"; };
 		88945E0E18F5ADC800F02E4A /* PPAutomationBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PPAutomationBridge.m; sourceTree = "<group>"; };
 		88945E1018F5ADC800F02E4A /* QServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QServer.h; sourceTree = "<group>"; };
@@ -77,16 +58,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		88945DF218F5AC4E00F02E4A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				88945DF718F5AC4E00F02E4A /* XCTest.framework in Frameworks */,
-				88945DF918F5AC4F00F02E4A /* UIKit.framework in Frameworks */,
-				88945DF818F5AC4E00F02E4A /* Foundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -94,7 +65,6 @@
 			isa = PBXGroup;
 			children = (
 				88945DDA18F5AC4E00F02E4A /* AutomatorSampleApp */,
-				88945DFC18F5AC4F00F02E4A /* AutomatorSampleAppTests */,
 				88945DD318F5AC4E00F02E4A /* Frameworks */,
 				88945DD218F5AC4E00F02E4A /* Products */,
 			);
@@ -104,7 +74,6 @@
 			isa = PBXGroup;
 			children = (
 				88945DD118F5AC4E00F02E4A /* AutomatorSampleApp.app */,
-				88945DF518F5AC4E00F02E4A /* AutomatorSampleAppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -149,24 +118,6 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		88945DFC18F5AC4F00F02E4A /* AutomatorSampleAppTests */ = {
-			isa = PBXGroup;
-			children = (
-				88945E0218F5AC4F00F02E4A /* AutomatorSampleAppTests.m */,
-				88945DFD18F5AC4F00F02E4A /* Supporting Files */,
-			);
-			path = AutomatorSampleAppTests;
-			sourceTree = "<group>";
-		};
-		88945DFD18F5AC4F00F02E4A /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				88945DFE18F5AC4F00F02E4A /* AutomatorSampleAppTests-Info.plist */,
-				88945DFF18F5AC4F00F02E4A /* InfoPlist.strings */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
 		88945E0C18F5ADC800F02E4A /* PPAutomationBridge */ = {
 			isa = PBXGroup;
 			children = (
@@ -207,24 +158,6 @@
 			productReference = 88945DD118F5AC4E00F02E4A /* AutomatorSampleApp.app */;
 			productType = "com.apple.product-type.application";
 		};
-		88945DF418F5AC4E00F02E4A /* AutomatorSampleAppTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 88945E0918F5AC4F00F02E4A /* Build configuration list for PBXNativeTarget "AutomatorSampleAppTests" */;
-			buildPhases = (
-				88945DF118F5AC4E00F02E4A /* Sources */,
-				88945DF218F5AC4E00F02E4A /* Frameworks */,
-				88945DF318F5AC4E00F02E4A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				88945DFB18F5AC4F00F02E4A /* PBXTargetDependency */,
-			);
-			name = AutomatorSampleAppTests;
-			productName = AutomatorSampleAppTests;
-			productReference = 88945DF518F5AC4E00F02E4A /* AutomatorSampleAppTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -234,11 +167,6 @@
 				CLASSPREFIX = PPHA;
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = PayPal;
-				TargetAttributes = {
-					88945DF418F5AC4E00F02E4A = {
-						TestTargetID = 88945DD018F5AC4E00F02E4A;
-					};
-				};
 			};
 			buildConfigurationList = 88945DCC18F5AC4E00F02E4A /* Build configuration list for PBXProject "AutomatorSampleApp" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -254,7 +182,6 @@
 			projectRoot = "";
 			targets = (
 				88945DD018F5AC4E00F02E4A /* AutomatorSampleApp */,
-				88945DF418F5AC4E00F02E4A /* AutomatorSampleAppTests */,
 			);
 		};
 /* End PBXProject section */
@@ -268,14 +195,6 @@
 				88945DF018F5AC4E00F02E4A /* Images.xcassets in Resources */,
 				88945DE818F5AC4E00F02E4A /* Main_iPhone.storyboard in Resources */,
 				88945DDF18F5AC4E00F02E4A /* InfoPlist.strings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		88945DF318F5AC4E00F02E4A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				88945E0118F5AC4F00F02E4A /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -295,23 +214,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		88945DF118F5AC4E00F02E4A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				88945E0318F5AC4F00F02E4A /* AutomatorSampleAppTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		88945DFB18F5AC4F00F02E4A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 88945DD018F5AC4E00F02E4A /* AutomatorSampleApp */;
-			targetProxy = 88945DFA18F5AC4F00F02E4A /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		88945DDD18F5AC4E00F02E4A /* InfoPlist.strings */ = {
@@ -336,14 +239,6 @@
 				88945DEA18F5AC4E00F02E4A /* Base */,
 			);
 			name = Main_iPad.storyboard;
-			sourceTree = "<group>";
-		};
-		88945DFF18F5AC4F00F02E4A /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				88945E0018F5AC4F00F02E4A /* en */,
-			);
-			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -449,48 +344,6 @@
 			};
 			name = Release;
 		};
-		88945E0A18F5AC4F00F02E4A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/AutomatorSampleApp.app/AutomatorSampleApp";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "AutomatorSampleApp/AutomatorSampleApp-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = "AutomatorSampleAppTests/AutomatorSampleAppTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = xctest;
-			};
-			name = Debug;
-		};
-		88945E0B18F5AC4F00F02E4A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/AutomatorSampleApp.app/AutomatorSampleApp";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "AutomatorSampleApp/AutomatorSampleApp-Prefix.pch";
-				INFOPLIST_FILE = "AutomatorSampleAppTests/AutomatorSampleAppTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = xctest;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -508,14 +361,6 @@
 			buildConfigurations = (
 				88945E0718F5AC4F00F02E4A /* Debug */,
 				88945E0818F5AC4F00F02E4A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-		};
-		88945E0918F5AC4F00F02E4A /* Build configuration list for PBXNativeTarget "AutomatorSampleAppTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				88945E0A18F5AC4F00F02E4A /* Debug */,
-				88945E0B18F5AC4F00F02E4A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
