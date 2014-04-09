@@ -3,3 +3,6 @@ buildArtifacts/
 .DS_Store
 .bundle
 .idea
+*.xcworkspace
+!default.xcworkspace
+xcuserdata
