@@ -36,10 +36,7 @@ class AutomationArgumentParser
                                                 })
     parser = parserFactory.buildParser(options, "xpatonsjdi#bzl#fek#crvmwy")
 
-    begin parser.parse! ARGV
-    rescue
-    end
-
+    parser.parse! args
     return options
   end
 
