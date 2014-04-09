@@ -8,7 +8,7 @@ class AutomationConfig
     @testPath = testPath
     @automatorRoot = File.dirname(__FILE__) + "/../.."
 
-    Dir.mkdir(File.dirname(__FILE__) + "/../../buildArtifacts")
+    FileUtils.mkdir_p(File.dirname(__FILE__) + "/../../buildArtifacts")
     self.renderTemplate "/../resources/testAutomatically.erb", "/../../buildArtifacts/testAutomatically.js"
     self.renderTemplate "/../resources/environment.erb", "/../../buildArtifacts/environment.js"
 
