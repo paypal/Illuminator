@@ -13,4 +13,10 @@
     return [action resultFromTarget:self];
 }
 
+- (NSDictionary *)setDefaultLabelText:(NSDictionary *)parameters {
+    //just pass with notification center as example
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"bridgeNotification" object:nil userInfo:parameters];
+    return nil;
+}
+
 @end

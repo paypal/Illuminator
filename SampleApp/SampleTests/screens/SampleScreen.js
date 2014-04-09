@@ -14,6 +14,10 @@ appmap.createOrAugmentApp("SampleApp").withScreen("homeScreen")
     .withAction("verifyLabelString", "Verify label has proper string")
     .withImplementation(verifyLabelString, "iPhone")
     .withParam("labelText", "label text", true, true)
+    
+    .withAction("mockLabelText", "Mock text label bridge action")
+    .withImplementation(bridge.makeActionFunction("setDefaultLabelText:"), "iPhone")
+    .withParam("labelText", "label text", true, true)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Actions
@@ -28,8 +32,6 @@ function homeScreenIsActive() {
     } catch (e) {
         return false;
     }
-
-
 }
 
 function pressButton() {
