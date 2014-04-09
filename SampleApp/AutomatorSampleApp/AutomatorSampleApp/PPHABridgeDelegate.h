@@ -7,7 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "PPAutomationBridge.h"
 
-@interface PPHABridgeDelegate : NSObject
+@interface PPHABridgeDelegate : NSObject <PPAutomationBridgeDelegate>
+
+
+
 
 @end

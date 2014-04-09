@@ -9,5 +9,8 @@
 #import "PPHABridgeDelegate.h"
 
 @implementation PPHABridgeDelegate
+- (NSDictionary *)automationBridge:(PPAutomationBridge *)bridge receivedAction:(PPAutomationBridgeAction *)action {
+    return [action resultFromTarget:self];
+}
 
 @end

@@ -7,11 +7,19 @@
 //
 
 #import "PPHAAppDelegate.h"
+#import "PPAutomationBridge.h"
+#import "PPHABridgeDelegate.h"
+
+@interface PPHAAppDelegate ()
+@property (nonatomic, strong) PPHABridgeDelegate *bridgeDelegate;
+@end
 
 @implementation PPHAAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    self.bridgeDelegate = [PPHABridgeDelegate new];
+    [[PPAutomationBridge bridge] startAutomationBridgeWithDelegate:self.bridgeDelegate];
     // Override point for customization after application launch.
     return YES;
 }
