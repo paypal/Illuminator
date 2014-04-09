@@ -47,7 +47,10 @@ options["simLanguage"] = 'en'
 options["timeout"] = 30
 		
 
-options = parser.parse(ARGV, options)
+puts  parser.parse ARGV
+
+#puts options
+exit
 
 Dir.chdir(File.dirname(__FILE__) + "/../")
 
