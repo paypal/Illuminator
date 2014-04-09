@@ -5,7 +5,6 @@ class AutomationArgumentParser
   def parse args
 
     options = {}
-    myfn = lambda{|p| self.readFromPath p }
     parserFactory = AutomationParserFactory.new({
                                                   "x" => "defaultXcode",
                                                   "p" => "testPath",

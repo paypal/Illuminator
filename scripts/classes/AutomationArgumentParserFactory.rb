@@ -37,9 +37,9 @@ class AutomationParserFactory
   #   the parse action is defined by the existence of letterProcessing for the letter key,
   #   which by default is simple assignment
   def addSwitch(letter, opts)
+    dest = self.getLetterDestination(letter)
     @switches[letter] = OpenStruct.new(:opts => opts,
-                                       :block => lambda do |letter|
-                                         dest = self.getLetterDestination(letter)
+                                       :block => lambda do |newval|
                                          # assign the parsed value to the output, processing it if necessary
                                          if @letterProcessing[letter]
                                            @options[dest] = @letterProcessing[letter].call(newval)
