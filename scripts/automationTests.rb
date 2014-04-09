@@ -6,6 +6,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/Automation
 require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/AutomationConfig.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/AutomationArgumentParser.rb')
 
+workspace = Dir.pwd
 
 parser = AutomationArgumentParser.new
 
@@ -14,7 +15,7 @@ options = {}
 # setupDefaults
 ####################################################################################################
 
-options["workspace"] = Dir.pwd
+options["workspace"] = workspace
 
 options["defaultXcode"] = '/Applications/Xcode.app'
 options["plistSettingsPath"] = ""
@@ -70,7 +71,7 @@ tagsNone_arr = options["tagsNone"].split(',') unless options["tagsNone"].nil?
 
 
 config = AutomationConfig.new(options["implementation"],
-                                  options["testPath"])
+                                  workspace + '/' + options["testPath"])
 
 unless options["hardwareID"].nil?
   config.setHardwareID options["hardwareID"]

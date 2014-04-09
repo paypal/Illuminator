@@ -1,4 +1,4 @@
-#import "../common/Common.js";
+#import "../Common.js";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Appmap additions
@@ -17,7 +17,7 @@ appmap.createOrAugmentApp("SampleApp").withScreen("homeScreen")
     
     .withAction("mockLabelText", "Mock text label bridge action")
     .withImplementation(bridge.makeActionFunction("setDefaultLabelText:"), "iPhone")
-    .withParam("labelText", "label text", true, true)
+    .withParam("labelText", "label text", true, true);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Actions

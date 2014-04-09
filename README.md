@@ -11,14 +11,14 @@ Quick Start
 
 A script is available to run integration test files from the command line: `automationTests.rb`.
 
-Example usage:
+Example usage from of sample app project directory:
 ```
-$ ruby scripts/buildMachine/automationTests.rb --stage=fake --tags-all=fake --tags-any=smoke,creditcard
+$ ruby ../../scripts/automationTests.rb -x /Applications/Xcode.app -p ../SampleTests/tests/AllTests.js -a AutomatorSampleApp -s AutomatorSampleApp -i iPhone -t test,mocked
 ```
 
 To see a list of defined tags, run the command with no arguments (or `--skip-build` to save time if you've already compiled):
 ```
-$ ruby scripts/buildMachine/automationTests.rb
+$ ruby scripts/automationTests.rb 
 ```
 
 
