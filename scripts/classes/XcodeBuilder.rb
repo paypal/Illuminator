@@ -57,7 +57,7 @@ class XcodeBuilder
       command << ' test'
     end
     
-    command << '| tee buildArtifacts/xcodebuild.log  | xcpretty -c'
+    command << " | tee '#{File.dirname(__FILE__)}/../../buildArtifacts/xcodebuild.log'  | xcpretty -c"
   
     if @shouldTest
       command << ' -r junit'

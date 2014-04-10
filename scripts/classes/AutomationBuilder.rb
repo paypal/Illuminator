@@ -12,7 +12,7 @@ class AutomationBuilder
 
   def initialize
 
-    resultPath = File.dirname(__FILE__) + "/../../buildArtifacts/xcodeArtifacts"
+    resultPath = "'#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts'"
     @builder = XcodeBuilder.new
     @builder.addParameter('configuration','Debug')
     @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR',resultPath)

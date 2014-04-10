@@ -15,8 +15,8 @@ class AutomationRunner
   def initialize path, scheme, appName
     @xcodePath = path
   
-    @outputDirectory = File.dirname(__FILE__) + "/../../buildArtifacts/xcodeArtifacts";
-    
+    @outputDirectory = "#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts";
+    puts @outputDirectory
     @reportPath = "buildArtifacts/UIAutomationReport"
     @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
     @crashReportsPath = "buildArtifacts/CrashReports"
@@ -28,9 +28,9 @@ class AutomationRunner
   
   def setupForSimulator simDevice, simVersion, simLanguage
     @simLanguage = simLanguage
-    command = "#{File.dirname(__FILE__)}/../choose_sim_device.scpt '#{simDevice}' '#{simVersion}' '#{@xcodePath}/Contents/Developer'"
+    command = "'#{File.dirname(__FILE__)}/../choose_sim_device.scpt' '#{simDevice}' '#{simVersion}' '#{@xcodePath}/Contents/Developer'"
     self.runAnnotatedCommand(command)
-    command = "osascript #{File.dirname(__FILE__)}/../reset_simulator.applescript"
+    command = "osascript '#{File.dirname(__FILE__)}/../reset_simulator.applescript'"
     self.runAnnotatedCommand(command)
   end
   
@@ -50,7 +50,7 @@ class AutomationRunner
   def runAllTests (report, doKillAfter, verbose = FALSE, startupTimeout = 30)
     testCase = "#{File.dirname(__FILE__)}/../../buildArtifacts/testAutomatically.js"
     command = "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
-    command << File.dirname(__FILE__) + "/../../contrib/tuneup_js/test_runner/run '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
+    command << "'#{File.dirname(__FILE__)}/../../contrib/tuneup_js/test_runner/run' '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
     unless @hardwareID.nil?
       command << " -d #{hardwareID}"
     end
