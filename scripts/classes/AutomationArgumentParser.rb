@@ -27,13 +27,12 @@ class AutomationArgumentParser
                                                   "v" => "verbose",
                                                   "m" => "timeout",
                                                   "w" => "randomSeed",
-                                                  "y" => "customArguments",
                                                 },
                                                 {
                                                   "j" => lambda {|p| (Pathname.new p).realpath().to_s },
                                                   "y" => lambda {|p| self.readFromPath p },
                                                 })
-    parser = parserFactory.buildParser(options, "xpatonsjdi#bzl#fek#crvmwy")
+    parser = parserFactory.buildParser(options, "xpatonsjdi#bzl#fek#crvmw")
 
     parser.parse! args
     return options
