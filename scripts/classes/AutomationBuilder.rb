@@ -16,6 +16,7 @@ class AutomationBuilder
     @builder = XcodeBuilder.new
     @builder.addParameter('configuration','Debug')
     @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR',resultPath)
+    @builder.addEnvironmentVariable('UIAUTOMATION_BUILD',true)
 
     @builder.clean
     @builder.killSim
