@@ -8,7 +8,6 @@ require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/Automation
 
 workspace = Dir.pwd
 
-parser = AutomationArgumentParser.new
 
 options = {}
 ####################################################################################################
@@ -48,6 +47,7 @@ options["simLanguage"] = 'en'
 options["timeout"] = 30
 
 
+parser = AutomationArgumentParser.new
 options = options.merge(parser.parse ARGV)
 
 
@@ -68,10 +68,12 @@ tagsAll_arr = options["tagsAll"].split(',') unless options["tagsAll"].nil?
 tagsNone_arr = Array.new(0)
 tagsNone_arr = options["tagsNone"].split(',') unless options["tagsNone"].nil?
 
+pathToAllTests = options["testPath"]
+unless pathToAllTests.start_with? workspace
+  pathToAllTests = workspace + '/' + pathToAllTests
+end
 
-
-config = AutomationConfig.new(options["implementation"],
-                                  workspace + '/' + options["testPath"])
+config = AutomationConfig.new(options["implementation"], pathToAllTests)
 
 unless options["hardwareID"].nil?
   config.setHardwareID options["hardwareID"]
