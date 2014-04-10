@@ -69,7 +69,6 @@ class AutomationConfig
   end
 
   def save
-    puts "path" + self.configPath()
     @plistStorage.saveToPath(self.configPath())
   end
 

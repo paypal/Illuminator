@@ -48,7 +48,7 @@ class AutomationParserFactory
   def prepare(defaultValues = nil, letterMapUpdates = nil, letterProcessingUpdates = nil)
     @letterMap = @letterMap.merge(letterMapUpdates) unless letterMapUpdates.nil?
     @letterProcessing = @letterProcessing.merge(letterProcessingUpdates) unless letterProcessingUpdates.nil?
-    @defaultValues = defaultValues unless defaultValues.nil?
+    @defaultValues = @defaultValues.merge defaultValues unless defaultValues.nil?
 
     self.addSwitch("x", ["-x", "--xcode PATH", "Sets path to default Xcode installation "])
     self.addSwitch("p", ["-p", "--testPath PATH", "Path to js file with all tests imported"])
@@ -60,9 +60,9 @@ class AutomationParserFactory
     self.addSwitch("j", ["-j", "--plistSettingsPath PATH", "path to settings plist"])
     self.addSwitch("d", ["-d", "--hardwareID ID", "hardware id of device you run on"])
     self.addSwitch("i", ["-i", "--implementation IMPL", "Device tests implementation (iPhone|iPad)"])
-    self.addSwitch("b", ["-b", "--simdevice DEVICE", "Run on given simulated device"])
-    self.addSwitch("z", ["-z", "--simversion VERSION", "Run on given simulated iOS version"])
-    self.addSwitch("l", ["-l", "--simlanguage LANGUAGE", "Run on given simulated iOS language"])
+    self.addSwitch("b", ["-b", "--simDevice DEVICE", "Run on given simulated device"])
+    self.addSwitch("z", ["-z", "--simVersion VERSION", "Run on given simulated iOS version"])
+    self.addSwitch("l", ["-l", "--simLanguage LANGUAGE", "Run on given simulated iOS language"])
     self.addSwitch("f", ["-f", "--skip-build", "Just automate; assume already built"])
     self.addSwitch("e", ["-e", "--skip-set-sim", "Assume that simulator has already been chosen and properly reset"])
     self.addSwitch("k", ["-k", "--skip-kill-after", "Do not kill the simulator after the run"])
