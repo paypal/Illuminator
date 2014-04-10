@@ -50,7 +50,7 @@ class AutomationConfig
   end
 
   def configPath
-    return 'buildArtifacts/generatedConfig.plist'
+    return @automatorRoot + '/buildArtifacts/generatedConfig.plist'
   end
 
   def renderTemplate sourceFile, destinationFile
@@ -69,6 +69,7 @@ class AutomationConfig
   end
 
   def save
+    puts "path" + self.configPath()
     @plistStorage.saveToPath(self.configPath())
   end
 

@@ -19,9 +19,9 @@ class AutomationParserFactory
       "j" => "plistSettingsPath",
       "d" => "hardwareID",
       "i" => "implementation",
-      "b" => "simdevice",
-      "z" => "simversion",
-      "l" => "simlanguage",
+      "b" => "simDevice",
+      "z" => "simVersion",
+      "l" => "simLanguage",
       "f" => "skipBuild",
       "e" => "skipSetSim",
       "k" => "skipKillAfter",
@@ -36,7 +36,12 @@ class AutomationParserFactory
       "j" => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to pList
     }
 
-    @defaultValues = {}
+    @defaultValues = {'x'=>'/Applications/Xcode.app', 
+                      'i'=>"iPhone",
+                      "b" => "iPhone Retina (4-inch)", 
+                      "z" => "iOS 7.0",
+                      'l' => 'en',
+                      'm' => 30 }
   end
 
   # you must custom prepare before you can add custom switches... otherwise things get all stupid
@@ -118,6 +123,8 @@ class AutomationParserFactory
 
     # build a parser as specified by the user
     letters.each_char do |c|
+      options[self.getLetterDestination(c)] = @defaultValues[c] unless @defaultValues[c].nil?
+      
       if c == "#"
         retval.separator("  ---------------------------------------------------------------------------------")
       else
