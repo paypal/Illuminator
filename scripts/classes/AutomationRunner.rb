@@ -17,9 +17,9 @@ class AutomationRunner
   
     @outputDirectory = "#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts";
     puts @outputDirectory
-    @reportPath = "buildArtifacts/UIAutomationReport"
+    @reportPath = "#{File.dirname(__FILE__)}/../../buildArtifacts/UIAutomationReport"
     @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
-    @crashReportsPath = "buildArtifacts/CrashReports"
+    @crashReportsPath = "#{File.dirname(__FILE__)}/../../buildArtifacts/CrashReports"
     @xBuilder = XcodeBuilder.new
    
     @appName = appName + ".app"
