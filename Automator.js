@@ -150,7 +150,6 @@ var debugAutomator = false;
     automator.paramsToString = function(actionparams) {
         var param_list = [];
         for (var p in actionparams) {
-            if (p == "dumpProperties" || p == "getMethods") continue;
             var pp = actionparams[p];
             param_list.push([p,
                              " (",
@@ -258,7 +257,6 @@ var debugAutomator = false;
 
         var tagsArr = [];
         for (var k in tags) {
-            if (k == "dumpProperties" || k == "getMethods") continue;
             tagsArr.push(k);
         }
 
@@ -279,8 +277,6 @@ var debugAutomator = false;
             for (key in automator.scenarios) {
                 all_keys.push(key);
             }
-            all_keys.pop(); // getMethods
-            all_keys.pop(); // dumpProperties
             fail(["Tried to test undefined tag called '",
                   givenTag,
                   "'; possible choices are: ['",
@@ -441,7 +437,6 @@ var debugAutomator = false;
                 var parameters_arr = [];
                 var parameters_str = "";
                 for (var k in parameters) {
-                    if (k == "dumpProperties" || k == "getMethods") continue;
                     var v = parameters[k];
                     if (step.action.params[k].useInSummary && undefined !== v) {
                         parameters_arr.push(k.toString() + ": " + v.toString());
