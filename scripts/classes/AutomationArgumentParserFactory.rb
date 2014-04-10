@@ -36,7 +36,7 @@ class AutomationParserFactory
       "j" => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to pList
     }
 
-    @defaultValues = {"b" => "iPhone Retina (4-inch)"}
+    @defaultValues = {}
   end
 
   # you must custom prepare before you can add custom switches... otherwise things get all stupid
