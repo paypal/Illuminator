@@ -160,9 +160,38 @@ function mkActionForNavbarButton(navbar_name, button_name) {
     }
 }
 
+function makeActionForVisibilityWithSelector(description, selector) {
+    return function (param) {
+        if (typeof(selector) === "function") {
+            selector = selector(param);
+        }
+        verifyUIElementVisibility(description, function (targ) {
+            var elts = $(selector);
+            if (elts && elts.length) { return elts[0]; }
+            return null;
+        }, param.expected);
+    };
+}
+
+function makeActionForTapWithSelector(description, selector) {
+    return function () {
+        verifyUIElementVisibility(description, function (targ) {
+            var elts = $(selector);
+            if (elts && elts.length) { return elts[0]; }
+            return null;
+        }, true);
+        $(selector).tap();
+    }
+}
+
+function makeActionToEnterTextWithSelector(description, elementKey) {
+    return function (param) {
+        $(elementKey).input(param.text);
+    }
+}
 
 function getPlistData(path) {
-    
+
     var jsonOutput;
     var scriptPath = automatorRoot + "/scripts/plist_to_json.sh";
     UIALogger.logDebug("Running " + scriptPath + " '" + path + "'");
@@ -173,7 +202,7 @@ function getPlistData(path) {
     } catch(e) {
         throw ("plist_to_json.sh gave bad JSON: ```" + output.stdout + "```");
     }
-    
+
     return jsonOutput;
 }
 

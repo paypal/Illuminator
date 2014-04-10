@@ -105,7 +105,6 @@ var debugAppmap = false;
         // now modify verifyNotActive's isCorrectScreen array to always return true.  slighly hacky.
         // this is because the meat of the function runs in our generated action
         for (var d in appmap.lastAction.isCorrectScreen) {
-            if (d == "dumpProperties" || d == "getMethods") continue;
             appmap.lastAction.isCorrectScreen[d] = function () { return true; };
         }
 
@@ -172,7 +171,6 @@ var debugAppmap = false;
         if ("default" != deviceName && !(deviceName in appmap.lastAction.isCorrectScreen)) {
             var devices = [];
             for (var k in appmap.lastAction.isCorrectScreen) {
-                if (k == "dumpProperties" || k == "getMethods") continue;
                 devices.push(k);
             }
             var msg = "Screen " + appmap.lastAppName + "." + appmap.lastScreenName;
