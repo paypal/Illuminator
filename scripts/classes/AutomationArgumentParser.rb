@@ -5,33 +5,8 @@ class AutomationArgumentParser
   def parse args
 
     options = {}
-    parserFactory = AutomationParserFactory.new({
-                                                  "x" => "defaultXcode",
-                                                  "p" => "testPath",
-                                                  "a" => "appName",
-                                                  "t" => "tagsAny",
-                                                  "o" => "tagsAll",
-                                                  "n" => "tagsNone",
-                                                  "s" => "scheme",
-                                                  "j" => "plistSettingsPath",
-                                                  "d" => "hardwareID",
-                                                  "i" => "implementation",
-                                                  "b" => "simdevice",
-                                                  "z" => "simversion",
-                                                  "l" => "simlanguage",
-                                                  "f" => "skipBuild",
-                                                  "e" => "skipSetSim",
-                                                  "k" => "skipKillAfter",
-                                                  "c" => "coverage",
-                                                  "r" => "report",
-                                                  "v" => "verbose",
-                                                  "m" => "timeout",
-                                                  "w" => "randomSeed",
-                                                },
-                                                {
-                                                  "j" => lambda {|p| (Pathname.new p).realpath().to_s },
-                                                  "y" => lambda {|p| self.readFromPath p },
-                                                })
+    parserFactory = AutomationParserFactory.new()
+    parserFactory.prepare()
     parser = parserFactory.buildParser(options, "xpatonsjdi#bzl#fek#crvmw")
 
     parser.parse! args
