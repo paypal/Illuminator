@@ -16,7 +16,7 @@ var mechanic = (function() {
 
     // Set the default timeout value to 0 to avoid making walking the object tree incredibly slow.
     // Developers can adjust this value by calling $.timeout(duration)
-    target.setTimeout(0);
+    // target.setTimeout(0);
 
     // This property is meant to suppress excessive logging which prevents instruments from promptly dumping out screenshots.
     this.isVerbose = false

@@ -319,10 +319,10 @@ var debugAutomator = false;
         // iterate through scenarios and run them
         UIALogger.logMessage(scenarioList.length + " scenarios to run");
         for (var i = 0; i < scenarioList.length; i++) {
-            UIALogger.logMessage("Running scenario " + (i + 1).toString() + " of " + scenarioList.length);
+            var message = "Running scenario " + (i + 1).toString() + " of " + scenarioList.length;
             var scenario = scenarioList[i];
             var t1 = getTime();
-            automator.runScenario(scenario);
+            automator.runScenario(scenario, message);
             dt = getTime() - t1;
             UIALogger.logDebug("Scenario completed in " + hms(dt));
         }
@@ -397,10 +397,13 @@ var debugAutomator = false;
 
 
     // run one scenario
-    automator.runScenario = function(scenario) {
+    automator.runScenario = function(scenario, message) {
         automator.checkInit();
         var testname = [scenario.title, " [", scenario.tags.join(", "), "]"].join("");
         UIALogger.logStart(testname);
+        if(undefined !== message) {
+            UIALogger.logMessage(message);
+        }
 
         // print the previous scenario in case we are running with a randomizer
         if (automator.lastRunScenario) {
