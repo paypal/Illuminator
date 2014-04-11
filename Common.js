@@ -5,6 +5,8 @@
 #import "AppMap.js";
 #import "Automator.js";
 #import "Bridge.js";
+#import "contrib/mechanic.js";
+
 var target = UIATarget.localTarget();
 var mainWindow = target.frontMostApp().mainWindow();
 
@@ -170,6 +172,22 @@ function makeActionForVisibilityWithSelector(description, selector) {
             if (elts && elts.length) { return elts[0]; }
             return null;
         }, param.expected);
+    };
+}
+
+function makeActionForPredicateOnElement(description, selector, predicate) {
+    return function (param) {
+        if (typeof(selector) === "function") {
+            selector = selector(param);
+        }
+        verifyUIElementVisibility(description, function (targ) {
+            var elts = $(selector);
+            if (elts && elts.length) { return elts[0]; }
+            return null;
+        }, true);
+        if (!predicate($(selector)[0], param)) {
+            throw new Error("Predicate " + description + " did not match " + selector);
+        }
     };
 }
 
