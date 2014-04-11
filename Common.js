@@ -5,6 +5,8 @@
 #import "AppMap.js";
 #import "Automator.js";
 #import "Bridge.js";
+#import "contrib/mechanic.js";
+
 var target = UIATarget.localTarget();
 var mainWindow = target.frontMostApp().mainWindow();
 
