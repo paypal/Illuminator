@@ -12,7 +12,7 @@
 
 var mechanic = (function() {
     // Save a reference to the local target for convenience
-    var target = UIATarget.localTarget();
+    var target =     UIATarget.localTarget();
 
     // Set the default timeout value to 0 to avoid making walking the object tree incredibly slow.
     // Developers can adjust this value by calling $.timeout(duration)
@@ -139,6 +139,7 @@ var mechanic = (function() {
     }
 
     $.qsa = $$ = function(element, selector) {
+        target.pushTimeout(0);
         var ret = [],
             groups = selector.split(/ *, */),
             matches
@@ -151,6 +152,7 @@ var mechanic = (function() {
             }
           }
         })
+        target.popTimeout();
         return $(ret)
     };
 
