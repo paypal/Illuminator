@@ -175,6 +175,22 @@ function makeActionForVisibilityWithSelector(description, selector) {
     };
 }
 
+function makeActionForPredicateOnElement(description, selector, predicate) {
+    return function (param) {
+        if (typeof(selector) === "function") {
+            selector = selector(param);
+        }
+        verifyUIElementVisibility(description, function (targ) {
+            var elts = $(selector);
+            if (elts && elts.length) { return elts[0]; }
+            return null;
+        }, true);
+        if (!predicate($(selector)[0], param)) {
+            throw new Error("Predicate " + description + " did not match " + selector);
+        }
+    };
+}
+
 function makeActionForTapWithSelector(description, selector) {
     return function () {
         verifyUIElementVisibility(description, function (targ) {
