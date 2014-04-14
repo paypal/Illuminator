@@ -17,7 +17,6 @@
     }
 
     config.implementation = 'iPhone';
-    config.stage = 'fake';
     config.tagsAny = []; // run all by default
     config.tagsAll = []; // none by default
     config.tagsNone = [];
@@ -31,10 +30,6 @@
     // setter for hardwareID
     config.setHardwareID = function(hardwareID) {
         config.hardwareID = hardwareID;
-    };
-    // setter for stage
-    config.setStage = function(stage) {
-        config.stage = stage;
     };
 
     // setter for tagsAny
@@ -51,11 +46,11 @@
     config.setTagsNone = function(tagsNone) {
         config.tagsNone = tagsNone;
     };
-    
+
     config.setCustomConfig = function(customConfig) {
-        
-      config.customConfig = getPlistData(customConfig);  
+      config.customConfig = getPlistData(customConfig);
     };
+
     // setter for automatorSequenceRandomSeed
     config.setAutomatorSequenceRandomSeed = function(asrs) {
         if (asrs !== undefined) {
@@ -76,13 +71,13 @@
     } catch (e) {
         UIALogger.logMessage("Couldn't read implementation from generated config");
     }
-    
+
     try {
         config.setAutomatorDesiredSimVersion(jsonConfig.automatorDesiredSimVersion);
     } catch (e) {
-        
+
     }
-    
+
     try {
         config.setHardwareID(jsonConfig.hardwareID)
     } catch (e) {
@@ -112,38 +107,11 @@
         UIALogger.logMessage("Didn't read (optional) automatorSequenceRandomSeed from generated config");
     }
 
-
     try {
         config.setCustomConfig(jsonConfig.customConfig);
     } catch (e) {
+        UIALogger.logMessage("Didn't read (optional) customConfig from generated config");
     }
-
-
-
-    // read config from json string
-    config.readFromJSONString = function(stringJSON) {
-        config.readFromObject(JSON.parse(stringJSON));
-    };
-
-    // read config from object
-    config.readFromObject = function(obj) {
-
-        for (var key in obj) {
-            switch (key) {
-            case "implementation":
-            config.setImplementation(obj[key]);
-            break;
-            case "stage":
-            config.setStage(obj[key]);
-            case "tags":
-            config.setTags(obj[key]);
-            case "attributes":
-            config.setAttributes(obj[key]);
-            default:
-            UIALogger.logDebug("Ignoring unrecognized config key '" + key + "'");
-            }
-        }
-    };
 
 
 }).call(this);
