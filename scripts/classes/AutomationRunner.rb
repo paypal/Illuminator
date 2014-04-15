@@ -160,7 +160,7 @@ class AutomationRunner
   
   def reportCrash()
     unless File.directory?(@crashReportsPath)
-      FileUtils.mkdir @crashReportsPath 
+      FileUtils.mkdir_p @crashReportsPath 
     end
 
     # find symbolicatecrash file, which is different depending on the Xcode version.  We assume either/or
@@ -171,7 +171,7 @@ class AutomationRunner
     end
 
     Dir.glob("#{@crashPath}/*.crash").each do |path|
-      outputFilename = "buildArtifacts/crashReport.txt"
+      outputFilename = "crashReport.txt"
       command =   "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
       command <<  "'#{symbolicatorPath}' "
       command <<  "-o '#{@crashReportsPath}/#{outputFilename}' '#{path}' '#{@outputDirectory}/#{@appName}.dSYM' 2>&1"
