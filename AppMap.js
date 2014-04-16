@@ -94,18 +94,25 @@ var debugAppmap = false;
         if (debugAppmap) UIALogger.logDebug("  on Device " + deviceName);
         appmap.lastScreenActiveFn[deviceName] = isActiveFn;
 
-        appmap.withAction("verifyIsActive", "Null op to verify that the " + appmap.lastScreenName + " screen is active")
-              .withImplementation(function() {}, deviceName);
+        appmap.withAction("verifyIsActive", "Null op to verify that the " + appmap.lastScreenName + " screen is active");
+        // slightly hacky, withImplementation expects actions to come AFTER all the onDevice calls
+        appmap.lastAction.isCorrectScreen[deviceName] = isActiveFn;
+        appmap.withImplementation(function() {}, deviceName);
 
         appmap.withAction("verifyNotActive", "Verify that the " + appmap.lastScreenName + " screen is NOT active")
-              .withImplementation(function() {
+        // slightly hacky, withImplementation expects actions to come AFTER all the onDevice calls
+        appmap.lastAction.isCorrectScreen[deviceName] = isActiveFn;
+        appmap.withImplementation(function() {
                       if (isActiveFn()) throw "Failed assertion that '" + appmap.lastScreenName + "' is NOT active ";
                   }, deviceName);
 
         // now modify verifyNotActive's isCorrectScreen array to always return true.  slighly hacky.
         // this is because the meat of the function runs in our generated action
         for (var d in appmap.lastAction.isCorrectScreen) {
-            appmap.lastAction.isCorrectScreen[d] = function () { return true; };
+            appmap.lastAction.isCorrectScreen[d] = function () {
+                UIALogger.logDebug("verifyNotActive is skipping the default screenIsActive function");
+                return true;
+            };
         }
 
         return this;
@@ -114,10 +121,18 @@ var debugAppmap = false;
 
     // create a new action in the latest screen, with the given name, description, and function
     appmap.withNewAction = function(actionName, desc) {
+        // we need this hack to prevent problems with the above isCorrectScreen hack --
+        //  so that we don't change the original reference, we rebuild the {devicename : function} map manually
+        var frozen = function(k) { return appmap.lastScreenActiveFn[k]; };
+        var isActiveMap = {};
+        for (var k in appmap.lastScreenActiveFn) {
+            isActiveMap[k] = frozen(k);
+        }
+
         // we add screen params to the action so that we can deal in actions alone
         appmap.lastAction = {
             name: actionName,
-            isCorrectScreen: appmap.lastScreenActiveFn,
+            isCorrectScreen: isActiveMap,
             screenName: appmap.lastScreenName,
             actionFn: {},
             description: desc,
@@ -174,7 +189,7 @@ var debugAppmap = false;
                 devices.push(k);
             }
             var msg = "Screen " + appmap.lastAppName + "." + appmap.lastScreenName;
-            msg += " only has devices: '" + devices.join("', '") + "' but tried to add an implementation";
+            msg += " only has defined devices: '" + devices.join("', '") + "' but tried to add an implementation";
             msg += " for device '" + deviceName + "' in action '" + appmap.lastActionName + "'";
             throw msg;
         }
