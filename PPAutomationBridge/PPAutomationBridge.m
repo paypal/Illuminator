@@ -61,9 +61,11 @@ NSStreamDelegate>
         NSString *automationUDID = nil;
 #ifdef AUTOMATION_UDID
         automationUDID =  AUTOMATION_UDID;
-#else
-        automationUDID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
 #endif
+        if (!automationUDID || [automationUDID isEqualToString:@""]) {
+            automationUDID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+        }
+        
         self.server = [[QServer alloc] initWithDomain:@"local."
                                                  type:@"_bridge._tcp."
                                                  name:[NSString stringWithFormat:@"UIAutomationBridge_%@", automationUDID]
