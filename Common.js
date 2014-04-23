@@ -224,3 +224,25 @@ function getPlistData(path) {
     return jsonOutput;
 }
 
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Appmap additions - common capabilities
+////////////////////////////////////////////////////////////////////////////////////////////////////
+appmap.createOrAugmentApp("ios-automator").withScreen("do")
+    .onDevice("iPhone", function() { return true; })
+    .onDevice("iPad", function() { return true; })
+
+    .withAction("delay", "Delay a given amount of time")
+    .withParam("seconds", "Number of seconds to delay", true, true)
+    .withImplementation(function(parm) {delay(parm.seconds);})
+
+    .withAction("debug", "Print the results of a debug function")
+    .withParam("debug_fn", "Function returning a string", true)
+    .withImplementation(function(parm) { UIALogger.logMessage(parm.debug_fn()); })
+
+    .withAction("logTree", "Log the UI element tree")
+    .withImplementation(function() { UIATarget.localTarget().logElementTree(); })
+
+    .withAction("fail", "Unconditionally fail the current test for debugging purposes")
+    .withImplementation(function() { throw "purposely-thrown exception to halt the test scenario"; });
