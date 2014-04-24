@@ -1,4 +1,5 @@
 require 'erb'
+require 'pathname'
 require File.join(File.expand_path(File.dirname(__FILE__)), '/ParameterStorage.rb')
 
 
@@ -6,7 +7,7 @@ class AutomationConfig
 
   def initialize(implementation, testPath)
     @testPath = testPath
-    @automatorRoot = File.dirname(__FILE__) + "/../.."
+    @automatorRoot = Pathname.new(File.dirname(__FILE__) + "/../..").realpath.to_s
 
     FileUtils.mkdir_p(File.dirname(__FILE__) + "/../../buildArtifacts")
     self.renderTemplate "/../resources/testAutomatically.erb", "/../../buildArtifacts/testAutomatically.js"
