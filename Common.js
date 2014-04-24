@@ -224,6 +224,55 @@ function getPlistData(path) {
     return jsonOutput;
 }
 
+function actionCompareScreenshotToTemplate(parm) {
+    var templatePath = parm.templatePath;
+    var captureTitle = parm.captureTitle;
+
+    var diff_pngPath = automatorRoot + "/scripts/diff_png.rb";
+    UIATarget.localTarget().captureScreenWithName(captureTitle);
+
+    screenshotDir  = automatorRoot + "/buildArtifacts/UIAutomationReport/Run 1"; // it's always Run 1
+    screenshotFile = captureTitle + ".png";
+    screenshotPath = screenshotDir + "/" + screenshotFile;
+    comparePngPath = screenshotDir + "/compared_" + screenshotFile;
+    compareGifPath = screenshotDir + "/compared_" + captureTitle + ".gif";
+
+    UIALogger.logDebug("Diffing images, this may take tens of seconds: " + templatePath + " :: " + screenshotPath);
+    var output = target.host().performTaskWithPathArgumentsTimeout("/usr/bin/ruby",
+                                                                   [diff_pngPath, templatePath, screenshotPath, comparePngPath],
+                                                                   120);
+
+    // turn the output into key/value pairs separated by ":"
+    var outputArr = output.stdout.split("\n");
+    var outputObj = {};
+    for (var i = 0; i < outputArr.length; ++i) {
+        var sp = outputArr[i].split(": ", 2)
+        if (sp.length == 2) {
+            outputObj[sp[0]] = sp[1];
+        }
+    }
+
+    // sanity check
+    if (!outputObj["pixels changed"]) throw "actionCompareScreenshotToTemplate: diff_png.rb failed to produce 'pixels changed' output";
+
+    // if output has no differences, return
+    var wrongPixels = parseInt(outputObj["pixels changed"]);
+    if (0 == wrongPixels) return;
+
+    // generate an animated gif of the changes
+    var output = target.host().performTaskWithPathArgumentsTimeout("/usr/local/bin/convert",
+                                                                   ["-delay", "50",
+                                                                    templatePath, screenshotPath,
+                                                                    "-loop", "0",
+                                                                    compareGifPath],
+                                                                   120);
+
+    throw ["Screenshot differed from", templatePath,
+           "by", wrongPixels, "pixels. ",
+           "Comparison image saved to:", comparePngPath,
+           " and comparison animation saved to:", compareGifPath].join(" ");
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,4 +294,9 @@ appmap.createOrAugmentApp("ios-automator").withScreen("do")
     .withImplementation(function() { UIATarget.localTarget().logElementTree(); })
 
     .withAction("fail", "Unconditionally fail the current test for debugging purposes")
-    .withImplementation(function() { throw "purposely-thrown exception to halt the test scenario"; });
+    .withImplementation(function() { throw "purposely-thrown exception to halt the test scenario"; })
+
+    .withAction("verifyScreenshot", "Validate a screenshot against a png template of the expected view")
+    .withParam("templatePath", "The path to the file that is considered the 'expected' view", true, true)
+    .withParam("captureTitle", "The title of the screenshot to capture", true, true)
+    .withImplementation(actionCompareScreenshotToTemplate);
