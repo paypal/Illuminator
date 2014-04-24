@@ -228,6 +228,8 @@ function actionCompareScreenshotToTemplate(parm) {
     var templatePath = parm.templatePath;
     var captureTitle = parm.captureTitle;
 
+    delay(0.4); // wait for any animations to settle
+
     var diff_pngPath = automatorRoot + "/scripts/diff_png.rb";
     UIATarget.localTarget().captureScreenWithName(captureTitle);
 
