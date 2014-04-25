@@ -30,7 +30,7 @@ class AutomationBuilder
     end
 
     if hardwareID.nil?
-      @builder.addParameter('sdk','iphonesimulator7.0')
+      @builder.addParameter('sdk','iphonesimulator')
       @builder.addParameter('arch','i386')
     else
       @builder.addParameter('arch','armv7')
