@@ -32,7 +32,7 @@ NSStreamDelegate>
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *inputData;
 @property (nonatomic, strong) NSMutableData *outputData;
-@property (nonatomic) uint writtenBytes;
+@property (nonatomic) NSInteger writtenBytes;
 
 
 @property (nonatomic, weak) id<PPAutomationBridgeDelegate> delegate;
@@ -197,7 +197,7 @@ NSStreamDelegate>
             self.inputData = [NSMutableData data];
 
             uint8_t buffer[32768];
-            unsigned int len = 0;
+            NSInteger len = 0;
             len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
             if(len) {
                 [self.inputData appendBytes:(const void *)buffer length:len];
@@ -216,7 +216,7 @@ NSStreamDelegate>
         case NSStreamEventHasSpaceAvailable: {
             const uint8_t *pData = [self.outputData bytes];
             while ([self.outputStream hasSpaceAvailable] && self.writtenBytes < self.outputData.length) {
-                int r = [self.outputStream write:pData+self.writtenBytes maxLength:self.outputData.length-self.writtenBytes];
+                NSInteger r = [self.outputStream write:pData+self.writtenBytes maxLength:self.outputData.length-self.writtenBytes];
                 if (r == -1) {
                     break;
                 }
