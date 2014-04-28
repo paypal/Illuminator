@@ -65,7 +65,7 @@ class AutomationRunner
     if verbose
       command << " -v"
     else 
-      command << " -b"
+      command << " -v -b"
     end
     command << " 1>&2"
     self.runAnnotatedCommand(command)
