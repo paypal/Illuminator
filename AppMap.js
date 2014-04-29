@@ -91,6 +91,7 @@ var debugAppmap = false;
     // enable the screen on a given device by setting the isActiveFn()
     //  isActiveFn() should return true if the screen is currently both visible and accessible
     appmap.onDevice = function(deviceName, isActiveFn) {
+        var lastScreenName = appmap.lastScreenName;
         if (debugAppmap) UIALogger.logDebug("  on Device " + deviceName);
         appmap.lastScreenActiveFn[deviceName] = isActiveFn;
 
@@ -103,7 +104,7 @@ var debugAppmap = false;
         // slightly hacky, withImplementation expects actions to come AFTER all the onDevice calls
         appmap.lastAction.isCorrectScreen[deviceName] = isActiveFn;
         appmap.withImplementation(function() {
-                      if (isActiveFn()) throw "Failed assertion that '" + appmap.lastScreenName + "' is NOT active ";
+                      if (isActiveFn()) throw "Failed assertion that '" + lastScreenName + "' is NOT active ";
                   }, deviceName);
 
         // now modify verifyNotActive's isCorrectScreen array to always return true.  slighly hacky.
