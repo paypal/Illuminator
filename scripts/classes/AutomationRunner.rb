@@ -150,9 +150,14 @@ class AutomationRunner
       elsif !options["skipSetSim"]
         runner.setupForSimulator options["simDevice"], options["simVersion"], options["simLanguage"]
       end
-  
+      
+      skipKillAfter = options["skipKillAfter"]
+      if options["coverage"]
+        skipKillAfter = TRUE
+      end 
+        
       config.save() # must save AFTER automationRunner initializes
-      runner.runAllTests(options["report"], !options["skipKillAfter"], options["verbose"], options["timeout"])
+      runner.runAllTests(options["report"], !skipKillAfter, options["verbose"], options["timeout"])
   
   end
   
