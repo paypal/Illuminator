@@ -38,10 +38,8 @@ class AutomationBuilder
       @builder.addEnvironmentVariable("AUTOMATION_UDID",hardwareID)
     end
     
-    if coverage
-      @builder.addParameter('xcconfig',"'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'")
-    end
-
+    @builder.addParameter('xcconfig',"'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'")
+    
     @builder.addParameter('scheme',scheme)
     @builder.run
 
