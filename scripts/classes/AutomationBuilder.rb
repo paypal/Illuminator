@@ -16,13 +16,14 @@ class AutomationBuilder
     @builder = XcodeBuilder.new
     @builder.addParameter('configuration','Debug')
     @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR',resultPath)
+    @builder.addEnvironmentVariable('CONFIGURATION_TEMP_DIR',resultPath)
     @builder.addEnvironmentVariable('UIAUTOMATION_BUILD',true)
 
     @builder.clean
     @builder.killSim
   end
 
-  def buildScheme scheme, hardwareID = nil, workspace = nil
+  def buildScheme scheme, hardwareID = nil, workspace = nil, coverage = FALSE
 
     directory = Dir.pwd
     unless workspace.nil?
@@ -36,12 +37,15 @@ class AutomationBuilder
       @builder.addParameter('arch','armv7')
       @builder.addEnvironmentVariable("AUTOMATION_UDID",hardwareID)
     end
+    
+    if coverage
+      @builder.addParameter('xcconfig',"'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'")
+    end
 
     @builder.addParameter('scheme',scheme)
     @builder.run
 
     Dir.chdir(directory)
   end
-
 
 end
