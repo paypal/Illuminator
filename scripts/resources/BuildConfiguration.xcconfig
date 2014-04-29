@@ -1,0 +1,10 @@
+//
+//  CoverageConfiguration.xcconfig
+//  
+//
+//  Created by Erceg,Boris on 8/5/13.
+//
+//
+
+GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES
+GCC_GENERATE_TEST_COVERAGE_FILES = YES
