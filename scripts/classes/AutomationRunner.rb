@@ -197,22 +197,22 @@ class AutomationRunner
     puts "Generating automation test coverage to #{destinationFile}".green
     sleep (3)
   
-    xcodeArtifactsFolder = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts").realpath
-    destinationPath = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts/objectFiles").realpath
-
+    xcodeArtifactsFolder = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts").realpath.to_s
+    destinationPath = "#{File.dirname(__FILE__)}/../../buildArtifacts/objectFiles"
+    
     #cleanup
     FileUtils.rm destinationFile, :force => true
     FileUtils.rm_rf destinationPath 
     unless File.directory?(destinationPath)
       FileUtils.mkdir_p destinationPath 
     end
+    destinationPath = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts/objectFiles").realpath.to_s
     
     filePaths = []
     Find.find(xcodeArtifactsFolder) do |pathP|
       path = pathP.to_s
       if /.*\.gcda$/.match path
         filePaths << path
-        puts path
         pathWithoutExt = path.chomp(File.extname(path))
         
         filePaths << pathWithoutExt + ".d"
