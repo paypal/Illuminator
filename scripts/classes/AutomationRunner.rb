@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'fileutils'
+require 'find'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationConfig.rb')
@@ -89,6 +90,7 @@ class AutomationRunner
   
   
    def self.runWithOptions options, workspace
+      options["workspace"] = Dir.pwd
       Dir.chdir(File.dirname(__FILE__) + "/../")
   
       ####################################################################################################
@@ -158,7 +160,10 @@ class AutomationRunner
         
       config.save() # must save AFTER automationRunner initializes
       runner.runAllTests(options["report"], !skipKillAfter, options["verbose"], options["timeout"])
-  
+      
+      if options["coverage"]
+        runner.generateCoverage options
+      end 
   end
   
   
@@ -186,31 +191,42 @@ class AutomationRunner
     end
   end
   
-  def generateCoverage()
-    destinationFile = "buildArtifacts/coverage.xml"
-    puts "generating automation test coverage to #{destinationFile}".green
+  def generateCoverage(options)
+    destinationFile = "#{File.dirname(__FILE__)}/../../buildArtifacts/coverage.xml"
+    excludeRegex = ".*(Debug|contrib).*"
+    puts "Generating automation test coverage to #{destinationFile}".green
     sleep (3)
-    parameterStorage = PLISTStorage.new
-    plist = parameterStorage.readFromStorageAtPath('buildParameters.plist')
-    path = plist['objectDirectory']
-    
-    iPhonePath = "#{path}/i386"
-    corePath = "#{path}/../../../../PPHCore.build/Debug-iphonesimulator/PPHCore.build/Objects-normal/i386"
-    destinationPath = "./objectFiles"
+  
+    xcodeArtifactsFolder = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts").realpath
+    destinationPath = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts/objectFiles").realpath
 
-    
+    #cleanup
     FileUtils.rm destinationFile, :force => true
     FileUtils.rm_rf destinationPath 
     unless File.directory?(destinationPath)
-      FileUtils.mkdir destinationPath 
+      FileUtils.mkdir_p destinationPath 
     end
     
-    FileUtils.cp_r "#{iPhonePath}/.", destinationPath 
-    FileUtils.cp_r "#{corePath}/.", destinationPath 
+    filePaths = []
+    Find.find(xcodeArtifactsFolder) do |pathP|
+      path = pathP.to_s
+      if /.*\.gcda$/.match path
+        filePaths << path
+        puts path
+        pathWithoutExt = path.chomp(File.extname(path))
+        
+        filePaths << pathWithoutExt + ".d"
+        filePaths << pathWithoutExt + ".dia"
+        filePaths << pathWithoutExt + ".o"
+        filePaths << pathWithoutExt + ".gcno"
+      end
+    end
     
-    excludeRegex = ".*(Debug|contrib).*"
-    
-    command = "gcovr -r ./ --exclude='#{excludeRegex}' --xml '#{destinationPath}' > #{destinationFile}"
+    filePaths.each do |path|
+      FileUtils.cp path, destinationPath 
+    end
+   
+    command = "gcovr -r '" + options["workspace"] + "' --exclude='#{excludeRegex}' --xml '#{destinationPath}' > #{destinationFile}"
     self.runAnnotatedCommand(command)
     
   end

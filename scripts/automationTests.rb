@@ -13,6 +13,6 @@ parser = parserFactory.buildParser(options, "xpatonsjdi#bzl#fek#crvmw")
 
 parser.parse! ARGV
 
-puts options
+options["workspace"] = workspace
 AutomationRunner.runWithOptions options, workspace
 
