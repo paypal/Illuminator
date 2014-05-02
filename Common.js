@@ -227,8 +227,9 @@ function getPlistData(path) {
 function actionCompareScreenshotToTemplate(parm) {
     var templatePath = parm.templatePath;
     var captureTitle = parm.captureTitle;
+    var delayCapture = parm.delay === undefined ? 0.4 : parm.delay;
 
-    delay(0.4); // wait for any animations to settle
+    delay(delayCapture); // wait for any animations to settle
 
     var diff_pngPath = automatorRoot + "/scripts/diff_png.rb";
     UIATarget.localTarget().captureScreenWithName(captureTitle);
@@ -301,4 +302,5 @@ appmap.createOrAugmentApp("ios-automator").withScreen("do")
     .withAction("verifyScreenshot", "Validate a screenshot against a png template of the expected view")
     .withParam("templatePath", "The path to the file that is considered the 'expected' view", true, true)
     .withParam("captureTitle", "The title of the screenshot to capture", true, true)
+    .withParam("delay", "The amount of time to delay before taking the screenshot", false, true)
     .withImplementation(actionCompareScreenshotToTemplate);

@@ -58,18 +58,30 @@
         }
     };
 
+    config.setAutomatorDesiredSimDevice = function(automatorDesiredSimDevice) {
+        config.automatorDesiredSimDevice = automatorDesiredSimDevice;
+    };
+
     config.setAutomatorDesiredSimVersion = function(automatorDesiredSimVersion) {
         config.automatorDesiredSimVersion = automatorDesiredSimVersion;
-    }
+    };
+
 
     var jsonConfig = getPlistData(automatorRoot + "/buildArtifacts/generatedConfig.plist");
-
+    target.host().performTaskWithPathArgumentsTimeout("/bin/mkdir", ["-p", automatorRoot + "/buildArtifacts/js-tmp"], 5);
+    config.tmpDir = automatorRoot + "/buildArtifacts/js-tmp";
 
     // attempt to read config -- look for VARIABLES IN GLOBAL SCOPE
     try {
         config.setImplementation(jsonConfig.implementation);
     } catch (e) {
         UIALogger.logMessage("Couldn't read implementation from generated config");
+    }
+
+    try {
+        config.setAutomatorDesiredSimDevice(jsonConfig.automatorDesiredSimDevice);
+    } catch (e) {
+
     }
 
     try {
