@@ -58,6 +58,10 @@
         }
     };
 
+    config.setAutomatorDesiredSimDevice = function(automatorDesiredSimDevice) {
+        config.automatorDesiredSimDevice = automatorDesiredSimDevice;
+    };
+
     config.setAutomatorDesiredSimVersion = function(automatorDesiredSimVersion) {
         config.automatorDesiredSimVersion = automatorDesiredSimVersion;
     };
@@ -72,6 +76,12 @@
         config.setImplementation(jsonConfig.implementation);
     } catch (e) {
         UIALogger.logMessage("Couldn't read implementation from generated config");
+    }
+
+    try {
+        config.setAutomatorDesiredSimDevice(jsonConfig.automatorDesiredSimDevice);
+    } catch (e) {
+
     }
 
     try {

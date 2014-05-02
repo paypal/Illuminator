@@ -22,6 +22,10 @@ class AutomationConfig
 
   end
 
+  def setSimDevice simDevice
+    @plistStorage.addParameterToStorage('automatorDesiredSimDevice', simDevice)
+  end
+
   def setSimVersion simVersion
     @plistStorage.addParameterToStorage('automatorDesiredSimVersion', simVersion)
   end

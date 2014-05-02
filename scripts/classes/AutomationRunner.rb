@@ -118,6 +118,7 @@ class AutomationRunner
       unless options["hardwareID"].nil?
         config.setHardwareID options["hardwareID"]
       else
+        config.setSimDevice options["simDevice"]
         config.setSimVersion options["simVersion"]
       end
 
