@@ -60,7 +60,8 @@
 
     config.setAutomatorDesiredSimVersion = function(automatorDesiredSimVersion) {
         config.automatorDesiredSimVersion = automatorDesiredSimVersion;
-    }
+    };
+
 
     var jsonConfig = getPlistData(automatorRoot + "/buildArtifacts/generatedConfig.plist");
 
