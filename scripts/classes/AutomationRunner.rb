@@ -120,11 +120,16 @@ class AutomationRunner
 
       unless options["hardwareID"].nil?
         config.setHardwareID options["hardwareID"]
-      else
-        config.setSimDevice options["simDevice"]
-        config.setSimVersion options["simVersion"]
       end
-
+     
+      unless options["simDevice"].nil?
+        config.setSimDevice options["simDevice"]
+      end
+     
+      unless options["simVersion"].nil?
+        config.setSimVersion options["simVersion"]
+      end    
+     
       unless options["plistSettingsPath"].nil?
         config.setCustomConfig options["plistSettingsPath"]
       end
