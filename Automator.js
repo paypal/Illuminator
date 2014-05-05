@@ -114,6 +114,13 @@ var debugAutomator = false;
 
     // whether a given scenario is a match for the given tags
     automator.scenarioMatchesCriteria = function(scenario, tagsAny, tagsAll, tagsNone) {
+        
+        // if any actions are neither defined for the current device nor "default"
+        for (var i = 0; i < scenario.steps.length; ++i) {
+            var s = scenario.steps[i];
+            if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) return false;
+        }
+        
         // if any tagsAll are missing from scenario, fail
         for (var i = 0; i < tagsAll.length; ++i) {
             var t = tagsAll[i];
@@ -133,12 +140,6 @@ var debugAutomator = false;
         for (var i = 0; i < tagsAny.length; ++i) {
             var t = tagsAny[i];
             if (t in scenario.tags_obj) return true;
-        }
-
-        // if any actions are neither defined for the current device nor "default"
-        for (var i = 0; i < scenario.steps.length; ++i) {
-            var s = scenario.steps[i];
-            if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) return false;
         }
 
         return false; // no tags matched

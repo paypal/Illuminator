@@ -27,12 +27,13 @@ class AutomationRunner
     self.cleanup
   end
 
-  def setupForSimulator simDevice, simVersion, simLanguage
+  def setupForSimulator simDevice, simLanguage, skipSetSim
     @simLanguage = simLanguage
-    command = "'#{File.dirname(__FILE__)}/../choose_sim_device.scpt' '#{simDevice}' '#{simVersion}' '#{@xcodePath}/Contents/Developer'"
-    self.runAnnotatedCommand(command)
-    command = "osascript '#{File.dirname(__FILE__)}/../reset_simulator.applescript'"
-    self.runAnnotatedCommand(command)
+    @simDevice = simDevice
+    unless skipSetSim
+      command = "osascript '#{File.dirname(__FILE__)}/../reset_simulator.applescript'"
+      self.runAnnotatedCommand(command)
+    end
   end
 
   def setHardwareID hardwareID
@@ -54,6 +55,8 @@ class AutomationRunner
     command << "'#{File.dirname(__FILE__)}/../../contrib/tuneup_js/test_runner/run' '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
     unless @hardwareID.nil?
       command << " -d #{hardwareID}"
+    else
+      command << " -w '#{@simDevice}'"
     end
     unless @simLanguage.nil?
       command << " -l '#{@simLanguage}'"
@@ -150,8 +153,8 @@ class AutomationRunner
 
       if !options["hardwareID"].nil?
         runner.setHardwareID options["hardwareID"]
-      elsif !options["skipSetSim"]
-        runner.setupForSimulator options["simDevice"], options["simVersion"], options["simLanguage"]
+      elsif
+        runner.setupForSimulator "#{options["simDevice"]} - Simulator - #{options["simVersion"]}", options["simLanguage"], options["skipSetSim"]
       end
 
       skipKillAfter = options["skipKillAfter"]
