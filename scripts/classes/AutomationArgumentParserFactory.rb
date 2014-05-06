@@ -39,7 +39,7 @@ class AutomationParserFactory
     @defaultValues = {'x'=>'/Applications/Xcode.app', 
                       'i'=>"iPhone",
                       "b" => "iPhone Retina (4-inch)", 
-                      "z" => "iOS 7.0",
+                      "z" => "iOS 7.1",
                       'l' => 'en',
                       'm' => 30 }
   end
