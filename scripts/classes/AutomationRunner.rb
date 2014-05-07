@@ -235,7 +235,7 @@ class AutomationRunner
       FileUtils.cp path, destinationPath
     end
 
-    command = "gcovr -r '" + options["workspace"] + "' --exclude='#{excludeRegex}' --xml '#{destinationPath}' > #{destinationFile}"
+    command = "gcovr -r '" + options["workspace"] + "' --exclude='#{excludeRegex}' --xml '#{destinationPath}' > '#{destinationFile}'"
     self.runAnnotatedCommand(command)
 
   end
