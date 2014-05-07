@@ -21,8 +21,8 @@ var mechanic = (function() {
     // This property is meant to suppress excessive logging which prevents instruments from promptly dumping out screenshots.
     this.isVerbose = false
 
-    var app = target.frontMostApp(),
-        window = app.mainWindow(),
+    var app = function () { return target.frontMostApp(); },
+        window = function () { return app().mainWindow(); },
         emptyArray = [],
         slice = emptyArray.slice
 
@@ -133,7 +133,7 @@ var mechanic = (function() {
             var dom;
             if (isA(selector)) dom = compact(selector);
             else if (selector instanceof UIAElement) dom = [selector];
-            else dom = $$(app, selector);
+            else dom = $$(app(), selector);
             return Z(dom, selector);
         }
     }
@@ -345,10 +345,10 @@ var mechanic = (function() {
             return $(result);
         },
         closest: function(selector, context) {
-            var el = this[0], candidates = $$(context || app, selector);
+            var el = this[0], candidates = $$(context || app(), selector);
             if (!candidates.length) el = null;
             while (el && candidates.indexOf(el) < 0)
-                el = el !== context && el !== app && el.parent();
+                el = el !== context && el !== app() && el.parent();
             return $(el);
         },
         ancestry: function(selector) {
@@ -451,7 +451,7 @@ var $ = $ || mechanic;  // expose $ shortcut
 //     mechanic.js may be freely distributed under the MIT license.
 
 (function($) {
-    var app = UIATarget.localTarget().frontMostApp();
+    var app = function () { return UIATarget.localTarget().frontMostApp(); };
     $.extend($.fn, {
         name: function() { return (this.length > 0) ? this[0].name() : null; },
         label: function() { return (this.length > 0) ? this[0].label() : null; },
@@ -468,17 +468,17 @@ var $ = $ || mechanic;  // expose $ shortcut
 
     $.extend($, {
         version: function() {
-            return app.version();
+            return app().version();
         },
         bundleID: function()  {
-            return app.bundleID();
+            return app().bundleID();
         },
         prefs: function(prefsOrKey) {
             // TODO: should we handle no-arg version that returns all prefs???
-            if (typeof prefsOrKey == 'string') return app.preferencesValueForKey(prefsOrKey);
+            if (typeof prefsOrKey == 'string') return app().preferencesValueForKey(prefsOrKey);
             else {
                 $.each(prefsOrKey, function(key, val) {
-                    app.setPreferencesValueForKey(val, key);
+                    app().setPreferencesValueForKey(val, key);
                 });
             }
         }
