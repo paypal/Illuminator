@@ -8,7 +8,7 @@ then
   echo
   echo "Compare two images and print the number of pixels that differ."
   echo "  - mask is a transparent image with masked areas colored magenta"
-  echo "  - diff image will be written to the given basename in PNG and GIF format"
+  echo "  - diff image will be written to the given base path in PNG and GIF format"
   echo
   exit 2;
 fi
@@ -20,6 +20,9 @@ img1="$tmpdir/img1.png"
 img2="$tmpdir/img2.png"
 imgm="$tmpdir/imgm.png"
 
+diffpng="$4.png"
+diffgif="$4.gif"
+
 echo "Normalize mask to black" >&2
 convert "$3" -fill black -opaque magenta "$imgm"
 echo "Apply mask to image 1" >&2
@@ -28,16 +31,18 @@ echo "Apply mask to image 2" >&2
 composite -gravity center "$3" "$2" "$img2"
 
 echo "Compare 2 masked images, get differences" >&2
-diffpixels=$(compare "$img1" "$img2" -highlight-color red -metric AE "$4.png" 2>&1)
+diffpixels=$(compare "$img1" "$img2" -highlight-color red -metric AE "$diffpng" 2>&1)
 RESULT=$?
 echo "Re-overlay the mask on the composite" >&2
-composite -gravity center "$imgm" "$4.png" "$4.png"
+composite -gravity center "$imgm" "$diffpng" "$diffpng"
 
 # IF DIFFERENT
 if [ "$diffpixels" -ne "0" ]
 then
     echo "Create the animated gif comparison" >&2
-    convert -delay 50 "$img1" "$img2" -loop 0 "$4.gif"
+    convert -delay 50 "$img1" "$img2" -loop 0 "$diffgif"
+else
+    rm -f "$diffpng"
 fi
 
 # count total pixels
