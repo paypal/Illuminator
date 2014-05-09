@@ -35,7 +35,7 @@ function homeScreenIsActive() {
 }
 
 function pressButton() {
-    target.frontMostApp().mainWindow().buttons()["Press Button"].tap();
+    target.frontMostApp().mainWindow().buttons()["Press aaaButton"].tap();
 }
 
 function clearLabel () {
