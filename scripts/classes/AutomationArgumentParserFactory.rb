@@ -30,6 +30,7 @@ class AutomationParserFactory
       "v" => "verbose",
       "m" => "timeout",
       "w" => "randomSeed",
+      "y" => "skipClean",
     }
 
     @letterProcessing = {
@@ -71,6 +72,7 @@ class AutomationParserFactory
     self.addSwitch("v", ["-v", "--verbose", "Show verbose output"])
     self.addSwitch("m", ["-m", "--timeout TIMEOUT", "startup timeout"])
     self.addSwitch("w", ["-w", "--random-seed SEED", "Randomize test order based on given integer seed"])
+    self.addSwitch("y", ["-y", "--skipClean", "Skip clean when building"])
   end
 
   # add a parse switch for the given letter key, using the given options.

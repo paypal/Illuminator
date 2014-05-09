@@ -19,11 +19,14 @@ class AutomationBuilder
     @builder.addEnvironmentVariable('CONFIGURATION_TEMP_DIR',resultPath)
     @builder.addEnvironmentVariable('UIAUTOMATION_BUILD',true)
     @builder.addEnvironmentVariable('GCC_PREPROCESSOR_DEFINITIONS',"'$(value) UIAUTOMATION_BUILD=1'")
-    @builder.clean
     @builder.killSim
   end
 
-  def buildScheme scheme, hardwareID = nil, workspace = nil, coverage = FALSE
+  def buildScheme scheme, hardwareID = nil, workspace = nil, coverage = FALSE, skipClean = FALSE
+
+    unless skipClean
+      @builder.clean
+    end
 
     directory = Dir.pwd
     unless workspace.nil?

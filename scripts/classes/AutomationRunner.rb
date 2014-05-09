@@ -148,7 +148,7 @@ class AutomationRunner
 
       unless options["skipBuild"]
         builder = AutomationBuilder.new()
-        builder.buildScheme(options["scheme"], options["hardwareID"], workspace, options["coverage"])
+        builder.buildScheme(options["scheme"], options["hardwareID"], workspace, options["coverage"], options["skipClean"])
 
       end
 
