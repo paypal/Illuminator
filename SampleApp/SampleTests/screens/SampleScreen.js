@@ -26,7 +26,7 @@ appmap.createOrAugmentApp("SampleApp").withScreen("homeScreen")
 function homeScreenIsActive() {
     try {
         target.waitUntilAccessorSuccess(function(targ) {
-                return targ.frontMostApp().mainWindow().buttons()["Press Button"];
+                return targ.frontMostApp().mainWindow().staticTexts()["Automator Sample App"];
             }, 10);
         return true;
     } catch (e) {
