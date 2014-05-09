@@ -230,7 +230,7 @@ function actionCompareScreenshotToMaster(parm) {
     var captureTitle = parm.captureTitle;
     var delayCapture = parm.delay === undefined ? 0.4 : parm.delay;
 
-    delay(delayCapture); // wait for any animations to settle
+    target.delay(delayCapture); // wait for any animations to settle
 
     var diff_pngPath = automatorRoot + "/scripts/diff_png.sh";
     UIATarget.localTarget().captureScreenWithName(captureTitle);
