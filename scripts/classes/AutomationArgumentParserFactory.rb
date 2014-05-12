@@ -37,9 +37,9 @@ class AutomationParserFactory
       "j" => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to pList
     }
 
-    @defaultValues = {'x'=>'/Applications/Xcode.app', 
+    @defaultValues = {'x'=>'/Applications/Xcode.app',
                       'i'=>"iPhone",
-                      "b" => "iPhone Retina (4-inch)", 
+                      "b" => "iPhone Retina (4-inch)",
                       "z" => "iOS 7.1",
                       'l' => 'en',
                       'm' => 30 }
@@ -126,7 +126,7 @@ class AutomationParserFactory
     # build a parser as specified by the user
     letters.each_char do |c|
       options[self.getLetterDestination(c)] = @defaultValues[c] unless @defaultValues[c].nil?
-      
+
       if c == "#"
         retval.separator("  ---------------------------------------------------------------------------------")
       else
