@@ -480,6 +480,13 @@ var debugAutomator = false;
                                       parameters_str
                                       ].join(""));
 
+                // assert isCorrectScreen function
+                if (undefined === step.action.isCorrectScreen[config.implementation]) {
+                    throw ["No isCorrectScreen function defined for '",
+                           step.action.screenName, ".", step.action.name,
+                           "' on ", config.implementation].join("");
+                }
+
                 // assert correct screen
                 if (!step.action.isCorrectScreen[config.implementation]()) {
                     throw ["Failed assertion that '", step.action.screenName, "' is active"].join("");
