@@ -67,12 +67,12 @@ class AutomationParserFactory
     self.addSwitch("f", ["-f", "--skip-build", "Just automate; assume already built"])
     self.addSwitch("e", ["-e", "--skip-set-sim", "Assume that simulator has already been chosen and properly reset"])
     self.addSwitch("k", ["-k", "--skip-kill-after", "Do not kill the simulator after the run"])
+    self.addSwitch("y", ["-y", "--skip-clean", "Skip clean when building"])
     self.addSwitch("c", ["-c", "--coverage", "Generate coverage files"])
     self.addSwitch("r", ["-r", "--report", "Generate Xunit reports in buildArtifacts/UIAutomationReport folder"])
     self.addSwitch("v", ["-v", "--verbose", "Show verbose output"])
     self.addSwitch("m", ["-m", "--timeout TIMEOUT", "startup timeout"])
     self.addSwitch("w", ["-w", "--random-seed SEED", "Randomize test order based on given integer seed"])
-    self.addSwitch("y", ["-y", "--skipClean", "Skip clean when building"])
   end
 
   # add a parse switch for the given letter key, using the given options.
