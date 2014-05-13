@@ -135,6 +135,10 @@ var debugAutomator = false;
         // if any actions are neither defined for the current device nor "default"
         for (var i = 0; i < scenario.steps.length; ++i) {
             var s = scenario.steps[i];
+            // device not defined
+            if (undefined === s.action.isCorrectScreen[config.implementation]) return false;
+
+            // action not defined for device
             if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) return false;
         }
 
