@@ -9,6 +9,7 @@ class XcodeBuilder
     @shouldClean = FALSE
     @shouldTest = FALSE
     @shouldReport = FALSE
+    @shouldBuild = TRUE
   end
 
   def addParameter(parameterName = '',parameterValue = '')
@@ -18,7 +19,11 @@ class XcodeBuilder
   def addEnvironmentVariable(parameterName = '',parameterValue = '')
     @environmentVariables[parameterName] = parameterValue
   end
-
+  
+  def skipBuild
+    @shouldBuild = FALSE
+  end
+  
   def clean
     @shouldClean = TRUE
   end
@@ -50,9 +55,11 @@ class XcodeBuilder
     if @shouldClean
       command << ' clean'
     end
-
-    command << ' build'
-
+    
+    if @shouldBuild
+      command << ' build'
+    end
+    
     if @shouldTest
       command << ' test'
     end
