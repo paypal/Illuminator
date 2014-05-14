@@ -38,7 +38,7 @@ class XcodeBuilder
 
 
   def buildCommand
-    command = 'xcodebuild'
+    command = 'set -o pipefail && xcodebuild'
     parameters = ''
     environmentVariables = ''
 
@@ -79,11 +79,22 @@ class XcodeBuilder
   def run
     command = self.buildCommand
     output = ""
-    IO.popen(command).each do |line|
-      puts line
-      output = output + line
+    
+    process = IO.popen(command) do |io|
+      while line = io.gets
+        line.chomp!
+        puts line
+        output = output + line
+      end
+      io.close
+      unless $?.to_i == 0 
+        puts "Build failed, check logs for results".red
+        exit $?.to_i
+      end
     end
-    return output
+    
+    
+    
   end
 
   def killSim
