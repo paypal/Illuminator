@@ -47,9 +47,20 @@ class AutomationRunner
     FileUtils.rmtree @crashReportsPath
     FileUtils.mkdir_p @reportPath
   end
-
+  
+  def installOnDevice
+    currentDir = Dir.pwd
+    Dir.chdir "#{File.dirname(__FILE__)}/../../contrib/ios-deploy"
+    command = "./ios-deploy -b '#{@outputDirectory}/#{@appName}' -i #{@hardwareID} -r -n"
+    self.runAnnotatedCommand(command)
+    Dir.chdir currentDir
+  end
 
   def runAllTests (report, doKillAfter, verbose = FALSE, startupTimeout = 30)
+    
+    unless @hardwareID.nil?
+      self.installOnDevice
+    end
     testCase = "#{File.dirname(__FILE__)}/../../buildArtifacts/testAutomatically.js"
     command = "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
     command << "'#{File.dirname(__FILE__)}/../../contrib/tuneup_js/test_runner/run' '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
