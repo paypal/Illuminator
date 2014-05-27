@@ -13,8 +13,8 @@
 
 #define DOCUMENTS_FOLDER NSHomeDirectory()
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+#define PPUIABSTRINGIFY(x) #x
+#define PPUIABTOSTRING(x) PPUIABSTRINGIFY(x)
 
 @interface PPAutomationBridgeAction ()
 
@@ -62,7 +62,7 @@ NSStreamDelegate>
     if (self) {
         NSString *automationUDID = nil;
 #ifdef AUTOMATION_UDID
-        automationUDID =  [NSString stringWithFormat:@"%c", TOSTRING(AUTOMATION_UDID)];
+        automationUDID =  [NSString stringWithFormat:@"%c", PPUIABTOSTRING(AUTOMATION_UDID)];
 #endif
         if (!automationUDID || [automationUDID isEqualToString:@""]) {
             automationUDID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
