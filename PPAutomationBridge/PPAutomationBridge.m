@@ -11,8 +11,8 @@
 #import "PPAutomationBridge.h"
 #import "QServer.h"
 
-#define DOCUMENTS_FOLDER NSHomeDirectory()
-
+#define PPUIABSTRINGIFY(x) #x
+#define PPUIABTOSTRING(x) PPUIABSTRINGIFY(x)
 
 @interface PPAutomationBridgeAction ()
 
@@ -60,7 +60,7 @@ NSStreamDelegate>
     if (self) {
         NSString *automationUDID = nil;
 #ifdef AUTOMATION_UDID
-        automationUDID =  AUTOMATION_UDID;
+        automationUDID =  [NSString stringWithUTF8String:PPUIABTOSTRING(AUTOMATION_UDID)];
 #endif
         if (!automationUDID || [automationUDID isEqualToString:@""]) {
             automationUDID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];

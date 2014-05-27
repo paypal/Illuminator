@@ -5,6 +5,7 @@ require 'json'
 require 'base64'
 require 'dnssd'
 require 'socket'
+require 'timeout'
 
 Dir.chdir(File.dirname(__FILE__) + "/../../")
 
