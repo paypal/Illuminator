@@ -54,7 +54,7 @@ class AutomationRunner
     command = "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
     command << "'#{File.dirname(__FILE__)}/../../contrib/tuneup_js/test_runner/run' '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
     unless @hardwareID.nil?
-      command << " -d #{hardwareID}"
+      command << " -d #{@hardwareID}"
     else
       command << " -w '#{@simDevice}'"
     end

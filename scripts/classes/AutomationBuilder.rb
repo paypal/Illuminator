@@ -18,7 +18,6 @@ class AutomationBuilder
     @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR',resultPath)
     @builder.addEnvironmentVariable('CONFIGURATION_TEMP_DIR',resultPath)
     @builder.addEnvironmentVariable('UIAUTOMATION_BUILD',true)
-    @builder.addEnvironmentVariable('GCC_PREPROCESSOR_DEFINITIONS',"'$(value) UIAUTOMATION_BUILD=1'")
     @builder.killSim
   end
 
@@ -32,14 +31,18 @@ class AutomationBuilder
     unless workspace.nil?
       Dir.chdir(workspace)
     end
-
+  
+    preprocessorDefinitions = "$(value) UIAUTOMATION_BUILD=1"
     if hardwareID.nil?
       @builder.addParameter('sdk','iphonesimulator')
       @builder.addParameter('arch','i386')
     else
       @builder.addParameter('arch','armv7')
-      @builder.addEnvironmentVariable("AUTOMATION_UDID",hardwareID)
+      @builder.addParameter('destination',"id=#{hardwareID}")
+      preprocessorDefinitions = preprocessorDefinitions + " AUTOMATION_UDID=#{hardwareID}"
     end
+    
+    @builder.addEnvironmentVariable('GCC_PREPROCESSOR_DEFINITIONS',"'#{preprocessorDefinitions}'")
     
     @builder.addParameter('xcconfig',"'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'")
     

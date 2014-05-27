@@ -10,6 +10,7 @@ class XcodeBuilder
     @shouldTest = FALSE
     @shouldReport = FALSE
     @shouldBuild = TRUE
+    @shouldArchive = FALSE
   end
 
   def addParameter(parameterName = '',parameterValue = '')
@@ -26,6 +27,10 @@ class XcodeBuilder
   
   def clean
     @shouldClean = TRUE
+  end
+
+  def archive
+    @shouldArchive = TRUE
   end
 
   def test
@@ -58,6 +63,10 @@ class XcodeBuilder
     
     if @shouldBuild
       command << ' build'
+    end
+    
+    if @shouldArchive
+      command << ' archive'
     end
     
     if @shouldTest
