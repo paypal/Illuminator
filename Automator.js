@@ -131,17 +131,6 @@ var debugAutomator = false;
 
     // whether a given scenario is a match for the given tags
     automator.scenarioMatchesCriteria = function(scenario, tagsAny, tagsAll, tagsNone) {
-
-        // if any actions are neither defined for the current device nor "default"
-        for (var i = 0; i < scenario.steps.length; ++i) {
-            var s = scenario.steps[i];
-            // device not defined
-            if (undefined === s.action.isCorrectScreen[config.implementation]) return false;
-
-            // action not defined for device
-            if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) return false;
-        }
-
         // if any tagsAll are missing from scenario, fail
         for (var i = 0; i < tagsAll.length; ++i) {
             var t = tagsAll[i];
@@ -152,6 +141,22 @@ var debugAutomator = false;
         for (var i = 0; i < tagsNone.length; ++i) {
             var t = tagsNone[i];
             if (t in scenario.tags_obj) return false;
+        }
+
+        // if any actions are neither defined for the current device nor "default"
+        for (var i = 0; i < scenario.steps.length; ++i) {
+            var s = scenario.steps[i];
+            // device not defined
+            if (undefined === s.action.isCorrectScreen[config.implementation]) {
+                UIALogger.logDebug("Skipping scenario '" + scenario.title + "' becuase '" + s.action.screenName + " doesn't have a screenIsActive function for " + config.implementation);
+                return false;
+            }
+
+            // action not defined for device
+            if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) {
+                UIALogger.logDebug("Skipping scenario '" + scenario.title + "' becuase of step '" + s.action.name + "'.");
+                return false;
+            }
         }
 
         // if no tagsAny specified, special case for ALL tags
