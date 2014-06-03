@@ -439,6 +439,7 @@ var debugAutomator = false;
         automator._deferredFailures = []; // reset any deferred errors
 
         var testname = [scenario.title, " [", scenario.tags.join(", "), "]"].join("");
+        UIALogger.logDebug("###############################################################");
         UIALogger.logStart(testname);
         if(undefined !== message) {
             UIALogger.logMessage(message);
@@ -471,6 +472,7 @@ var debugAutomator = false;
             for (var i = 0; i < scenario.steps.length; i++) {
                 var step = scenario.steps[i];
                 if (debugAutomator) {
+                    UIALogger.logDebug("----------------------------------------------------------------");
                     UIALogger.logDebug(["STEP", i + 1, JSON.stringify(step)].join(""));
                 }
 
@@ -493,6 +495,7 @@ var debugAutomator = false;
                 parameters_str = parameters_arr.length ? (" {" + parameters_arr.join(", ") + "}") : "";
 
                 // build the step description
+                UIALogger.logDebug("----------------------------------------------------------------");
                 UIALogger.logMessage(["STEP ", i + 1, " of ",
                                       scenario.steps.length, ": ",
                                       step.action.description,
@@ -542,6 +545,7 @@ var debugAutomator = false;
                             ') failed in scenario: "', scenario.title,
                             '" with message: ', failmsg].join(""));
 
+            UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             UIALogger.logDebug(["FAILED:", failmsg].join(" "));
             UIATarget.localTarget().logElementTree();
             UIATarget.localTarget().captureScreenWithName(step.name);
