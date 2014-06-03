@@ -129,6 +129,31 @@ var debugAutomator = false;
     };
 
 
+    //whether a given scenario is supported by the desired implementation
+    automator.deviceSupportsScenario = function(scenario) {
+        // if any actions are neither defined for the current device nor "default"
+        for (var i = 0; i < scenario.steps.length; ++i) {
+            var s = scenario.steps[i];
+            // device not defined
+            if (undefined === s.action.isCorrectScreen[config.implementation]) {
+                UIALogger.logDebug(["Skipping scenario '", scenario.title,
+                                    "' because screen '", s.action.screenName, "'",
+                                    " doesn't have a screenIsActive function for ", config.implementation].join(""));
+                return false;
+            }
+
+            // action not defined for device
+            if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) {
+                UIALogger.logDebug(["Skipping scenario '", scenario.title, "' because action '",
+                                    s.action.screenName, ".", s.action.name,
+                                    "' isn't suppored on ", config.implementation].join(""));
+                return false;
+            }
+        }
+
+        return true;
+    };
+
     // whether a given scenario is a match for the given tags
     automator.scenarioMatchesCriteria = function(scenario, tagsAny, tagsAll, tagsNone) {
         // if any tagsAll are missing from scenario, fail
@@ -141,22 +166,6 @@ var debugAutomator = false;
         for (var i = 0; i < tagsNone.length; ++i) {
             var t = tagsNone[i];
             if (t in scenario.tags_obj) return false;
-        }
-
-        // if any actions are neither defined for the current device nor "default"
-        for (var i = 0; i < scenario.steps.length; ++i) {
-            var s = scenario.steps[i];
-            // device not defined
-            if (undefined === s.action.isCorrectScreen[config.implementation]) {
-                UIALogger.logDebug("Skipping scenario '" + scenario.title + "' becuase '" + s.action.screenName + " doesn't have a screenIsActive function for " + config.implementation);
-                return false;
-            }
-
-            // action not defined for device
-            if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) {
-                UIALogger.logDebug("Skipping scenario '" + scenario.title + "' becuase of step '" + s.action.name + "'.");
-                return false;
-            }
         }
 
         // if no tagsAny specified, special case for ALL tags
@@ -399,7 +408,8 @@ var debugAutomator = false;
         var onesToRun = [];
         for (var i = 0; i < automator.allScenarios.length; ++i) {
             var scenario = automator.allScenarios[i];
-            if (automator.scenarioMatchesCriteria(scenario, tagsAny, tagsAll, tagsNone)) {
+            if (automator.scenarioMatchesCriteria(scenario, tagsAny, tagsAll, tagsNone)
+                && automator.deviceSupportsScenario(scenario)) {
                 onesToRun.push(scenario);
             }
         }
