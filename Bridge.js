@@ -21,9 +21,6 @@ var debugBridge = false;
     var bridgeCallNum = 0; // the call ID of a request in progress
     var bridgeWaitTime = 6; // seconds to wait for response from a bridge call
 
-    // some structures to make function names less wordy
-    bridge.nextNetworkRequest = {};
-
     bridge.runNativeMethod = function(selector, arguments_obj) {
 
         var arguments = undefined;
@@ -45,11 +42,11 @@ var debugBridge = false;
         taskArguments.push(scriptPath);
 
         taskArguments.push("--callUID=" + UID)
-        
+
         if (config.hardwareID !== undefined) {
             taskArguments.push("--hardwareID=" + config.hardwareID);
         }
-        
+
         if (selector !== undefined) {
             taskArguments.push("--selector=" + selector);
         }
@@ -114,47 +111,5 @@ var debugBridge = false;
             bridge.runNativeMethod(selector, parm);
         };
     }
-
-    // passes a fake response from resources/savedServerResponses
-    //  where responseId is the serverResponseName_responseId) -- optional
-    bridge.nextNetworkRequest.returnFakeResponse = function(method, parms, responseId) {
-        if (undefined === parms) parms = {};
-
-        // build up parms with response ID and method
-        if (undefined !== responseId) {
-            parms["responseId"] = responseId;
-        }
-        parms["method"] = method;
-        UIALogger.logDebug(JSON.stringify(parms));
-        bridge.runNativeMethod("returnFakeResponseForNextNetworkRequestToMethod:", parms);
-    };
-
-    // convenient wrapper for fake response functions for use in appmap actions
-    bridge.nextNetworkRequest.mkReturnFakeResponseFn = function(method, responseId) {
-        return function(parm) {
-            bridge.nextNetworkRequest.returnFakeResponse(method, parm, responseId);
-        };
-    };
-
-
-    bridge.nextNetworkRequest.failWithServerError = function(method, errorCode, parameters) {
-        parameters["method"] = method;
-        parameters["errorCode"] = errorCode;
-
-        bridge.runNativeMethod("failNextNetworkRequestToMethodWithServerError:", parameters);
-    };
-
-
-    bridge.nextNetworkRequest.failWithNetworkError = function(method,
-                                                              nsErrorCode,
-                                                              httpStatusCode,
-                                                              parameters) {
-        parameters["method"] = method;
-        parameters["nsErrorCode"] = nsErrorCode;
-        parameters["httpStatusCode"] = httpStatusCode;
-
-        bridge.runNativeMethod("failNextNetworkRequestToMethodWithNetworkError:", parameters);
-    };
-
 
 }).call(this);
