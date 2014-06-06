@@ -319,6 +319,9 @@ appmap.createOrAugmentApp("ios-automator").withScreen("do")
     .withAction("logTree", "Log the UI element tree")
     .withImplementation(function() { UIATarget.localTarget().logElementTree(); })
 
+    .withAction("logAccessors", "Log the list of valid element accessors")
+    .withImplementation(function() { UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow")); })
+
     .withAction("fail", "Unconditionally fail the current test for debugging purposes")
     .withImplementation(function() { throw "purposely-thrown exception to halt the test scenario"; })
 
