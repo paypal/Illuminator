@@ -299,6 +299,13 @@ function actionCompareScreenshotToMaster(parm) {
 
 }
 
+function actionLogAccessors(parm) {
+    if (parm !== undefined && parm.delay !== undefined) {
+        delay(parm.delay);
+    }
+    var visibleOnly = parm !== undefined && parm.visibleOnly === true;
+    UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", visibleOnly));
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -318,6 +325,12 @@ appmap.createOrAugmentApp("ios-automator").withScreen("do")
 
     .withAction("logTree", "Log the UI element tree")
     .withImplementation(function() { UIATarget.localTarget().logElementTree(); })
+
+    .withAction("logAccessors", "Log the list of valid element accessors")
+    .withParam("visibleOnly", "Whether to log only the visible elements", false, true)
+    .withParam("delay", "Number of seconds to delay before logging", false, true)
+    .withImplementation(actionLogAccessors)
+
 
     .withAction("fail", "Unconditionally fail the current test for debugging purposes")
     .withImplementation(function() { throw "purposely-thrown exception to halt the test scenario"; })

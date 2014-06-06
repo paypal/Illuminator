@@ -56,6 +56,9 @@ var debugAutomator = false;
     automator.deferFailure = function(err) {
         UIALogger.logDebug("Deferring an error: " + err);
         UIATarget.localTarget().logElementTree();
+        UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow"));
+        UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", true));
+
         if (automator._state.internal["currentStepName"] && automator._state.internal["currentStepNumber"]) {
             var msg = "Step " + automator._state.internal["currentStepNumber"];
             msg += " (" + automator._state.internal["currentStepName"] + "): ";
@@ -548,6 +551,8 @@ var debugAutomator = false;
             UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             UIALogger.logDebug(["FAILED:", failmsg].join(" "));
             UIATarget.localTarget().logElementTree();
+            UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow"));
+            UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", true));
             UIATarget.localTarget().captureScreenWithName(step.name);
             UIALogger.logDebug(longmsg);
             UIALogger.logFail(longmsg);
