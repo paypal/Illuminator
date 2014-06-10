@@ -554,6 +554,7 @@ var debugAutomator = false;
             UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow"));
             UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", true));
             UIATarget.localTarget().captureScreenWithName(step.name);
+            UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             UIALogger.logDebug(longmsg);
             UIALogger.logFail(longmsg);
        }
