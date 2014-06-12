@@ -74,9 +74,86 @@ function getNamedCellFromContainer(cellContainerView, name) {
     return ret !== null ? ret : cellContainerView.cells().firstWithName(name).elements().firstWithName(name);
 }
 
-function dumpElements(elements) {
-    for (var i in elements) {
-        UIALogger.logDebug(elements[i].toString());
+/**
+ * Resolve an expression to a single UIAElement
+ *
+ * Selector can be one of the following:
+ * 1. A function that takes UIATarget as an argument and returns a UIAElement.
+ * 2. An object of critera to satisfy mainWindow.find() .
+ * 3. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
+*/
+function resolveElement(selector) {
+    // there are multiple ways to access certain elements; collapse these entries
+    var getUniqueElements = function (elemObject) {
+        var ret = {};
+        for (var i in elemObject) {
+            var elem = elemObject[i];
+            var found = false;
+            for (var j in ret) {
+                if (found) continue;
+                if (ret[j] == elem) {
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                ret[i] = elem;
+            }
+        }
+        return ret;
+    };
+
+    // return one element from an associative array of possibly-duplicate entries, raise error if distinct entries != 1
+    var getOneElement = function (elemObject) {
+        var uniq = getUniqueElements(elemObject);
+        var size = Object.keys(elemObject).length;
+        if (size != 1) {
+            var msg = "resolveElement: expected 1 element, received " + size.toString() + " {";
+            for (var k in elemObject) {
+                msg += "\n    " + k + ": " + elemObject[k].toString();
+            }
+            msg += "\n}";
+            throw msg;
+        }
+
+        for (var k in elemObject) {
+            UIALogger.logDebug("Selector found object with canonical name: " + k);
+            return elemObject[k];
+        }
+    }
+
+    // perform a find in several stages
+    var segmentedFind = function(selectorArray) {
+        var intermElems = {"mainWindow": mainWindow}; //intermediate elements
+        // go through all selectors
+        for (var i = 0; i < selectorArray.length; ++i) {
+            var tmp = {};
+            // expand search on each intermediate element using current selector
+            for (var k in intermElems) {
+                var newFrontier = intermElems[k].find(selectorArray[i], k);
+                // merge results with temporary storage
+                for (var f in newFrontier) {
+                    tmp[f] = newFrontier[f];
+                }
+            }
+            // move unique elements from temporary storage into loop variable
+            intermElems = getUniqueElements(tmp);
+        }
+        return intermElems;
+    }
+
+    // search in the appropriate way
+    switch(typeof selector) {
+    case "function":
+        return selector(target);
+    case "object":
+        if (selector instanceof Array) {
+            return getOneElement(segmentedFind(selector));
+        } else {
+            return getOneElement(mainWindow.find(selector, "mainWindow"));
+        }
+    default:
+        throw "resolveSelector received undefined input type of " + (typeof selector).toString();
     }
 }
 
@@ -103,24 +180,14 @@ function verifyUIElementVisibility(name, targetAccessorFn, expectedVisibility, t
 // given a UI element accessor function, throw an error if the element's editabilty
 //   doesn't match what the editabilty (keyboard use) was.  "name" is for logging purposes
 function verifyUIElementEditability(name, targetAccessorFn, expectedEditability) {
-
-    var editability;
-    try {
-        var theItem = target.waitUntilAccessorSuccess(targetAccessorFn, 1, name);
-        theItem.tap();
-
-        target.frontMostApp().keyboard().waitUntilVisible(2);
-        editability = true;
-    } catch (e) {
-        editability = false;
-    }
-
+    var editability = target.waitUntilAccessorSuccess(targetAccessorFn, 1, name).checkIsEditable();
     if (expectedEditability != editability) {
         throw ("''" + name + "'' has edit-ability '" + editability +
                "' but expected '" + expectedEditability + "'");
     }
-
 }
+
+
 
 function mkActionForItemVisibility(name, targetAccessorFn) {
     return function(parm) {
