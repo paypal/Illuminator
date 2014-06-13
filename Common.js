@@ -373,9 +373,6 @@ function actionCompareScreenshotToMaster(parm) {
             }
         }
     }
-
-    // if
-
 }
 
 function actionLogAccessors(parm) {
@@ -409,7 +406,6 @@ appmap.createOrAugmentApp("ios-automator").withScreen("do")
     .withParam("visibleOnly", "Whether to log only the visible elements", false, true)
     .withParam("delay", "Number of seconds to delay before logging", false, true)
     .withImplementation(actionLogAccessors)
-
 
     .withAction("fail", "Unconditionally fail the current test for debugging purposes")
     .withImplementation(function() { throw "purposely-thrown exception to halt the test scenario"; })
