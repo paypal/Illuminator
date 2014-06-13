@@ -144,7 +144,7 @@ function resolveElement(selector) {
     // search in the appropriate way
     switch(typeof selector) {
     case "function":
-        return selector(target);
+        return selector(target); // TODO: guarantee isNotNil ?
     case "object":
         if (selector instanceof Array) {
             return getOneElement(segmentedFind(selector));
@@ -175,7 +175,8 @@ function getPlistData(path) {
 /**
  * Build an action on an element based on an element selector and a function to apply
  *
- * Selector is passed to resolveElement
+ * selector is passed to resolveElement to get an element
+ * work_fn takes an element and an object containing any necessary function parameters
  */
 function makeActionOnElement(selector, work_fn) {
     return function(param) {
