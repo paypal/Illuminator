@@ -265,6 +265,7 @@ function actionLogAccessors(parm) {
     UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", visibleOnly));
 }
 
+appmap.actionBuilder.initialize(resolveElement);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Appmap additions - common capabilities

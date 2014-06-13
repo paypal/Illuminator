@@ -212,5 +212,102 @@ var debugAppmap = false;
         return ret;
     };
 
+    // create an action builder to enable easy one-liners for common actions
+    //  intended use is to say var ab = appmap.actionBuilder.makeAction;
+    //        then in appmap: .withImplementation(ab.verifyElement.visibility({name: "blah"}))
+    appmap.actionBuilder = {};
+    appmap.actionBuilder.resolveElement = null;
+    appmap.actionBuilder.makeAction = {};
+    appmap.actionBuilder.makeAction.verifyElement = {};
+    appmap.actionBuilder.makeAction.element = {};
+
+    // must initialize the builder with a "resolve element" function; can be overridden by user for app-specific stuff
+    appmap.actionBuilder.initialize = function(resolveElement_fn) {
+        appmap.actionBuilder.resolveElement = resolveElement_fn;
+    };
+
+    // resolve an element
+    appmap.actionBuilder.getElement = function(selector, retryDelay) {
+        var elem = appmap.actionBuilder.resolveElement(selector);
+        if (null === elem || elem.isNotNil === undefined || !elem.isNotNil()) {
+            if (retryDelay !== undefined) {
+                target.delay(retryDelay);
+                elem = appmap.actionBuilder.resolveElement(selector);
+            }
+        }
+        return elem;
+    };
+
+    // build a predicate function action
+    // selector is for resolveElement
+    // elemName is the name for logging purposes
+    // predicate_fn is a function that takes an element as an argument
+    // predicateDesc is a description of the function for logging
+    // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
+    appmap.actionBuilder.makeAction.verifyElement.predicate = function(selector, elemName, predicate_fn, predicateDesc, retryDelay) {
+        return function(parm) {
+            var elem = appmap.actionBuilder.getElement(selector, retryDelay);
+
+            // prevent any funny business with integer comparisons
+            if ((predicate_fn(elem) == true) != (parm.expected == true)) {
+                throw "Element " + elemName + " failed predicate " + predicateDesc + " (expected value: " + parm.expected + ")";
+            }
+        };
+    };
+
+    // build an element method action
+    // selector is for resolveElement
+    // elemName is the name for logging purposes
+    // work_fn is a function that takes an element as an argument plus
+    // workDesc is a description of the function for logging
+    // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
+    appmap.actionBuilder.makeAction.element.act = function(selector, elemName, work_fn, retryDelay) {
+        return function(parm) {
+            var elem = appmap.actionBuilder.getElement(selector, retryDelay);
+            work_fn(elem, parm);
+        };
+    };
+
+    appmap.actionBuilder.makeAction.verifyElement.visibility = function(selector, elemName, retryDelay) {
+        return appmap.actionBuilder.makeAction.verifyElement.predicate(selector, elemName, function (elem) {
+            return elem.isVisible();
+        }, "isVisible", retryDelay);
+    };
+
+    appmap.actionBuilder.makeAction.verifyElement.editability = function(selector, elemName, retryDelay) {
+        return appmap.actionBuilder.makeAction.verifyElement.predicate(selector, elemName, function (elem) {
+            return elem.checkIsEditable();
+        }, "isEditable", retryDelay);
+    };
+
+    appmap.actionBuilder.makeAction.verifyElement.enabled = function(selector, elemName, retryDelay) {
+        return appmap.actionBuilder.makeAction.verifyElement.predicate(selector, elemName, function (elem) {
+            return elem.isEnabled();
+        }, "isEnabled", retryDelay);
+    };
+
+    appmap.actionBuilder.makeAction.element.tap = function(selector, elemName, retryDelay) {
+        return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
+            elem.tap()
+        }, retryDelay);
+    };
+
+    appmap.actionBuilder.makeAction.element.vtap = function(selector, elemName, retryDelay) {
+        return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
+            elem.vtap(4)
+        }, retryDelay);
+    };
+
+    appmap.actionBuilder.makeAction.element.svtap = function(selector, elemName, retryDelay) {
+        return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
+            elem.svtap(4)
+        }, retryDelay);
+    };
+
+    appmap.actionBuilder.makeAction.element.typeString = function(selector, elemName, retryDelay) {
+        return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
+            elem.typeString(parm.text, parm.clear === true);
+        }, retryDelay);
+    };
 
 }).call(this);
