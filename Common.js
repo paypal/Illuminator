@@ -150,7 +150,7 @@ function resolveElement(selector) {
         if (selector instanceof Array) {
             return getOneElement(segmentedFind(selector));
         } else {
-            return getOneElement(mainWindow.find(selector, "mainWindow"));
+            return getOneElement(segmentedFind([selector]));
         }
     default:
         throw "resolveSelector received undefined input type of " + (typeof selector).toString();
