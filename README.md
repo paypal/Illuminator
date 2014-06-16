@@ -107,7 +107,7 @@ appmap.augmentApp("PayPalHere").withScreen("login")
 
 In this example, the `withScreen` method takes 1 argument: the screen name.
 
-`onDevice` takes 2 arguments: the function (taking no arguments, returning boolean) that will specify at runtime whether the screen is currently active, and the device on which this function will be used.
+`onDevice` takes 2 arguments: device on which this function will be used, and the function (taking no arguments, returning boolean) that will specify at runtime whether the screen is currently active.
 
 The `withAction` method takes 2 arguments: the action name, the text that will be displayed in the automator when the action is run.
 
