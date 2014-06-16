@@ -47,7 +47,7 @@ class AutomationRunner
     FileUtils.rmtree @crashReportsPath
     FileUtils.mkdir_p @reportPath
   end
-  
+
   def installOnDevice
     currentDir = Dir.pwd
     Dir.chdir "#{File.dirname(__FILE__)}/../../contrib/ios-deploy"
@@ -57,7 +57,7 @@ class AutomationRunner
   end
 
   def runAllTests (report, doKillAfter, verbose = FALSE, startupTimeout = 30)
-    
+
     unless @hardwareID.nil?
       self.installOnDevice
     end
@@ -108,6 +108,12 @@ class AutomationRunner
       Dir.chdir(File.dirname(__FILE__) + "/../")
 
       ####################################################################################################
+      # Sanity checks
+      ####################################################################################################
+
+      raise ArgumentError, 'Path to all tests was not supplied' if options["testPath"].nil?
+
+      ####################################################################################################
       # Storing parameters
       ####################################################################################################
 
@@ -132,15 +138,15 @@ class AutomationRunner
       unless options["hardwareID"].nil?
         config.setHardwareID options["hardwareID"]
       end
-     
+
       unless options["simDevice"].nil?
         config.setSimDevice options["simDevice"]
       end
-     
+
       unless options["simVersion"].nil?
         config.setSimVersion options["simVersion"]
-      end    
-     
+      end
+
       unless options["plistSettingsPath"].nil?
         config.setCustomConfig options["plistSettingsPath"]
       end
