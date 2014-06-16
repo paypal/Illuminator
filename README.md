@@ -144,8 +144,9 @@ Many actions are simple -- tapping a button, entering text, verifying that an el
      .withImplementation(ab.element.tap({name: "Done", UIAType: "UIAButton"}, "Done button"))
  ```
 
- Element Selectors
- -----------------
+
+Element Selectors
+-----------------
 
 `ios-automator` provides a function called `resolveElement` which drives the operation of common actions:
 
