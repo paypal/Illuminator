@@ -18,7 +18,7 @@ $ ruby ../../scripts/automationTests.rb -x /Applications/Xcode.app -p ../SampleT
 
 To see a list of defined tags, run the command with no arguments (or `--skip-build` to save time if you've already compiled):
 ```
-$ ruby scripts/automationTests.rb 
+$ ruby scripts/automationTests.rb
 ```
 
 
