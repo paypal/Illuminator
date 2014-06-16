@@ -88,10 +88,11 @@ function resolveElement(selector) {
         for (var i in elemObject) {
             var elem = elemObject[i];
             var found = false;
+            // add elements to return object if they are not already there (via equality)
             for (var j in ret) {
-                if (found) continue;
-                if (ret[j] == elem) {
+                if (ret[j].equals(elem)) {
                     found = true;
+                    break;
                 }
             }
 
