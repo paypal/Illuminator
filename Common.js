@@ -108,11 +108,15 @@ function resolveElement(selector) {
         var uniq = getUniqueElements(elemObject);
         var size = Object.keys(elemObject).length;
         if (size != 1) {
-            var msg = "resolveElement: expected 1 element, received " + size.toString() + " {";
-            for (var k in elemObject) {
-                msg += "\n    " + k + ": " + elemObject[k].toString();
+            var msg = "resolveElement: expected 1 element from selector " + JSON.stringify(selector);
+            msg += ", received " + size.toString();
+            if (size > 0) {
+                msg += " {";
+                for (var k in elemObject) {
+                    msg += "\n    " + k + ": " + elemObject[k].toString();
+                }
+                msg += "\n}";
             }
-            msg += "\n}";
             throw msg;
         }
 
