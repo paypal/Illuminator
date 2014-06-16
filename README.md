@@ -150,7 +150,7 @@ Element Selectors
 
 `ios-automator` provides a function called `resolveElement` which drives the operation of common actions:
 
- ```javascript
+```javascript
 // not actual implementation, but basic idea
 appmap.actionBuilder.makeAction.element.tap = function (selector) {
     var elem = resolveElement(selector);
@@ -164,9 +164,11 @@ appmap.actionBuilder.makeAction.element.tap = function (selector) {
 2. A single object for `tuneup_js`'s `.find()` function, e.g. `{name: "My Button", UIAtype: "UIAButton"}`.
 3. An array of objects for the `.find()` function, indicating a hierarchy of UIAElements that ends with the desired element, e.g.
 ```javascript
-[{name: "My table", UIAtype: "UIATableView},
- {isValid: true, UIAtype: "UIATableCell"},
- {name: "My button", UIAtype: "UIAButton", isVisible: true}]
+selector = [{name: "My table", UIAtype: "UIATableView"},
+
+            {isValid: true, UIAtype: "UIATableCell"},
+
+            {name: "My button", UIAtype: "UIAButton", isVisible: true}];
 ```
 
 
