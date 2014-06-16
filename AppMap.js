@@ -228,7 +228,11 @@ var debugAppmap = false;
 
     // resolve an element
     appmap.actionBuilder.getElement = function(selector, retryDelay) {
-        var elem = appmap.actionBuilder.resolveElement(selector);
+        try {
+            var elem = appmap.actionBuilder.resolveElement(selector);
+        } catch (e) {
+            // one consequence-free failure allowed
+        }
         if (null === elem || elem.isNotNil === undefined || !elem.isNotNil()) {
             if (retryDelay !== undefined) {
                 target.delay(retryDelay);
@@ -237,6 +241,26 @@ var debugAppmap = false;
         }
         return elem;
     };
+
+
+    // build an existence function action
+    // selector is for resolveElement
+    // elemName is the name for logging purposes
+    // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
+    appmap.actionBuilder.makeAction.verifyElement.existence = function(selector, elemName, retryDelay) {
+        return function(parm) {
+            var msg = "";
+            try {
+                var elem = appmap.actionBuilder.getElement(selector, retryDelay);
+                if (parm.expected === true) return;
+            } catch (e) {
+                msg = ": " + e.toString();
+                if (!(parm.expected === true)) return;
+            }
+            throw "Element " + elemName + " failed existence check (expected: " + parm.expected + ")" + msg;
+        };
+    };
+
 
     // build a predicate function action
     // selector is for resolveElement
