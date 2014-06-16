@@ -111,7 +111,7 @@ In this example, the `withScreen` method takes 1 argument: the screen name.
 
 The `withAction` method takes 2 arguments: the action name, the text that will be displayed in the automator when the action is run.
 
-The `withImplementation` function take the function (which can take one optional argument -- an associative array) that is the action itself, and the device that will use this implementation.  The device must match one of the defined `onDevice` devices.  If this argment is not provided, a default value will be used -- it will be considered to be part of every device.
+The `withImplementation` function takes the function (which can take one optional argument -- an associative array) that is the action itself, and the device that will use this implementation.  The device must match one of the defined `onDevice` devices.  If this argment is not provided, a default value will be used -- it will be considered to be part of every device.
 
 The `withParam` method specifies the parameters that may be given (as associative array keys) to the action.  The 4 arguments are the key name, the description of the parameter, whether the parameter is required, and whether the parameter's value should be included in the action description.
 
