@@ -351,5 +351,5 @@ var debugAppmap = false;
 
 }).call(this);
 
-// initialize action builder with pass-through function
+// initialize action builder with pass-through function for selector modification
 appmap.actionBuilder.initialize(function (x) { return x;} );
