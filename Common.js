@@ -73,58 +73,70 @@ function getNamedCellFromContainer(cellContainerView, name) {
     return ret !== null ? ret : cellContainerView.cells().firstWithName(name).elements().firstWithName(name);
 }
 
-/**
- * Resolve an expression to a single UIAElement
- *
- * Selector can be one of the following:
- * 1. A function that takes UIATarget as an argument and returns a UIAElement.
- * 2. An object of critera to satisfy mainWindow.find() .
- * 3. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
-*/
-function resolveElement(selector) {
-    // there are multiple ways to access certain elements; collapse these entries
-    var getUniqueElements = function (elemObject) {
-        var ret = {};
-        for (var i in elemObject) {
-            var elem = elemObject[i];
-            var found = false;
-            // add elements to return object if they are not already there (via equality)
-            for (var j in ret) {
-                if (ret[j].equals(elem)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                ret[i] = elem;
+// return unique elements from a {key: element} object
+function getUniqueElements(elemObject) {
+    var ret = {};
+    for (var i in elemObject) {
+        var elem = elemObject[i];
+        var found = false;
+        // add elements to return object if they are not already there (via equality)
+        for (var j in ret) {
+            if (ret[j].equals(elem)) {
+                found = true;
+                break;
             }
         }
-        return ret;
-    };
 
-    // return one element from an associative array of possibly-duplicate entries, raise error if distinct entries != 1
-    var getOneElement = function (elemObject) {
-        var uniq = getUniqueElements(elemObject);
-        var size = Object.keys(elemObject).length;
-        if (size != 1) {
-            var msg = "resolveElement: expected 1 element from selector " + JSON.stringify(selector);
-            msg += ", received " + size.toString();
-            if (size > 0) {
-                msg += " {";
-                for (var k in elemObject) {
-                    msg += "\n    " + k + ": " + elemObject[k].toString();
-                }
-                msg += "\n}";
-            }
-            throw msg;
-        }
-
-        for (var k in elemObject) {
-            UIALogger.logDebug("Selector found object with canonical name: " + k);
-            return elemObject[k];
+        if (!found) {
+            ret[i] = elem;
         }
     }
+    return ret;
+}
+
+
+// return one element from an associative array of possibly-duplicate entries, raise error if distinct entries != 1
+// optionally provide the original selector for logging purposes
+function assertOneUniqueElement(elemObject, originalSelector) {
+    var uniq = getUniqueElements(elemObject);
+    var size = Object.keys(elemObject).length;
+    if (size != 1) {
+        var msg = "resolveElement: expected 1 element";
+        if (originalSelector !== undefined) {
+            msg += " from selector " + JSON.stringify(originalSelector);
+        }
+        msg += ", received " + size.toString();
+        if (size > 0) {
+            msg += " {";
+            for (var k in elemObject) {
+                msg += "\n    " + k + ": " + elemObject[k].toString();
+            }
+            msg += "\n}";
+        }
+        throw msg;
+    }
+}
+
+/**
+ * Get one element from a selector result
+ */
+function getOneSelectorResult(elemObject, originalSelector) {
+    assertOneUniqueElement(elemObject, originalSelector);
+    // they're all the same, so return just one
+    for (var k in elemObject) {
+        UIALogger.logDebug("Selector found object with canonical name: " + k);
+        return elemObject[k];
+    }
+}
+
+/**
+ * Resolve an expression to a set of UIAElements
+ *
+ * Selector can be one of the following:
+ * 1. An object of critera to satisfy mainWindow.find() .
+ * 2. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
+*/
+function resolveElements(selector) {
 
     // perform a find in several stages
     var segmentedFind = function(selectorArray) {
@@ -147,17 +159,30 @@ function resolveElement(selector) {
     }
 
     // search in the appropriate way
-    switch(typeof selector) {
+    if (selector instanceof Array) {
+        return segmentedFind(selector);
+    } else {
+        return segmentedFind([selector]);
+    }
+}
+
+/**
+ * Resolve an expression to a single UIAElement
+ *
+ * selectorOrAccessor can be one of the following:
+ * 1. A function that takes UIATarget as an argument and returns a UIAElement.
+ * 2. An object of critera to satisfy mainWindow.find() .
+ * 3. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
+*/
+function resolveElement(selectorOrAccessor) {
+    switch(typeof selectorOrAccessor) {
     case "function":
-        return selector(target); // TODO: guarantee isNotNil ?
+        return selectorOrAccessor(target); // TODO: guarantee isNotNil ?
     case "object":
-        if (selector instanceof Array) {
-            return getOneElement(segmentedFind(selector));
-        } else {
-            return getOneElement(segmentedFind([selector]));
-        }
+        var ret =  getOneSelectorResult(resolveElements(selectorOrAccessor), selectorOrAccessor);
+        return ret;
     default:
-        throw "resolveSelector received undefined input type of " + (typeof selector).toString();
+        throw "resolveElement received undefined input type of " + (typeof selector).toString();
     }
 }
 
@@ -270,7 +295,6 @@ function actionLogAccessors(parm) {
     UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", visibleOnly));
 }
 
-appmap.actionBuilder.initialize(resolveElement);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Appmap additions - common capabilities
