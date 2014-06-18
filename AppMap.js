@@ -216,27 +216,34 @@ var debugAppmap = false;
     //  intended use is to say var ab = appmap.actionBuilder.makeAction;
     //        then in appmap: .withImplementation(ab.verifyElement.visibility({name: "blah"}))
     appmap.actionBuilder = {};
-    appmap.actionBuilder.resolveElement = null;
+    appmap.actionBuilder.preProcessSelectorOrAccessor = null;
     appmap.actionBuilder.makeAction = {};
     appmap.actionBuilder.makeAction.verifyElement = {};
     appmap.actionBuilder.makeAction.element = {};
 
     // must initialize the builder with a "resolve element" function; can be overridden by user for app-specific stuff
-    appmap.actionBuilder.initialize = function(resolveElement_fn) {
-        appmap.actionBuilder.resolveElement = resolveElement_fn;
+    appmap.actionBuilder.initialize = function(preProcessSelectorOrAccessor_fn) {
+        appmap.actionBuilder.preProcessSelectorOrAccessor = preProcessSelectorOrAccessor_fn;
     };
 
     // resolve an element
-    appmap.actionBuilder.getElement = function(selector, retryDelay) {
+    appmap.actionBuilder.getElement = function(selectorOrAccessor, retryDelay) {
+        var modifiedSelector = appmap.actionBuilder.preProcessSelectorOrAccessor(selectorOrAccessor);
         try {
-            var elem = appmap.actionBuilder.resolveElement(selector);
+            var elem = resolveElement(modifiedSelector);
         } catch (e) {
-            // one consequence-free failure allowed
+            // it's possible that the selector returned multiple things, so re-raise that
+            if ("function" != typeof (modifiedSelector)) {
+                var elems = resolveElements(modifiedSelector);
+                if (Object.keys(getUniqueElements(elems)).length > 1) throw e;
+            }
+
+            // otherwise, one consequence-free failure allowed
         }
         if (null === elem || elem.isNotNil === undefined || !elem.isNotNil()) {
             if (retryDelay !== undefined) {
                 target.delay(retryDelay);
-                elem = appmap.actionBuilder.resolveElement(selector);
+                elem = appmap.actionBuilder.resolveElement(modifiedSelector);
             }
         }
         return elem;
@@ -293,9 +300,17 @@ var debugAppmap = false;
     };
 
     appmap.actionBuilder.makeAction.verifyElement.visibility = function(selector, elemName, retryDelay) {
-        return appmap.actionBuilder.makeAction.verifyElement.predicate(selector, elemName, function (elem) {
-            return elem.isVisible();
-        }, "isVisible", retryDelay);
+        return function(parm) {
+            var msg = "";
+            try {
+                var elem = appmap.actionBuilder.getElement(selector, retryDelay);
+                return elem && elem.isVisible();
+            } catch (e) {
+                msg = ": " + e.toString();
+                if (!(parm.expected === true)) return;
+            }
+            throw "Element " + elemName + " failed visibility check (expected: " + parm.expected + ")" + msg;
+        };
     };
 
     appmap.actionBuilder.makeAction.verifyElement.editability = function(selector, elemName, retryDelay) {
@@ -335,3 +350,6 @@ var debugAppmap = false;
     };
 
 }).call(this);
+
+// initialize action builder with pass-through function
+appmap.actionBuilder.initialize(function (x) { return x;} );
