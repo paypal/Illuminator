@@ -216,14 +216,13 @@ var debugAppmap = false;
     //  intended use is to say var ab = appmap.actionBuilder.makeAction;
     //        then in appmap: .withImplementation(ab.verifyElement.visibility({name: "blah"}))
     appmap.actionBuilder = {};
-    appmap.actionBuilder.preProcessSelectorOrAccessor = null;
     appmap.actionBuilder.makeAction = {};
     appmap.actionBuilder.makeAction.verifyElement = {};
     appmap.actionBuilder.makeAction.element = {};
 
-    // must initialize the builder with a "resolve element" function; can be overridden by user for app-specific stuff
-    appmap.actionBuilder.initialize = function(preProcessSelectorOrAccessor_fn) {
-        appmap.actionBuilder.preProcessSelectorOrAccessor = preProcessSelectorOrAccessor_fn;
+    // initialize action builder with pass-through function for selector modification
+    appmap.actionBuilder.preProcessSelectorOrAccessor = function (x) {
+        return x;
     };
 
     // resolve an element
@@ -350,6 +349,3 @@ var debugAppmap = false;
     };
 
 }).call(this);
-
-// initialize action builder with pass-through function for selector modification
-appmap.actionBuilder.initialize(function (x) { return x;} );
