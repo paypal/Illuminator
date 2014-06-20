@@ -228,24 +228,22 @@ var debugAppmap = false;
     // resolve an element
     appmap.actionBuilder.getElement = function(selectorOrAccessor, retryDelay) {
         var modifiedSelector = appmap.actionBuilder.preProcessSelectorOrAccessor(selectorOrAccessor);
+        var err;
         try {
-            var elem = resolveElement(modifiedSelector);
+            return resolveElement(modifiedSelector);
         } catch (e) {
+            err = e;
             // it's possible that the selector returned multiple things, so re-raise that
             if ("function" != typeof (modifiedSelector)) {
                 var elems = resolveElements(modifiedSelector);
                 if (Object.keys(getUniqueElements(elems)).length > 1) throw e;
             }
 
-            // otherwise, one consequence-free failure allowed
+            // one consequence-free failure allowed if retryDelay was specified
+            if (retryDelay === undefined) throw err;
+            target.delay(retryDelay);
+            return appmap.actionBuilder.resolveElement(modifiedSelector);
         }
-        if (null === elem || elem.isNotNil === undefined || !elem.isNotNil()) {
-            if (retryDelay !== undefined) {
-                target.delay(retryDelay);
-                elem = appmap.actionBuilder.resolveElement(modifiedSelector);
-            }
-        }
-        return elem;
     };
 
 
