@@ -301,7 +301,11 @@ var debugAppmap = false;
             var msg = "";
             try {
                 var elem = appmap.actionBuilder.getElement(selector, retryDelay);
-                return elem && elem.isVisible();
+                if (parm.expected === true && elem && elem.isVisible()) {
+                    return;
+                } else if(parm.expected === false) {
+                    return;
+                }
             } catch (e) {
                 msg = ": " + e.toString();
                 if (!(parm.expected === true)) return;
