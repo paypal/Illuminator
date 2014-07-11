@@ -219,6 +219,7 @@ var debugAppmap = false;
     appmap.actionBuilder.makeAction = {};
     appmap.actionBuilder.makeAction.verifyElement = {};
     appmap.actionBuilder.makeAction.element = {};
+    appmap.actionBuilder.makeAction.selector = {};
 
     // initialize action builder with pass-through function for selector modification
     appmap.actionBuilder.preProcessSelectorOrAccessor = function (x) {
@@ -246,11 +247,19 @@ var debugAppmap = false;
         }
     };
 
+    // resolve several elements
+    appmap.actionBuilder.getElements = function(selectorOrAccessor, retryDelay) {
+        var modifiedSelector = appmap.actionBuilder.preProcessSelectorOrAccessor(selectorOrAccessor);
+        return resolveElements(modifiedSelector);
+    };
+
 
     // build an existence function action
     // selector is for resolveElement
     // elemName is the name for logging purposes
     // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
+    //
+    // return an action that takes 'expected' (bool) as a parameter
     appmap.actionBuilder.makeAction.verifyElement.existence = function(selector, elemName, retryDelay) {
         return function(parm) {
             var msg = "";
@@ -272,6 +281,8 @@ var debugAppmap = false;
     // predicate_fn is a function that takes an element as an argument
     // predicateDesc is a description of the function for logging
     // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
+    //
+    // return an action that takes 'expected' (bool) as a parameter
     appmap.actionBuilder.makeAction.verifyElement.predicate = function(selector, elemName, predicate_fn, predicateDesc, retryDelay) {
         return function(parm) {
             var elem = appmap.actionBuilder.getElement(selector, retryDelay);
@@ -296,6 +307,8 @@ var debugAppmap = false;
         };
     };
 
+
+    // return an action that takes 'expected' (bool) as a parameter
     appmap.actionBuilder.makeAction.verifyElement.visibility = function(selector, elemName, retryDelay) {
         return function(parm) {
             var msg = "";
@@ -310,24 +323,28 @@ var debugAppmap = false;
         };
     };
 
+    // return an action that takes 'expected' (bool) as a parameter
     appmap.actionBuilder.makeAction.verifyElement.editability = function(selector, elemName, retryDelay) {
         return appmap.actionBuilder.makeAction.verifyElement.predicate(selector, elemName, function (elem) {
             return elem.checkIsEditable();
         }, "isEditable", retryDelay);
     };
 
+    // return an action that takes 'expected' (bool) as a parameter
     appmap.actionBuilder.makeAction.verifyElement.enabled = function(selector, elemName, retryDelay) {
         return appmap.actionBuilder.makeAction.verifyElement.predicate(selector, elemName, function (elem) {
             return elem.isEnabled();
         }, "isEnabled", retryDelay);
     };
 
+    // return an action that takes no parameters
     appmap.actionBuilder.makeAction.element.tap = function(selector, elemName, retryDelay) {
         return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
             elem.tap()
         }, retryDelay);
     };
 
+    // return an action that takes no parameters
     appmap.actionBuilder.makeAction.element.vtap = function(selector, elemName, retryDelay) {
         return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
             elem.vtap(4)
@@ -340,10 +357,37 @@ var debugAppmap = false;
         }, retryDelay);
     };
 
+    // return an action that takes "text" and "clear" (bool) as parameters
     appmap.actionBuilder.makeAction.element.typeString = function(selector, elemName, retryDelay) {
         return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
             elem.typeString(parm.text, parm.clear === true);
         }, retryDelay);
+    };
+
+    // return an action that takes a selector as a parameter
+    appmap.actionBuilder.makeAction.selector.verifyExists = function(retryDelay, parentSelector) {
+        return function(parm) {
+            var fullSelector;
+            if (undefined === parentSelector || !(parentSelector) || 0 == Object.keys(parentSelector).length) {
+                fullSelector = parm.selector;
+            } else {
+                fullSelector = parentSelector;
+                fullSelector.push(parm.selector);
+            }
+
+            var elemsObj = appmap.actionBuilder.getElements(fullSelector, retryDelay);
+            // one retry allowed
+            if (Object.keys(elemsObj).length == 0 && retryDelay !== undefined && retryDelay >= 0) {
+                elemsObj = appmap.actionBuilder.getElements(fullSelector, retryDelay);
+            }
+
+            // react to number of elements
+            switch (Object.keys(elemsObj).length) {
+            case 0: throw "Selector found no elements: " + JSON.stringify(fullSelector);
+            case 1: return;
+            default: UIALogger.logMessage("Selector (for existence) found multiple elements: " + JSON.stringify(elemsObj));
+            }
+        };
     };
 
 }).call(this);
