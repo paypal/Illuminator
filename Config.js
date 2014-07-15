@@ -68,7 +68,7 @@
 
 
     var jsonConfig = getPlistData(automatorRoot + "/buildArtifacts/generatedConfig.plist");
-    target.host().performTaskWithPathArgumentsTimeout("/bin/mkdir", ["-p", automatorRoot + "/buildArtifacts/js-tmp"], 5);
+    target().host().performTaskWithPathArgumentsTimeout("/bin/mkdir", ["-p", automatorRoot + "/buildArtifacts/js-tmp"], 5);
     config.tmpDir = automatorRoot + "/buildArtifacts/js-tmp";
 
     // attempt to read config -- look for VARIABLES IN GLOBAL SCOPE

@@ -1,21 +1,26 @@
-#import "contrib/tuneup_js/tuneup.js";
 #import "buildArtifacts/environment.js"
 // these are here so that everything just imports from Common.js
+#import "Extensions.js";
 #import "Config.js";
 #import "AppMap.js";
 #import "Automator.js";
 #import "Bridge.js";
 
-var target = UIATarget.localTarget();
-var mainWindow = target.frontMostApp().mainWindow();
 
+function target() {
+    return UIATarget.localTarget();
+}
+
+function mainWindow() {
+    return UIATarget().localTarget().frontMostApp().mainWindow();
+}
 
 function delay(seconds) {
-    target.delay(seconds);
+    target().delay(seconds);
 }
 
 function getTime() {
-    var output = target.host().performTaskWithPathArgumentsTimeout("/bin/date", ["+%s"], 5);
+    var output = target().host().performTaskWithPathArgumentsTimeout("/bin/date", ["+%s"], 5);
     return parseInt(output.stdout);
 }
 
@@ -33,156 +38,14 @@ function isMatchingVersion(input, prefix, major, minor, rev) {
 }
 
 function isSimVersion(major, minor, rev) {
-    return isMatchingVersion(target.systemVersion(), "", major, minor, rev);
+    return isMatchingVersion(target().systemVersion(), "", major, minor, rev);
 }
 
 function assertDesiredSimVersion() {
-    var ver = target.systemVersion();
+    var ver = target().systemVersion();
     if (("iOS " + ver).indexOf(config.automatorDesiredSimVersion) == -1) {
         throw "Simulator version " + ver + " is running, but generated-config.js " +
             "specifies " + config.automatorDesiredSimVersion;
-    }
-}
-
-
-// for compatibility with iOS 6 that doesn't name cells, buttons, etc
-function getNamedItemFromContainer(itemContainerView,
-                                   itemArrayAccessor,
-                                   itemMatchPredicate,
-                                   itemSelector,
-                                   name) {
-
-    var items = itemArrayAccessor(itemContainerView);
-    for (var i = 0; i < items.length; ++i) {
-        var item = items[i];
-        if (itemMatchPredicate(item)) return itemSelector(item);
-    }
-
-    return null;
-}
-
-function getNamedCellFromContainer(cellContainerView, name) {
-    var ret = getNamedItemFromContainer(cellContainerView,
-                                        function(c) { return c.cells(); },
-                                        function(i) {
-                                            var ii = i.elements()[0];
-                                            return ii.isNotNil() && ii.name() == name;
-                                        },
-                                        function(i) { return i.elements()[0]; },
-                                        name);
-    return ret !== null ? ret : cellContainerView.cells().firstWithName(name).elements().firstWithName(name);
-}
-
-// return unique elements from a {key: element} object
-function getUniqueElements(elemObject) {
-    var ret = {};
-    for (var i in elemObject) {
-        var elem = elemObject[i];
-        var found = false;
-        // add elements to return object if they are not already there (via equality)
-        for (var j in ret) {
-            if (ret[j].equals(elem)) {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            ret[i] = elem;
-        }
-    }
-    return ret;
-}
-
-
-// return one element from an associative array of possibly-duplicate entries, raise error if distinct entries != 1
-// optionally provide the original selector for logging purposes
-function assertOneUniqueElement(elemObject, originalSelector) {
-    var uniq = getUniqueElements(elemObject);
-    var size = Object.keys(elemObject).length;
-    if (size != 1) {
-        var msg = "resolveElement: expected 1 element";
-        if (originalSelector !== undefined) {
-            msg += " from selector " + JSON.stringify(originalSelector);
-        }
-        msg += ", received " + size.toString();
-        if (size > 0) {
-            msg += " {";
-            for (var k in elemObject) {
-                msg += "\n    " + k + ": " + elemObject[k].toString();
-            }
-            msg += "\n}";
-        }
-        throw msg;
-    }
-}
-
-/**
- * Get one element from a selector result
- */
-function getOneSelectorResult(elemObject, originalSelector) {
-    assertOneUniqueElement(elemObject, originalSelector);
-    // they're all the same, so return just one
-    for (var k in elemObject) {
-        UIALogger.logDebug("Selector found object with canonical name: " + k);
-        return elemObject[k];
-    }
-}
-
-/**
- * Resolve an expression to a set of UIAElements
- *
- * Selector can be one of the following:
- * 1. An object of critera to satisfy mainWindow.find() .
- * 2. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
-*/
-function resolveElements(selector) {
-
-    // perform a find in several stages
-    var segmentedFind = function(selectorArray) {
-        var intermElems = {"mainWindow": mainWindow}; //intermediate elements
-        // go through all selectors
-        for (var i = 0; i < selectorArray.length; ++i) {
-            var tmp = {};
-            // expand search on each intermediate element using current selector
-            for (var k in intermElems) {
-                var newFrontier = intermElems[k].find(selectorArray[i], k);
-                // merge results with temporary storage
-                for (var f in newFrontier) {
-                    tmp[f] = newFrontier[f];
-                }
-            }
-            // move unique elements from temporary storage into loop variable
-            intermElems = getUniqueElements(tmp);
-        }
-        return intermElems;
-    }
-
-    // search in the appropriate way
-    if (selector instanceof Array) {
-        return segmentedFind(selector);
-    } else {
-        return segmentedFind([selector]);
-    }
-}
-
-/**
- * Resolve an expression to a single UIAElement
- *
- * selectorOrAccessor can be one of the following:
- * 1. A function that takes UIATarget as an argument and returns a UIAElement.
- * 2. An object of critera to satisfy mainWindow.find() .
- * 3. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
-*/
-function resolveElement(selectorOrAccessor) {
-    switch(typeof selectorOrAccessor) {
-    case "function":
-        return selectorOrAccessor(target); // TODO: guarantee isNotNil ?
-    case "object":
-        var ret =  getOneSelectorResult(resolveElements(selectorOrAccessor), selectorOrAccessor);
-        return ret;
-    default:
-        throw "resolveElement received undefined input type of " + (typeof selector).toString();
     }
 }
 
@@ -192,7 +55,7 @@ function getPlistData(path) {
     var scriptPath = automatorRoot + "/scripts/plist_to_json.sh";
     UIALogger.logDebug("Running " + scriptPath + " '" + path + "'");
 
-    var output = target.host().performTaskWithPathArgumentsTimeout(scriptPath, [path], 30);
+    var output = target().host().performTaskWithPathArgumentsTimeout(scriptPath, [path], 30);
     try {
         jsonOutput = JSON.parse(output.stdout);
     } catch(e) {
@@ -221,7 +84,7 @@ function actionCompareScreenshotToMaster(parm) {
     var captureTitle = parm.captureTitle;
     var delayCapture = parm.delay === undefined ? 0.4 : parm.delay;
 
-    target.delay(delayCapture); // wait for any animations to settle
+    target().delay(delayCapture); // wait for any animations to settle
 
     var diff_pngPath = automatorRoot + "/scripts/diff_png.sh";
     UIATarget.localTarget().captureScreenWithName(captureTitle);
@@ -231,7 +94,7 @@ function actionCompareScreenshotToMaster(parm) {
     var screenshotPath  = screenshotDir + "/" + screenshotFile;
     var compareFileBase = screenshotDir + "/compared_" + captureTitle;
 
-    var output = target.host().performTaskWithPathArgumentsTimeout("/bin/sh",
+    var output = target().host().performTaskWithPathArgumentsTimeout("/bin/sh",
                                                                    [diff_pngPath,
                                                                     masterPath,
                                                                     screenshotPath,

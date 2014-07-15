@@ -59,7 +59,7 @@ var debugBridge = false;
                            + UID + "'" + " from $ /usr/bin/ruby "
                            + taskArguments.join(" "));
 
-        output = target.host().performTaskWithPathArgumentsTimeout("/usr/bin/ruby", taskArguments, 500);
+        output = target().host().performTaskWithPathArgumentsTimeout("/usr/bin/ruby", taskArguments, 500);
 
 
         if (output) {
