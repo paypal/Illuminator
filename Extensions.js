@@ -394,7 +394,7 @@ extendPrototype(UIAElement, {
      * @param criteria
      */
     getChildElements: function (criteria) {
-        var accessor = this.accessor === undefined ? "<unknown>" : this.accessor;
+        var accessor = this._accessor === undefined ? "<unknown>" : this._accessor;
         return getElementsFromCriteria(selector, this, accessor);
     },
 
@@ -628,6 +628,7 @@ extendPrototype(UIAElement, {
             if (c.value !== undefined && c.value != elem.value()) return acc;
 
             acc[varName + prefix] = elem;
+            elem._accessor = varName + prefix; // annotate the element with its accessor
             return acc;
         }
 
