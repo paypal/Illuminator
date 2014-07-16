@@ -617,7 +617,7 @@ extendPrototype(UIAElement, {
      * Find function
      *
      * Find elements by given criteria.  Known criteria options are:
-     *  * UIAtype: the class name of the UIAElement
+     *  * UIAType: the class name of the UIAElement
      *  * nameRegex: a regular expression that will be applied to the name() method
      *  * rect, hasKeyboardFocus, isEnabled, isValid, label, name, value:
      *        these correspond to the values of the UIAelement methods of the same names.
@@ -632,7 +632,7 @@ extendPrototype(UIAElement, {
         varName = varName === undefined ? "<root element>" : varName;
         var visibleOnly = criteria.isVisible === true;
 
-        var knownOptions = {UIAtype: 1, rect: 1, hasKeyboardFocus: 1, isEnabled: 1, isValid: 1,
+        var knownOptions = {UIAType: 1, rect: 1, hasKeyboardFocus: 1, isEnabled: 1, isValid: 1,
                             label: 1, name: 1, nameRegex: 1, value: 1, isVisible: 1};
 
         // helpful check, mostly catching capitalization errors
@@ -647,7 +647,7 @@ extendPrototype(UIAElement, {
         var c = criteria;
         // don't consider isVisible here, because we do it in this._reduce
         var collect_fn = function (acc, elem, prefix, _) {
-            if (c.UIAtype !== undefined && "[object " + c.UIAtype + "]" != elem.toString()) return acc;
+            if (c.UIAType !== undefined && "[object " + c.UIAType + "]" != elem.toString()) return acc;
             if (c.rect !== undefined && JSON.stringify(c.rect) != JSON.stringify(elem.rect())) return acc;
             if (c.hasKeyboardFocus !== undefined && c.hasKeyboardFocus != elem.hasKeyboardFocus()) return acc;
             if (c.isEnabled !== undefined && c.isEnabled != elem.isEnabled()) return acc;
