@@ -783,10 +783,41 @@ extendPrototype(UIAElement, {
      */
     waitForChildExistence: function (timeout, existenceState, description, selector) {
         var actualValFn = function (thisObj) {
-            return thisObj.getChildElement(selector);
+            // if we expect existence, try to get the element.
+            if (existenceState) return thisObj.getChildElement(selector);
+
+            // else we need to check on the special case where criteria might fail by returning multiple elements
+            if ((typeof selector) != "function") {
+                // criteria should return 0 elements -- we will check for 2 elements after
+                return {"criteriaResult": thisObj.getChildElements(selector)};
+            }
+
+            // functions should error or return a nil element
+            try {
+                return {"functionResult": thisObj.getChildElement(selector)};
+            } catch (e) {
+                return {"functionResult": newUIAElementNil()};
+            }
         };
+
         var isDesired = function (someObj) {
-            return existenceState == isNotNilElement(someObj);
+            // if desired an element, straightforward case
+            if (existenceState) return isNotNilElement(someObj);
+
+            // else, make sure we got 0 elements
+            if ((typeof selector) != "function") {
+                var result = someObj.criteriaResult;
+                switch (Object.keys(result).length) {
+                case 0: return true;
+                case 1: return false;
+                default:
+                    UIALogger.logWarning("Selector (criteria) returned " + Object.keys(result).length + " results, not 0: " + JSON.stringify(result));
+                    return false;
+                }
+            }
+
+            // functions should return a nil element
+            return !isNotNilElement(someObj.functionResult);
         };
 
         try {
