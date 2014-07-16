@@ -55,9 +55,7 @@ var debugAutomator = false;
 
     automator.deferFailure = function(err) {
         UIALogger.logDebug("Deferring an error: " + err);
-        UIATarget.localTarget().logElementTree();
-        UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow"));
-        UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", true));
+        automator.logScreenInfo();
 
         if (automator._state.internal["currentStepName"] && automator._state.internal["currentStepNumber"]) {
             var msg = "Step " + automator._state.internal["currentStepNumber"];
@@ -303,6 +301,13 @@ var debugAutomator = false;
 
     };
 
+    // log screen information, such as when a test fails
+    automator.logScreenInfo = function () {
+        //UIATarget.localTarget().logElementTree(); // ugly
+        UIALogger.logDebug(target().elementReferenceDump("target()"));
+        UIALogger.logDebug(target().elementReferenceDump("target()", true));
+    }
+
 
     // run function: the tag that matches
     automator.runAllWithTag = function(givenTag) {
@@ -461,8 +466,7 @@ var debugAutomator = false;
             automator.resetState();
             automator.callback["prescenario"]();
         } catch (e) {
-            UIATarget.localTarget().logElementTree();
-            delay(2);
+            automator.logScreenInfo();
             UIALogger.logFail("Test setup failed: " + e);
             return;
         }
@@ -550,9 +554,7 @@ var debugAutomator = false;
 
             UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             UIALogger.logDebug(["FAILED:", failmsg].join(" "));
-            UIATarget.localTarget().logElementTree();
-            UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow"));
-            UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", true));
+            automator.logScreenInfo();
             UIATarget.localTarget().captureScreenWithName(step.name);
             UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             UIALogger.logDebug(longmsg);
