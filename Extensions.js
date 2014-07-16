@@ -6,6 +6,28 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * shortcut function to get target, sets _accessor
+ */
+function target() {
+    var ret = UIATarget.localTarget();
+    ret._accessor = "target()";
+    return ret;
+}
+
+function mainWindow() {
+    var ret = UIATarget.localTarget().frontMostApp().mainWindow();
+    ret._accessor = "mainWindow()";
+    return ret;
+}
+
+function delay(seconds) {
+    target().delay(seconds);
+}
+
+function getTime() {
+    return (new Date).getTime() / 1000;
+}
 
 /**
  * Extend an object prototype with an associative array of properties
@@ -154,7 +176,7 @@ function getOneCriteriaSearchResult(elemObject, originalCriteria, allowZero) {
 function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
     if (parentElem === undefined) {
         parentElem = target();
-        elemAccessor = "target()";
+        elemAccessor = parentElem._accessor;
     }
 
     if (elemAccessor === undefined) {
@@ -163,7 +185,8 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 
     // perform a find in several stages
     var segmentedFind = function (criteriaArray, initialElem, initialAccessor) {
-        var intermElems = {initialAccessor: initialElem}; // intermediate elements
+        var intermElems = {};
+        intermElems[initialAccessor] = initialElem; // intermediate elements
         // go through all criteria
         for (var i = 0; i < criteriaArray.length; ++i) {
             var tmp = {};
@@ -207,7 +230,7 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 */
 function getElementFromSelector(selector, parentElem, accessorString) {
     var elem = parentElem === undefined ? target() : parentElem;
-    accessorString = accessorString === undefined ? "target()" : accessorString;
+    accessorString = accessorString === undefined ? elem._accessor : accessorString;
     switch(typeof selector) {
     case "function":
         try {
@@ -413,7 +436,7 @@ extendPrototype(UIAElement, {
     _getChildElement: function (callerName, selector, allowZero) {
         switch(typeof selector) {
         case "function":
-            return selector(target); // TODO: guarantee isNotNil ?
+            return selector(target()); // TODO: guarantee isNotNil ?
         case "object":
             return getOneCriteriaSearchResult(this.getChildElements(selector), selector, allowZero);
         default:
@@ -742,6 +765,7 @@ extendPrototype(UIAElement, {
         var thisObj = this;
         var wrapFn = function () {
             var actual = actualValueFunction(thisObj);
+            // TODO: possibly wrap this in try/catch and use it to detect criteria selectors that return multiples
             if (isDesiredValueFunction(actual)) return actual;
             throw "No acceptable value for " + returnName + " was returned";
         };
@@ -937,7 +961,7 @@ extendPrototype(UIAElement, {
      */
     checkIsEditable: function (maxAttempts) {
         var getKb = function () {
-            return target.frontMostApp().keyboard();
+            return target().frontMostApp().keyboard();
         };
         return this._checkProducesElement("checkIsEditable", getKb, "keyboard", maxAttempts);
     },
@@ -947,7 +971,7 @@ extendPrototype(UIAElement, {
      */
     checkIsPickable: function (maxAttempts) {
         var getPicker = function () {
-            return target.frontMostApp().windows()[1].pickers()[0];
+            return target().frontMostApp().windows()[1].pickers()[0];
         };
         return this._checkProducesElement("checkIsPickable", getPicker, "picker", maxAttempts);
     },

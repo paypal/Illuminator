@@ -7,23 +7,6 @@
 #import "Bridge.js";
 
 
-function target() {
-    return UIATarget.localTarget();
-}
-
-function mainWindow() {
-    return UIATarget().localTarget().frontMostApp().mainWindow();
-}
-
-function delay(seconds) {
-    target().delay(seconds);
-}
-
-function getTime() {
-    var output = target().host().performTaskWithPathArgumentsTimeout("/bin/date", ["+%s"], 5);
-    return parseInt(output.stdout);
-}
-
 function isMatchingVersion(input, prefix, major, minor, rev) {
     var findStr = prefix + major;
 
@@ -84,7 +67,7 @@ function actionCompareScreenshotToMaster(parm) {
     var captureTitle = parm.captureTitle;
     var delayCapture = parm.delay === undefined ? 0.4 : parm.delay;
 
-    target().delay(delayCapture); // wait for any animations to settle
+    delay(delayCapture); // wait for any animations to settle
 
     var diff_pngPath = automatorRoot + "/scripts/diff_png.sh";
     UIATarget.localTarget().captureScreenWithName(captureTitle);

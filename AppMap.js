@@ -251,7 +251,7 @@ var debugAppmap = false;
 
             // one consequence-free failure allowed if retryDelay was specified
             if (retryDelay === undefined) throw err;
-            target().delay(retryDelay);
+            delay(retryDelay);
             return target().getOneChildElement(selector);
         }
     };
