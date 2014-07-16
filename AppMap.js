@@ -227,30 +227,23 @@ var debugAppmap = false;
     };
 
     // resolve an element
-    appmap.actionBuilder.getElement = function(selectorOrAccessor, retryDelay) {
-        var modifiedSelector = appmap.actionBuilder.preProcessSelectorOrAccessor(selectorOrAccessor);
+    appmap.actionBuilder.getElement = function(selector, retryDelay) {
         var err;
         try {
-            return resolveElement(modifiedSelector);
+            return target().getOneChildElement(selector);
         } catch (e) {
             err = e;
             // it's possible that the selector returned multiple things, so re-raise that
-            if ("function" != typeof (modifiedSelector)) {
-                var elems = resolveElements(modifiedSelector);
+            if ("function" != typeof (selector)) {
+                var elems = target().getChildElements(selector);
                 if (Object.keys(getUniqueElements(elems)).length > 1) throw e;
             }
 
             // one consequence-free failure allowed if retryDelay was specified
             if (retryDelay === undefined) throw err;
-            target.delay(retryDelay);
-            return appmap.actionBuilder.resolveElement(modifiedSelector);
+            target().delay(retryDelay);
+            return target().getOneChildElement(selector);
         }
-    };
-
-    // resolve several elements
-    appmap.actionBuilder.getElements = function(selectorOrAccessor, retryDelay) {
-        var modifiedSelector = appmap.actionBuilder.preProcessSelectorOrAccessor(selectorOrAccessor);
-        return resolveElements(modifiedSelector);
     };
 
 
@@ -375,10 +368,12 @@ var debugAppmap = false;
                 fullSelector.push(parm.selector);
             }
 
-            var elemsObj = appmap.actionBuilder.getElements(fullSelector, retryDelay);
+            //TODO: possibly cache the parentSelector element and use that instead of target()
+
+            var elemsObj = target().getChildElements(fullSelector);
             // one retry allowed
             if (Object.keys(elemsObj).length == 0 && retryDelay !== undefined && retryDelay >= 0) {
-                elemsObj = appmap.actionBuilder.getElements(fullSelector, retryDelay);
+                elemsObj = target().getChildElements(fullSelector);
             }
 
             // react to number of elements
