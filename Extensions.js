@@ -54,10 +54,15 @@ function newUIAElementNil() {
  * @param functionReturningValue the function to execute.  can return anything.
  */
 function waitForReturnValue(timeout, functionName, functionReturningValue) {
-    var stopTime = now + (timeout * 1000);
+    var myGetTime = function () {
+        return (new Date).getTime() / 1000;
+    }
+
+    var stopTime = myGetTime() + timeout;
     var caught = null;
 
-    for (var now = getTime(), runsAfterTimeout = 0; now < stopTime || runsAfterTimeout < 1; now = getTime()) {
+
+    for (var now = myGetTime(), runsAfterTimeout = 0; now < stopTime || runsAfterTimeout < 1; now = myGetTime()) {
         if (now >= stopTime) {
             ++runsAfterTimeout;
         }
