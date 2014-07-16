@@ -188,7 +188,7 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 
     try {
         UIATarget.localTarget().pushTimeout(0);
-        return segmentedFind(criteria, parentElem, initialAccessor);
+        return segmentedFind(criteria, parentElem, elemAccessor);
     } catch (e) {
         throw e;
     } finally {
@@ -400,7 +400,7 @@ extendPrototype(UIAElement, {
      */
     getChildElements: function (criteria) {
         var accessor = this._accessor === undefined ? "<unknown>" : this._accessor;
-        return getElementsFromCriteria(selector, this, accessor);
+        return getElementsFromCriteria(criteria, this, accessor);
     },
 
     /**
@@ -739,8 +739,9 @@ extendPrototype(UIAElement, {
      * @param actualValueFunction function that retrieves value from element
      */
     _waitForReturnFromElement: function (timeout, functionName, returnName, isDesiredValueFunction, actualValueFunction) {
+        var thisObj = this;
         var wrapFn = function () {
-            var actual = actualValueFunction(this);
+            var actual = actualValueFunction(thisObj);
             if (isDesiredValueFunction(actual)) return actual;
             throw "No acceptable value for " + returnName + " was returned";
         };
