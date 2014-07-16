@@ -139,8 +139,8 @@ function getOneCriteriaSearchResult(elemObject, originalCriteria, allowZero) {
  * Resolve an expression to a set of UIAElements
  *
  * Criteria can be one of the following:
- * 1. An object of critera to satisfy mainWindow.find() .
- * 2. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
+ * 1. An object of critera to satisfy UIAElement..find() .
+ * 2. An array of objects containing UIAElement.find() criteria; elem = UIAElement.find(arr[0])[0..n].find(arr[1])...
  *
  * @param criteria as described above
  * @param parentElem a UIAElement from which the search for elements will begin
@@ -758,7 +758,15 @@ extendPrototype(UIAElement, {
         var isDesired = function (someObj) {
             return existenceState == isNotNilElement(someObj);
         };
-        return this._waitForReturnFromElement(timeout, "waitForChildExistence", description, isDesired, actualValFn);
+
+        try {
+            UIATarget.localTarget().pushTimeout(0);
+            return this._waitForReturnFromElement(timeout, "waitForChildExistence", description, isDesired, actualValFn);
+        } catch (e) {
+            throw e;
+        } finally {
+            UIATarget.localTarget().popTimeout();
+        }
     },
 
     /**
@@ -823,7 +831,16 @@ extendPrototype(UIAElement, {
         };
 
         var description = "Selectors for (" +  Object.keys(selectors).join(", ") + ")";
-        return this._waitForReturnFromElement(timeout, "waitForChildSelect", description, foundAtLeastOne, findAll);
+
+        try {
+            UIATarget.localTarget().pushTimeout(0);
+            return this._waitForReturnFromElement(timeout, "waitForChildSelect", description, foundAtLeastOne, findAll);
+        } catch (e) {
+            throw e;
+        } finally {
+            UIATarget.localTarget().popTimeout();
+        }
+
     },
 
     /**
