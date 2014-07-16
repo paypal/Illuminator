@@ -220,10 +220,20 @@ var debugAppmap = false;
     appmap.actionBuilder.makeAction.verifyElement = {};
     appmap.actionBuilder.makeAction.element = {};
     appmap.actionBuilder.makeAction.selector = {};
+    appmap.actionBuilder.makeAction.screenIsActive = {};
 
-    // initialize action builder with pass-through function for selector modification
-    appmap.actionBuilder.preProcessSelectorOrAccessor = function (x) {
-        return x;
+    // create a screenIsActive function
+    appmap.actionBuilder.makeAction.screenIsActive.byElement = function (screenName, elementName, selector, timeout) {
+        return function () {
+            UIALogger.logDebug("screenIsActive.byElement for " + screenName);
+            try {
+                target().waitForChildExistence(timeout, true, elementName, selector);
+                return true;
+            } catch (e) {
+                UIALogger.logDebug("screenIsActive function for " + screenName + " got error " + e);
+                return false;
+            }
+        };
     };
 
     // resolve an element
