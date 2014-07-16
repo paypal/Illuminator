@@ -148,8 +148,8 @@ function getOneCriteriaSearchResult(elemObject, originalCriteria, allowZero) {
 */
 function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
     if (parentElem === undefined) {
-        parentElem = mainWindow();
-        elemAccessor = "mainWindow()";
+        parentElem = target();
+        elemAccessor = "target()";
     }
 
     if (elemAccessor === undefined) {
@@ -484,11 +484,11 @@ extendPrototype(UIAElement, {
      */
     _reduce: function (callback, initialValue, visibleOnly) {
         var reduce_helper = function (elem, acc, prefix) {
-            var scalars = ["navigationBar", "popover", "tabBar", "toolbar"];
+            var scalars = ["frontMostApp", "navigationBar", "mainWindow", "popover", "tabBar", "toolbar"];
             var vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images", "links", "navigationBars",
                            "pageIndicators", "pickers", "progressIndicators", "scrollViews", "searchBars",
                            "secureTextFields", "segmentedControls", "sliders", "staticTexts", "switches", "tabBars",
-                           "tableViews", "textFields", "textViews", "toolbars", "webViews"];
+                           "tableViews", "textFields", "textViews", "toolbars", "webViews", "windows"];
 
             // function to visit an element, and add it to an array of what was discovered
             var accessed = [];
@@ -520,6 +520,7 @@ extendPrototype(UIAElement, {
 
             // visit scalars
             for (var i = 0; i < scalars.length; ++i) {
+                if (undefined === elem[scalars[i]]) continue;
                 visit(elem[scalars[i]](), prefix + "." + scalars[i] + "()", false);
             }
 
@@ -530,7 +531,8 @@ extendPrototype(UIAElement, {
                 if (undefined === elemArray) continue;
                 for (var j = 0; j < elemArray.length; ++j) {
                     var newElem = elemArray[j];
-                    visit(newElem, prefix + "." + vectors[i] + "()[" + getNamedIndex(elemArray, j) + "]", false);
+                    var preventDuplicates = vectors[i] == "windows"; // otherwise we get both .mainWindow() and .windows()[0]
+                    visit(newElem, prefix + "." + vectors[i] + "()[" + getNamedIndex(elemArray, j) + "]", preventDuplicates);
                 }
             }
 
@@ -637,7 +639,9 @@ extendPrototype(UIAElement, {
 
     /**
      * Get a list of valid element references in .js format for copy/paste use in code
-     * varname is used as the first element in the canonical name
+     * @param varname is used as the first element in the canonical name
+     * @param visibleOnly boolean whether to only get visible elements
+     * @return array of strings
      */
     getChildElementReferences: function (varName, visibleOnly) {
         varName = varName === undefined ? "<root element>" : varName;
@@ -649,6 +653,36 @@ extendPrototype(UIAElement, {
 
         return this._reduce(collect_fn, [], visibleOnly);
     },
+
+
+    /**
+     * Get the valid child element references in .js format as one string, delimited by newlines
+     *
+     * @param varname is used as the first element in the canonical name
+     * @param visibleOnly boolean whether to only get visible elements
+     */
+    elementReferenceDump: function (varName, visibleOnly) {
+        varName = varName === undefined ? "<root element>" : varName;
+        var title = "elementReferenceDump";
+        if (visibleOnly === true) {
+            title += " (of visible elements)";
+            switch (this.toString()) {
+            case "[object UIATarget]":
+            case "[object UIAApplication]":
+                break;
+            default:
+                if (this.isVisible()) return title + ": <none, " + varName + " is not visible>";
+            }
+        }
+        var ret = title + " of " + varName + ":\n" + varName + "\n";
+        var refArray = this.getChildElementReferences(varName, visibleOnly);
+        // shorten references if we can
+        for (var i = 0; i < refArray.length; ++i) {
+            ret += refArray[i].replace("target().frontMostApp().mainWindow()", "mainWindow()") + "\n";
+        }
+        return ret;
+    },
+
 
     /**
      * Wait for a function on this element to return a value
