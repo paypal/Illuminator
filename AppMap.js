@@ -224,13 +224,18 @@ var debugAppmap = false;
 
     // create a screenIsActive function
     appmap.actionBuilder.makeAction.screenIsActive.byElement = function (screenName, elementName, selector, timeout) {
+        switch (typeof timeout) {
+        case "number": break;
+        default: throw "makeAction.screenIsActive.byElement got a bad timeout value: (" + (typeof timeout) + ") " + timeout;
+        }
+
         return function () {
             UIALogger.logDebug("screenIsActive.byElement for " + screenName);
             try {
                 target().waitForChildExistence(timeout, true, elementName, selector);
                 return true;
             } catch (e) {
-                UIALogger.logDebug("screenIsActive function for " + screenName + " got error " + e);
+                UIALogger.logDebug("screenIsActive function for " + screenName + " got error: " + e);
                 return false;
             }
         };

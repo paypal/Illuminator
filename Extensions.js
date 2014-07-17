@@ -80,6 +80,11 @@ function waitForReturnValue(timeout, functionName, functionReturningValue) {
         return (new Date).getTime() / 1000;
     }
 
+    switch (typeof timeout) {
+    case "number": break;
+    default: throw "waitForReturnValue got a bad timeout type: (" + (typeof timeout) + ") " + timeout;
+    }
+
     var stopTime = myGetTime() + timeout;
     var caught = null;
 
@@ -926,7 +931,6 @@ extendPrototype(UIAElement, {
                 throw e;
             }
         }
-        //this.waitUntilVisible(timeout);
         this.tap();
     },
 
