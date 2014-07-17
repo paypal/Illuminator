@@ -29,7 +29,8 @@ var debugAutomator = false;
         _untagged: []
     }; // each of scenarios[tag] is an array of scenarios
     automator.allScenarios = []; // flat list of scenarios
-    var lastScenario; // state variable for building scenarios of steps
+    automator.lastScenario = null; // state variable for building scenarios of steps
+    automator.allScenarioNames = {}; // for ensuring name uniqueness
 
     automator.lastRunScenario = null;
 
@@ -98,6 +99,9 @@ var debugAutomator = false;
     //    the test will run if ['alpha', 'gamma'] are specified as tagsAny
     //     but it will not run if ['fake', 'YES hardware'] are specified as tagsAll
     automator.createScenario = function(scenarioName, tags, attributes) {
+        if (automator.allScenarioNames[scenarioName]) throw "Can't createScenario '" + scenarioName + "', because that name already exists";
+        automator.allScenarioNames[scenarioName] = true;
+
         automator.lastScenario = {
             title: scenarioName,
             steps: []
