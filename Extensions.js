@@ -513,10 +513,11 @@ extendPrototype(UIAElement, {
     _reduce: function (callback, initialValue, visibleOnly) {
         var reduce_helper = function (elem, acc, prefix) {
             var scalars = ["frontMostApp", "navigationBar", "mainWindow", "popover", "tabBar", "toolbar"];
-            var vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images", "links", "navigationBars",
-                           "pageIndicators", "pickers", "progressIndicators", "scrollViews", "searchBars",
-                           "secureTextFields", "segmentedControls", "sliders", "staticTexts", "switches", "tabBars",
-                           "tableViews", "textFields", "textViews", "toolbars", "webViews", "windows"];
+            var vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images","keys",
+                           "links", "navigationBars", "pageIndicators", "pickers", "progressIndicators",
+                           "scrollViews", "searchBars", "secureTextFields", "segmentedControls", "sliders",
+                           "staticTexts", "switches", "tabBars", "tableViews", "textFields", "textViews",
+                           "toolbars", "webViews", "windows"];
 
             // function to visit an element, and add it to an array of what was discovered
             var accessed = [];
