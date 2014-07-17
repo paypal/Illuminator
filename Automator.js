@@ -6,6 +6,26 @@
 
 var debugAutomator = false;
 
+/**
+ * The exception thrown when a 'fail' is used.
+ *
+ * @param message - reason the test failed/aborted
+ */
+function FailureException(message) {
+    this.name = 'FailureException';
+    this.message = message;
+    this.toString = function() {
+        return this.name + ': "' + this.message + '"';
+    };
+}
+
+/**
+ * Fail the test with the given message
+ */
+function fail(message) {
+  throw new FailureException(message);
+}
+
 (function() {
 
     var root = this,
