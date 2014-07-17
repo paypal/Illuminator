@@ -127,13 +127,15 @@ function getUniqueElements(elemObject) {
 }
 
 
-// return one element from an associative array of possibly-duplicate entries, raise error if distinct entries != 1
-// optionally provide the original criteria for logging purposes
-function assertOneUniqueElement(elemObject, originalCriteria, allowZero) {
+/**
+ * Get one element from a selector result
+ */
+function getOneCriteriaSearchResult(callerName, elemObject, originalCriteria, allowZero) {
+    // assert that there is only one element
     var uniq = getUniqueElements(elemObject);
     var size = Object.keys(elemObject).length;
     if (size > 1 || size == 0 && !allowZero) {
-        var msg = "resolveElement: expected 1 element";
+        var msg = callerName + ": expected 1 element";
         if (originalCriteria !== undefined) {
             msg += " from selector " + JSON.stringify(originalCriteria);
         }
@@ -147,13 +149,7 @@ function assertOneUniqueElement(elemObject, originalCriteria, allowZero) {
         }
         throw msg;
     }
-}
 
-/**
- * Get one element from a selector result
- */
-function getOneCriteriaSearchResult(elemObject, originalCriteria, allowZero) {
-    assertOneUniqueElement(elemObject, originalCriteria, allowZero);
     // they're all the same, so return just one
     for (var k in elemObject) {
         UIALogger.logDebug("Selector found object with canonical name: " + k);
@@ -242,7 +238,7 @@ function getElementFromSelector(selector, parentElem, accessorString) {
             UIATarget.localTarget().popTimeout();
         }
     case "object":
-        var ret =  getOneCriteriaSearchResult(getElementsFromCriteria(selector, parentElem, accessorString), selector);
+        var ret =  getOneCriteriaSearchResult("getElementFromSelector", getElementsFromCriteria(selector, parentElem, accessorString), selector, true);
         return ret;
     default:
         throw "resolveElement received undefined input type of " + (typeof selector).toString();
@@ -422,6 +418,7 @@ extendPrototype(UIAElement, {
      * @param criteria
      */
     getChildElements: function (criteria) {
+        criteria = this.preProcessSelector(criteria);
         var accessor = this._accessor === undefined ? "<unknown>" : this._accessor;
         return getElementsFromCriteria(criteria, this, accessor);
     },
@@ -436,9 +433,9 @@ extendPrototype(UIAElement, {
     _getChildElement: function (callerName, selector, allowZero) {
         switch(typeof selector) {
         case "function":
-            return selector(target()); // TODO: guarantee isNotNil ?
+            return this.preProcessSelector(selector)(target()); // TODO: guarantee isNotNil ?
         case "object":
-            return getOneCriteriaSearchResult(this.getChildElements(selector), selector, allowZero);
+            return getOneCriteriaSearchResult(callerName, this.getChildElements(selector), selector, allowZero);
         default:
             throw caller + " received undefined input type of " + (typeof selector).toString();
         }
