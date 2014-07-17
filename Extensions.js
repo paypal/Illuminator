@@ -6,6 +6,28 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * shortcut function to get target, sets _accessor
+ */
+function target() {
+    var ret = UIATarget.localTarget();
+    ret._accessor = "target()";
+    return ret;
+}
+
+function mainWindow() {
+    var ret = UIATarget.localTarget().frontMostApp().mainWindow();
+    ret._accessor = "mainWindow()";
+    return ret;
+}
+
+function delay(seconds) {
+    target().delay(seconds);
+}
+
+function getTime() {
+    return (new Date).getTime() / 1000;
+}
 
 /**
  * Extend an object prototype with an associative array of properties
@@ -54,10 +76,20 @@ function newUIAElementNil() {
  * @param functionReturningValue the function to execute.  can return anything.
  */
 function waitForReturnValue(timeout, functionName, functionReturningValue) {
-    var stopTime = now + (timeout * 1000);
+    var myGetTime = function () {
+        return (new Date).getTime() / 1000;
+    }
+
+    switch (typeof timeout) {
+    case "number": break;
+    default: throw "waitForReturnValue got a bad timeout type: (" + (typeof timeout) + ") " + timeout;
+    }
+
+    var stopTime = myGetTime() + timeout;
     var caught = null;
 
-    for (var now = getTime(), runsAfterTimeout = 0; now < stopTime || runsAfterTimeout < 1; now = getTime()) {
+
+    for (var now = myGetTime(), runsAfterTimeout = 0; now < stopTime || runsAfterTimeout < 1; now = myGetTime()) {
         if (now >= stopTime) {
             ++runsAfterTimeout;
         }
@@ -100,13 +132,15 @@ function getUniqueElements(elemObject) {
 }
 
 
-// return one element from an associative array of possibly-duplicate entries, raise error if distinct entries != 1
-// optionally provide the original criteria for logging purposes
-function assertOneUniqueElement(elemObject, originalCriteria, allowZero) {
+/**
+ * Get one element from a selector result
+ */
+function getOneCriteriaSearchResult(callerName, elemObject, originalCriteria, allowZero) {
+    // assert that there is only one element
     var uniq = getUniqueElements(elemObject);
     var size = Object.keys(elemObject).length;
     if (size > 1 || size == 0 && !allowZero) {
-        var msg = "resolveElement: expected 1 element";
+        var msg = callerName + ": expected 1 element";
         if (originalCriteria !== undefined) {
             msg += " from selector " + JSON.stringify(originalCriteria);
         }
@@ -120,13 +154,7 @@ function assertOneUniqueElement(elemObject, originalCriteria, allowZero) {
         }
         throw msg;
     }
-}
 
-/**
- * Get one element from a selector result
- */
-function getOneCriteriaSearchResult(elemObject, originalCriteria, allowZero) {
-    assertOneUniqueElement(elemObject, originalCriteria, allowZero);
     // they're all the same, so return just one
     for (var k in elemObject) {
         UIALogger.logDebug("Selector found object with canonical name: " + k);
@@ -139,8 +167,8 @@ function getOneCriteriaSearchResult(elemObject, originalCriteria, allowZero) {
  * Resolve an expression to a set of UIAElements
  *
  * Criteria can be one of the following:
- * 1. An object of critera to satisfy mainWindow.find() .
- * 2. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
+ * 1. An object of critera to satisfy UIAElement..find() .
+ * 2. An array of objects containing UIAElement.find() criteria; elem = UIAElement.find(arr[0])[0..n].find(arr[1])...
  *
  * @param criteria as described above
  * @param parentElem a UIAElement from which the search for elements will begin
@@ -148,8 +176,8 @@ function getOneCriteriaSearchResult(elemObject, originalCriteria, allowZero) {
 */
 function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
     if (parentElem === undefined) {
-        parentElem = mainWindow();
-        elemAccessor = "mainWindow()";
+        parentElem = target();
+        elemAccessor = parentElem._accessor;
     }
 
     if (elemAccessor === undefined) {
@@ -158,7 +186,8 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 
     // perform a find in several stages
     var segmentedFind = function (criteriaArray, initialElem, initialAccessor) {
-        var intermElems = {initialAccessor: initialElem}; // intermediate elements
+        var intermElems = {};
+        intermElems[initialAccessor] = initialElem; // intermediate elements
         // go through all criteria
         for (var i = 0; i < criteriaArray.length; ++i) {
             var tmp = {};
@@ -183,7 +212,7 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 
     try {
         UIATarget.localTarget().pushTimeout(0);
-        return segmentedFind(criteria, parentElem, initialAccessor);
+        return segmentedFind(criteria, parentElem, elemAccessor);
     } catch (e) {
         throw e;
     } finally {
@@ -202,7 +231,7 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 */
 function getElementFromSelector(selector, parentElem, accessorString) {
     var elem = parentElem === undefined ? target() : parentElem;
-    accessorString = accessorString === undefined ? "target()" : accessorString;
+    accessorString = accessorString === undefined ? elem._accessor : accessorString;
     switch(typeof selector) {
     case "function":
         try {
@@ -214,7 +243,7 @@ function getElementFromSelector(selector, parentElem, accessorString) {
             UIATarget.localTarget().popTimeout();
         }
     case "object":
-        var ret =  getOneCriteriaSearchResult(getElementsFromCriteria(selector, parentElem, accessorString), selector);
+        var ret =  getOneCriteriaSearchResult("getElementFromSelector", getElementsFromCriteria(selector, parentElem, accessorString), selector, true);
         return ret;
     default:
         throw "resolveElement received undefined input type of " + (typeof selector).toString();
@@ -394,8 +423,9 @@ extendPrototype(UIAElement, {
      * @param criteria
      */
     getChildElements: function (criteria) {
-        var accessor = this.accessor === undefined ? "<unknown>" : this.accessor;
-        return getElementsFromCriteria(selector, this, accessor);
+        criteria = this.preProcessSelector(criteria);
+        var accessor = this._accessor === undefined ? "<unknown>" : this._accessor;
+        return getElementsFromCriteria(criteria, this, accessor);
     },
 
     /**
@@ -408,9 +438,9 @@ extendPrototype(UIAElement, {
     _getChildElement: function (callerName, selector, allowZero) {
         switch(typeof selector) {
         case "function":
-            return selector(target); // TODO: guarantee isNotNil ?
+            return this.preProcessSelector(selector)(target()); // TODO: guarantee isNotNil ?
         case "object":
-            return getOneCriteriaSearchResult(this.getChildElements(selector), selector, allowZero);
+            return getOneCriteriaSearchResult(callerName, this.getChildElements(selector), selector, allowZero);
         default:
             throw caller + " received undefined input type of " + (typeof selector).toString();
         }
@@ -484,11 +514,12 @@ extendPrototype(UIAElement, {
      */
     _reduce: function (callback, initialValue, visibleOnly) {
         var reduce_helper = function (elem, acc, prefix) {
-            var scalars = ["navigationBar", "popover", "tabBar", "toolbar"];
-            var vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images", "links", "navigationBars",
-                           "pageIndicators", "pickers", "progressIndicators", "scrollViews", "searchBars",
-                           "secureTextFields", "segmentedControls", "sliders", "staticTexts", "switches", "tabBars",
-                           "tableViews", "textFields", "textViews", "toolbars", "webViews"];
+            var scalars = ["frontMostApp", "navigationBar", "mainWindow", "popover", "tabBar", "toolbar"];
+            var vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images","keys",
+                           "links", "navigationBars", "pageIndicators", "pickers", "progressIndicators",
+                           "scrollViews", "searchBars", "secureTextFields", "segmentedControls", "sliders",
+                           "staticTexts", "switches", "tabBars", "tableViews", "textFields", "textViews",
+                           "toolbars", "webViews", "windows"];
 
             // function to visit an element, and add it to an array of what was discovered
             var accessed = [];
@@ -520,6 +551,7 @@ extendPrototype(UIAElement, {
 
             // visit scalars
             for (var i = 0; i < scalars.length; ++i) {
+                if (undefined === elem[scalars[i]]) continue;
                 visit(elem[scalars[i]](), prefix + "." + scalars[i] + "()", false);
             }
 
@@ -530,7 +562,8 @@ extendPrototype(UIAElement, {
                 if (undefined === elemArray) continue;
                 for (var j = 0; j < elemArray.length; ++j) {
                     var newElem = elemArray[j];
-                    visit(newElem, prefix + "." + vectors[i] + "()[" + getNamedIndex(elemArray, j) + "]", false);
+                    var preventDuplicates = vectors[i] == "windows"; // otherwise we get both .mainWindow() and .windows()[0]
+                    visit(newElem, prefix + "." + vectors[i] + "()[" + getNamedIndex(elemArray, j) + "]", preventDuplicates);
                 }
             }
 
@@ -587,7 +620,7 @@ extendPrototype(UIAElement, {
      * Find function
      *
      * Find elements by given criteria.  Known criteria options are:
-     *  * UIAtype: the class name of the UIAElement
+     *  * UIAType: the class name of the UIAElement
      *  * nameRegex: a regular expression that will be applied to the name() method
      *  * rect, hasKeyboardFocus, isEnabled, isValid, label, name, value:
      *        these correspond to the values of the UIAelement methods of the same names.
@@ -602,7 +635,7 @@ extendPrototype(UIAElement, {
         varName = varName === undefined ? "<root element>" : varName;
         var visibleOnly = criteria.isVisible === true;
 
-        var knownOptions = {UIAtype: 1, rect: 1, hasKeyboardFocus: 1, isEnabled: 1, isValid: 1,
+        var knownOptions = {UIAType: 1, rect: 1, hasKeyboardFocus: 1, isEnabled: 1, isValid: 1,
                             label: 1, name: 1, nameRegex: 1, value: 1, isVisible: 1};
 
         // helpful check, mostly catching capitalization errors
@@ -617,7 +650,7 @@ extendPrototype(UIAElement, {
         var c = criteria;
         // don't consider isVisible here, because we do it in this._reduce
         var collect_fn = function (acc, elem, prefix, _) {
-            if (c.UIAtype !== undefined && "[object " + c.UIAtype + "]" != elem.toString()) return acc;
+            if (c.UIAType !== undefined && "[object " + c.UIAType + "]" != elem.toString()) return acc;
             if (c.rect !== undefined && JSON.stringify(c.rect) != JSON.stringify(elem.rect())) return acc;
             if (c.hasKeyboardFocus !== undefined && c.hasKeyboardFocus != elem.hasKeyboardFocus()) return acc;
             if (c.isEnabled !== undefined && c.isEnabled != elem.isEnabled()) return acc;
@@ -628,6 +661,7 @@ extendPrototype(UIAElement, {
             if (c.value !== undefined && c.value != elem.value()) return acc;
 
             acc[varName + prefix] = elem;
+            elem._accessor = varName + prefix; // annotate the element with its accessor
             return acc;
         }
 
@@ -636,7 +670,9 @@ extendPrototype(UIAElement, {
 
     /**
      * Get a list of valid element references in .js format for copy/paste use in code
-     * varname is used as the first element in the canonical name
+     * @param varname is used as the first element in the canonical name
+     * @param visibleOnly boolean whether to only get visible elements
+     * @return array of strings
      */
     getChildElementReferences: function (varName, visibleOnly) {
         varName = varName === undefined ? "<root element>" : varName;
@@ -648,6 +684,36 @@ extendPrototype(UIAElement, {
 
         return this._reduce(collect_fn, [], visibleOnly);
     },
+
+
+    /**
+     * Get the valid child element references in .js format as one string, delimited by newlines
+     *
+     * @param varname is used as the first element in the canonical name
+     * @param visibleOnly boolean whether to only get visible elements
+     */
+    elementReferenceDump: function (varName, visibleOnly) {
+        varName = varName === undefined ? "<root element>" : varName;
+        var title = "elementReferenceDump";
+        if (visibleOnly === true) {
+            title += " (of visible elements)";
+            switch (this.toString()) {
+            case "[object UIATarget]":
+            case "[object UIAApplication]":
+                break;
+            default:
+                if (this.isVisible()) return title + ": <none, " + varName + " is not visible>";
+            }
+        }
+        var ret = title + " of " + varName + ":\n" + varName + "\n";
+        var refArray = this.getChildElementReferences(varName, visibleOnly);
+        // shorten references if we can
+        for (var i = 0; i < refArray.length; ++i) {
+            ret += refArray[i].replace("target().frontMostApp().mainWindow()", "mainWindow()") + "\n";
+        }
+        return ret;
+    },
+
 
     /**
      * Wait for a function on this element to return a value
@@ -699,8 +765,10 @@ extendPrototype(UIAElement, {
      * @param actualValueFunction function that retrieves value from element
      */
     _waitForReturnFromElement: function (timeout, functionName, returnName, isDesiredValueFunction, actualValueFunction) {
+        var thisObj = this;
         var wrapFn = function () {
-            var actual = actualValueFunction(this);
+            var actual = actualValueFunction(thisObj);
+            // TODO: possibly wrap this in try/catch and use it to detect criteria selectors that return multiples
             if (isDesiredValueFunction(actual)) return actual;
             throw "No acceptable value for " + returnName + " was returned";
         };
@@ -718,12 +786,51 @@ extendPrototype(UIAElement, {
      */
     waitForChildExistence: function (timeout, existenceState, description, selector) {
         var actualValFn = function (thisObj) {
-            return thisObj.getChildElement(selector);
+            // if we expect existence, try to get the element.
+            if (existenceState) return thisObj.getChildElement(selector);
+
+            // else we need to check on the special case where criteria might fail by returning multiple elements
+            if ((typeof selector) != "function") {
+                // criteria should return 0 elements -- we will check for 2 elements after
+                return {"criteriaResult": thisObj.getChildElements(selector)};
+            }
+
+            // functions should error or return a nil element
+            try {
+                return {"functionResult": thisObj.getChildElement(selector)};
+            } catch (e) {
+                return {"functionResult": newUIAElementNil()};
+            }
         };
+
         var isDesired = function (someObj) {
-            return existenceState == isNotNilElement(someObj);
+            // if desired an element, straightforward case
+            if (existenceState) return isNotNilElement(someObj);
+
+            // else, make sure we got 0 elements
+            if ((typeof selector) != "function") {
+                var result = someObj.criteriaResult;
+                switch (Object.keys(result).length) {
+                case 0: return true;
+                case 1: return false;
+                default:
+                    UIALogger.logWarning("Selector (criteria) returned " + Object.keys(result).length + " results, not 0: " + JSON.stringify(result));
+                    return false;
+                }
+            }
+
+            // functions should return a nil element
+            return !isNotNilElement(someObj.functionResult);
         };
-        return this._waitForReturnFromElement(timeout, "waitForChildExistence", description, isDesired, actualValFn);
+
+        try {
+            UIATarget.localTarget().pushTimeout(0);
+            return this._waitForReturnFromElement(timeout, "waitForChildExistence", description, isDesired, actualValFn);
+        } catch (e) {
+            throw e;
+        } finally {
+            UIATarget.localTarget().popTimeout();
+        }
     },
 
     /**
@@ -788,7 +895,16 @@ extendPrototype(UIAElement, {
         };
 
         var description = "Selectors for (" +  Object.keys(selectors).join(", ") + ")";
-        return this._waitForReturnFromElement(timeout, "waitForChildSelect", description, foundAtLeastOne, findAll);
+
+        try {
+            UIATarget.localTarget().pushTimeout(0);
+            return this._waitForReturnFromElement(timeout, "waitForChildSelect", description, foundAtLeastOne, findAll);
+        } catch (e) {
+            throw e;
+        } finally {
+            UIATarget.localTarget().popTimeout();
+        }
+
     },
 
     /**
@@ -815,7 +931,6 @@ extendPrototype(UIAElement, {
                 throw e;
             }
         }
-        //this.waitUntilVisible(timeout);
         this.tap();
     },
 
@@ -879,7 +994,7 @@ extendPrototype(UIAElement, {
      */
     checkIsEditable: function (maxAttempts) {
         var getKb = function () {
-            return target.frontMostApp().keyboard();
+            return target().frontMostApp().keyboard();
         };
         return this._checkProducesElement("checkIsEditable", getKb, "keyboard", maxAttempts);
     },
@@ -889,7 +1004,7 @@ extendPrototype(UIAElement, {
      */
     checkIsPickable: function (maxAttempts) {
         var getPicker = function () {
-            return target.frontMostApp().windows()[1].pickers()[0];
+            return target().frontMostApp().windows()[1].pickers()[0];
         };
         return this._checkProducesElement("checkIsPickable", getPicker, "picker", maxAttempts);
     },

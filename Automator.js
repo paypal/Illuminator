@@ -29,7 +29,8 @@ var debugAutomator = false;
         _untagged: []
     }; // each of scenarios[tag] is an array of scenarios
     automator.allScenarios = []; // flat list of scenarios
-    var lastScenario; // state variable for building scenarios of steps
+    automator.lastScenario = null; // state variable for building scenarios of steps
+    automator.allScenarioNames = {}; // for ensuring name uniqueness
 
     automator.lastRunScenario = null;
 
@@ -55,9 +56,7 @@ var debugAutomator = false;
 
     automator.deferFailure = function(err) {
         UIALogger.logDebug("Deferring an error: " + err);
-        UIATarget.localTarget().logElementTree();
-        UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow"));
-        UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", true));
+        automator.logScreenInfo();
 
         if (automator._state.internal["currentStepName"] && automator._state.internal["currentStepNumber"]) {
             var msg = "Step " + automator._state.internal["currentStepNumber"];
@@ -100,6 +99,9 @@ var debugAutomator = false;
     //    the test will run if ['alpha', 'gamma'] are specified as tagsAny
     //     but it will not run if ['fake', 'YES hardware'] are specified as tagsAll
     automator.createScenario = function(scenarioName, tags, attributes) {
+        if (automator.allScenarioNames[scenarioName]) throw "Can't createScenario '" + scenarioName + "', because that name already exists";
+        automator.allScenarioNames[scenarioName] = true;
+
         automator.lastScenario = {
             title: scenarioName,
             steps: []
@@ -303,6 +305,13 @@ var debugAutomator = false;
 
     };
 
+    // log screen information, such as when a test fails
+    automator.logScreenInfo = function () {
+        //UIATarget.localTarget().logElementTree(); // ugly
+        UIALogger.logDebug(target().elementReferenceDump("target()"));
+        UIALogger.logDebug(target().elementReferenceDump("target()", true));
+    }
+
 
     // run function: the tag that matches
     automator.runAllWithTag = function(givenTag) {
@@ -461,8 +470,7 @@ var debugAutomator = false;
             automator.resetState();
             automator.callback["prescenario"]();
         } catch (e) {
-            UIATarget.localTarget().logElementTree();
-            delay(2);
+            automator.logScreenInfo();
             UIALogger.logFail("Test setup failed: " + e);
             return;
         }
@@ -550,9 +558,7 @@ var debugAutomator = false;
 
             UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             UIALogger.logDebug(["FAILED:", failmsg].join(" "));
-            UIATarget.localTarget().logElementTree();
-            UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow"));
-            UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", true));
+            automator.logScreenInfo();
             UIATarget.localTarget().captureScreenWithName(step.name);
             UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             UIALogger.logDebug(longmsg);
