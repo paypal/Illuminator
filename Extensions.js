@@ -552,6 +552,7 @@ extendPrototype(UIAElement, {
             // visit scalars
             for (var i = 0; i < scalars.length; ++i) {
                 if (undefined === elem[scalars[i]]) continue;
+                if (elem.toString() == "[object UIAApplication]" && scalars[i] == "navigationBar") continue; // prevent dupe
                 visit(elem[scalars[i]](), prefix + "." + scalars[i] + "()", false);
             }
 
