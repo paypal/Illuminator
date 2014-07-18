@@ -278,7 +278,7 @@ var typeString = function (text, clear) {
     var noSuccess = true;
     var failMsg = null;
 
-    kb = target.frontMostApp().keyboard();
+    kb = target().frontMostApp().keyboard();
 
     // attempt to get a successful keypress several times -- using the first character
     // this is a hack for iOS 6.x where the keyboard is sometimes "visible" before usable
@@ -341,7 +341,7 @@ var pickDate = function (year, month, day) {
         throw "pickDate couldn't get the picker to appear for element " + this.toString() + " with name '" + this.name() + "'";
     }
 
-    var wheel = target.frontMostApp().windows()[1].pickers()[0].wheels();
+    var wheel = target().frontMostApp().windows()[1].pickers()[0].wheels();
     if (year !== undefined) wheel[2].selectValue(year.toString());
     if (month !== undefined) wheel[0].selectValue(wheel[0].values()[month - 1]); // read localized value, set that value
     if (day !== undefined) wheel[1].selectValue(day.toString());
@@ -514,7 +514,7 @@ extendPrototype(UIAElement, {
      */
     _reduce: function (callback, initialValue, visibleOnly) {
         var reduce_helper = function (elem, acc, prefix) {
-            var scalars = ["frontMostApp", "navigationBar", "mainWindow", "popover", "tabBar", "toolbar"];
+            var scalars = ["frontMostApp", "navigationBar", "mainWindow", "keyboard", "popover", "tabBar", "toolbar"];
             var vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images","keys",
                            "links", "navigationBars", "pageIndicators", "pickers", "progressIndicators",
                            "scrollViews", "searchBars", "secureTextFields", "segmentedControls", "sliders",
@@ -987,7 +987,7 @@ extendPrototype(UIAElement, {
 
             if (!elem.isNotNil()) return false;
 
-            elem.waitUntilVisible(1);
+            elem.waitForVisibility(1, true);
             return true;
         } catch (e) {
             UIALogger.logDebug("_checkProduceElement (for " + callerName + ") caught error: " + e);
