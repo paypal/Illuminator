@@ -438,7 +438,7 @@ extendPrototype(UIAElement, {
     _getChildElement: function (callerName, selector, allowZero) {
         switch(typeof selector) {
         case "function":
-            return this.preProcessSelector(selector)(target()); // TODO: guarantee isNotNil ?
+            return this.preProcessSelector(selector)(this); // TODO: guarantee isNotNil ?
         case "object":
             return getOneCriteriaSearchResult(callerName, this.getChildElements(selector), selector, allowZero);
         default:
