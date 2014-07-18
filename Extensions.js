@@ -913,7 +913,7 @@ extendPrototype(UIAElement, {
      */
     vtap: function (timeout) {
         timeout = timeout === undefined ? 5 : timeout;
-        this.waitForVisiblity(timeout, true);
+        this.waitForVisibility(timeout, true);
         this.tap();
     },
 
