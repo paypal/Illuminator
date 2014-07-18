@@ -788,6 +788,8 @@ extendPrototype(UIAElement, {
      * @param selector the selector for the element whose existence will be checked
      */
     waitForChildExistence: function (timeout, existenceState, description, selector) {
+        if (undefined === selector) throw "waitForChildExistence: No selector was specified";
+
         var actualValFn = function (thisObj) {
             // if we expect existence, try to get the element.
             if (existenceState) return thisObj.getChildElement(selector);
@@ -875,6 +877,8 @@ extendPrototype(UIAElement, {
      * @param selectors associative array of {label: selector}
      */
     waitForChildSelect: function (timeout, selectors) {
+        if ((typeof selectors) != "object") throw "waitForChildSelect expected selectors to be an object, but got: " + (typeof selectors);
+
         // composite find function
         var findAll = function (thisObj) {
             var ret = {};
