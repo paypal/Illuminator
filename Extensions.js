@@ -842,7 +842,7 @@ extendPrototype(UIAElement, {
      * @param visibility boolean whether we want the item to be visible
      */
     waitForVisibility: function (timeout, visibility) {
-        return this._waitForPropertyOfElement(timeout, "waitForVisibility", "isVisible", visibility);
+        return this._waitForPropertyOfElement(timeout, "waitForVisibility", "isVisible", visibility ? 1 : 0);
     },
 
     /**
@@ -852,7 +852,7 @@ extendPrototype(UIAElement, {
      * @param validity boolean whether we want the item to be valid
      */
     waitForValidity: function (timeout, validity) {
-        return this._waitForPropertyOfElement(timeout, "waitForValidity", "checkIsValid", validity);
+        return this._waitForPropertyOfElement(timeout, "waitForValidity", "checkIsValid", validity ? 1 : 0);
     },
 
     /**
