@@ -552,6 +552,7 @@ extendPrototype(UIAElement, {
             // visit scalars
             for (var i = 0; i < scalars.length; ++i) {
                 if (undefined === elem[scalars[i]]) continue;
+                if (elem.toString() == "[object UIAApplication]" && scalars[i] == "navigationBar") continue; // prevent dupe
                 visit(elem[scalars[i]](), prefix + "." + scalars[i] + "()", false);
             }
 
@@ -728,6 +729,7 @@ extendPrototype(UIAElement, {
         // actualValueFunction overrides default behavior: just grab the property name and call it
         if (undefined === actualValueFunction) {
             actualValueFunction = function (obj) {
+                if (undefined === obj[propertyName]) throw "Couldn't get property '" + propertyName + "' of object " + obj;
                 return obj[propertyName]();
             }
         }
@@ -737,10 +739,11 @@ extendPrototype(UIAElement, {
             desiredValues = [desiredValue];
         }
 
+        var thisObj = this;
         var wrapFn = function () {
-            var actual = actualValueFunction (this);
-            for (var i = 0; i < desiredValue.length; ++i) {
-                if (desiredValue[i] === actual) return;
+            var actual = actualValueFunction(thisObj);
+            for (var i = 0; i < desiredValues.length; ++i) {
+                if (desiredValues[i] === actual) return;
             }
             var msg = "Value of property '" + propertyName + "' is (" + (typeof actual) + ") '" + actual + "'";
             if (desiredValue instanceof Array) {
@@ -840,7 +843,7 @@ extendPrototype(UIAElement, {
      * @param visibility boolean whether we want the item to be visible
      */
     waitForVisibility: function (timeout, visibility) {
-        return this._waitForPropertyOfElement(timeout, "waitForVisibility", "isVisible", visibility);
+        return this._waitForPropertyOfElement(timeout, "waitForVisibility", "isVisible", visibility ? 1 : 0);
     },
 
     /**
@@ -850,7 +853,7 @@ extendPrototype(UIAElement, {
      * @param validity boolean whether we want the item to be valid
      */
     waitForValidity: function (timeout, validity) {
-        return this._waitForPropertyOfElement(timeout, "waitForValidity", "checkIsValid", validity);
+        return this._waitForPropertyOfElement(timeout, "waitForValidity", "checkIsValid", validity ? 1 : 0);
     },
 
     /**
