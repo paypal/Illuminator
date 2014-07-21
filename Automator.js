@@ -301,10 +301,10 @@ function fail(message) {
     // log some information about the automation environment
     automator.logInfo = function () {
         UIALogger.logMessage("Device info: " +
-                             "name='" + target.name() + "', " +
-                             "model='" + target.model() + "', " +
-                             "systemName='" + target.systemName() + "', " +
-                             "systemVersion='" + target.systemVersion() + "', ");
+                             "name='" + target().name() + "', " +
+                             "model='" + target().model() + "', " +
+                             "systemName='" + target().systemName() + "', " +
+                             "systemVersion='" + target().systemVersion() + "', ");
 
         var tags = {};
         for (var s = 0; s < automator.allScenarios.length; ++s) {
