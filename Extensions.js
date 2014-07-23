@@ -54,6 +54,17 @@ function isNotNilElement(elem) {
 }
 
 /**
+ * Return true if a selector is "hard" -- referring to one and only one element by nature
+ */
+function isHardSelector(selector) {
+    switch (typeof selector) {
+        case "function": return true;
+        case "string": return true;
+        default: return false;
+    }
+}
+
+/**
  * "constructor" for UIAElementNil
  *
  * UIAutomation doesn't give us access to the UIAElementNil constructor, so do it our own way
@@ -380,10 +391,13 @@ extendPrototype(UIAElement, {
     /*
      * A note on what a "selector" is:
      *
-     * It can be one of 3 things.
+     * It can be one of 4 things.
      * 1. A lookup function that takes a base element as an argument and returns another UIAElement.
-     * 2. An object containing critera to satisfy UIAElement.find() .
-     * 3. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
+     * 2. A string that contains an expression (starting with "element.") that returns another UIAElement
+     * 3. An object containing critera to satisfy UIAElement.find() .
+     * 4. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
+     *
+     * Selector types 1 and 2 are considered "hard" selectors -- they can return at most one element
      */
 
     /**
@@ -393,6 +407,7 @@ extendPrototype(UIAElement, {
      * @param criteria
      */
     getChildElements: function (criteria) {
+        if (isHardSelector(criteria)) throw "getChildElements got a hard selector, which cannot return multiple elements";
         criteria = this.preProcessSelector(criteria);
         var accessor = this._accessor === undefined ? "<unknown>" : this._accessor;
         return getElementsFromCriteria(criteria, this, accessor);
@@ -411,6 +426,13 @@ extendPrototype(UIAElement, {
             return this.preProcessSelector(selector)(this); // TODO: guarantee isNotNil ?
         case "object":
             return getOneCriteriaSearchResult(callerName, this.getChildElements(selector), selector, allowZero);
+        case "string":
+            // wrapper function for lookups, only return element if element is visible
+            var visible = function (elem) {
+                return elem.isVisible() ? elem : newUIAElementNil();
+            }
+            var element = this;
+            return eval(selector);
         default:
             throw caller + " received undefined input type of " + (typeof selector).toString();
         }
@@ -769,7 +791,7 @@ extendPrototype(UIAElement, {
             if (existenceState) return thisObj.getChildElement(selector);
 
             // else we need to check on the special case where criteria might fail by returning multiple elements
-            if ((typeof selector) != "function") {
+            if (!isHardSelector(selector)) {
                 // criteria should return 0 elements -- we will check for 2 elements after
                 return {"criteriaResult": thisObj.getChildElements(selector)};
             }
@@ -787,7 +809,7 @@ extendPrototype(UIAElement, {
             if (existenceState) return isNotNilElement(someObj);
 
             // else, make sure we got 0 elements
-            if ((typeof selector) != "function") {
+            if (!isHardSelector(selector)) {
                 var result = someObj.criteriaResult;
                 switch (Object.keys(result).length) {
                 case 0: return true;
@@ -804,7 +826,7 @@ extendPrototype(UIAElement, {
         };
 
         var inputDescription;
-        if ((typeof selector) == "function") {
+        if (isHardSelector(selector)) {
             inputDescription = selector;
         } else {
             inputDescription = JSON.stringify(selector);
@@ -860,7 +882,7 @@ extendPrototype(UIAElement, {
         for (var selectorName in selectors) {
             var selector = selectors[selectorName];
 
-            if ((typeof selector) == "function") {
+            if (isHardSelector(selector)) {
                 inputArr.push(selectorName + ": " + selector);
             } else {
                 inputArr.push(selectorName + ": " + JSON.stringify(selector));
