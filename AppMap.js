@@ -230,12 +230,11 @@ var debugAppmap = false;
         }
 
         return function () {
-            UIALogger.logDebug("screenIsActive.byElement for " + screenName);
             try {
                 target().waitForChildExistence(timeout, true, elementName, selector);
                 return true;
             } catch (e) {
-                UIALogger.logDebug("screenIsActive function for " + screenName + " got error: " + e);
+                UIALogger.logDebug("screenIsActive.byElement function for " + screenName + " got error: " + e);
                 return false;
             }
         };
