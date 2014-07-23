@@ -110,7 +110,8 @@ var debugAppmap = false;
         // now modify verifyNotActive's isCorrectScreen array to always return true.  slighly hacky.
         // this is because the meat of the function runs in our generated action
         for (var d in appmap.lastAction.isCorrectScreen) {
-            appmap.lastAction.isCorrectScreen[d] = function () {
+            appmap.lastAction.isCorrectScreen[d] = function (parm) {
+                delay((parm === undefined || parm.delay === undefined) ? 0.35 : parm.delay); // wait for animations to complete
                 UIALogger.logDebug("verifyNotActive is skipping the default screenIsActive function");
                 return true;
             };
