@@ -819,6 +819,7 @@ extendPrototype(UIAElement, {
                 case 0: return true;
                 case 1: return false;
                 default:
+                    // TODO: throw specific error here: "setup error discovered at runtime"
                     UIALogger.logWarning("Selector (criteria) returned " + Object.keys(result).length + " results, not 0: " + JSON.stringify(result));
                     return false;
                 }
