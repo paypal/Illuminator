@@ -576,12 +576,15 @@ extendPrototype(UIAElement, {
             return acc;
         };
 
+        var t0 = getTime();
         UIATarget.localTarget().pushTimeout(0);
         try {
             return reduce_helper(this, initialValue, "");
         } catch(e) {
             throw e;
         } finally {
+            var totalTime = Math.round((getTime() - t0) * 10) / 10;
+            UIALogger.logDebug("_reduce operation on " + this + " completed in " + totalTime + " seconds");
             UIATarget.localTarget().popTimeout();
         }
 
