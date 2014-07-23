@@ -840,36 +840,6 @@ extendPrototype(UIAElement, {
     },
 
     /**
-     * Wait for this element to become visible
-     *
-     * @param timeout the timeout in seconds
-     * @param visibility boolean whether we want the item to be visible
-     */
-    waitForVisibility: function (timeout, visibility) {
-        return this._waitForPropertyOfElement(timeout, "waitForVisibility", "isVisible", visibility ? 1 : 0);
-    },
-
-    /**
-     * Wait for this element to become valid
-     *
-     * @param timeout the timeout in seconds
-     * @param validity boolean whether we want the item to be valid
-     */
-    waitForValidity: function (timeout, validity) {
-        return this._waitForPropertyOfElement(timeout, "waitForValidity", "checkIsValid", validity ? 1 : 0);
-    },
-
-    /**
-     * Wait for this element to have the given name
-     *
-     * @param timeout the timeout in seconds
-     * @param name string the name we are waiting for
-     */
-    waitForName: function (timeout, name) {
-        return this._waitForPropertyOfElement(timeout, "waitForName", "name", name);
-    },
-
-    /**
      * Wait until at least one selector in an associative array of selectors returns a valid lookup.
      *
      *  Return an associative array of {key: <element found>, elem: <the element that was found>}
@@ -913,6 +883,36 @@ extendPrototype(UIAElement, {
             UIATarget.localTarget().popTimeout();
         }
 
+    },
+
+    /**
+     * Wait for this element to become visible
+     *
+     * @param timeout the timeout in seconds
+     * @param visibility boolean whether we want the item to be visible
+     */
+    waitForVisibility: function (timeout, visibility) {
+        return this._waitForPropertyOfElement(timeout, "waitForVisibility", "isVisible", visibility ? 1 : 0);
+    },
+
+    /**
+     * Wait for this element to become valid
+     *
+     * @param timeout the timeout in seconds
+     * @param validity boolean whether we want the item to be valid
+     */
+    waitForValidity: function (timeout, validity) {
+        return this._waitForPropertyOfElement(timeout, "waitForValidity", "checkIsValid", validity ? 1 : 0);
+    },
+
+    /**
+     * Wait for this element to have the given name
+     *
+     * @param timeout the timeout in seconds
+     * @param name string the name we are waiting for
+     */
+    waitForName: function (timeout, name) {
+        return this._waitForPropertyOfElement(timeout, "waitForName", "name", name);
     },
 
     /**
