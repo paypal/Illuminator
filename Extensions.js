@@ -221,36 +221,6 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 }
 
 
-/**
- * Resolve an expression to a single UIAElement
- *
- * selectorOrAccessor can be one of the following:
- * 1. A function that takes UIATarget as an argument and returns a UIAElement.
- * 2. An object of critera to satisfy mainWindow.find() .
- * 3. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
-*/
-function getElementFromSelector(selector, parentElem, accessorString) {
-    var elem = parentElem === undefined ? target() : parentElem;
-    accessorString = accessorString === undefined ? elem._accessor : accessorString;
-    switch(typeof selector) {
-    case "function":
-        try {
-            UIATarget.localTarget().pushTimeout(0);
-            return selector(parentElem); // TODO: guarantee isNotNil ?
-        } catch (e) {
-            throw e;
-        } finally {
-            UIATarget.localTarget().popTimeout();
-        }
-    case "object":
-        var ret =  getOneCriteriaSearchResult("getElementFromSelector", getElementsFromCriteria(selector, parentElem, accessorString), selector, true);
-        return ret;
-    default:
-        throw "resolveElement received undefined input type of " + (typeof selector).toString();
-    }
-}
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Object prototype functions
