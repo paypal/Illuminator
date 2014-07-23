@@ -54,6 +54,17 @@ function isNotNilElement(elem) {
 }
 
 /**
+ * Return true if a selector is "hard" -- referring to one and only one element by nature
+ */
+function isHardSelector(selector) {
+    switch (typeof selector) {
+        case "function": return true;
+        case "string": return true;
+        default: return false;
+    }
+}
+
+/**
  * "constructor" for UIAElementNil
  *
  * UIAutomation doesn't give us access to the UIAElementNil constructor, so do it our own way
@@ -221,36 +232,6 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 }
 
 
-/**
- * Resolve an expression to a single UIAElement
- *
- * selectorOrAccessor can be one of the following:
- * 1. A function that takes UIATarget as an argument and returns a UIAElement.
- * 2. An object of critera to satisfy mainWindow.find() .
- * 3. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
-*/
-function getElementFromSelector(selector, parentElem, accessorString) {
-    var elem = parentElem === undefined ? target() : parentElem;
-    accessorString = accessorString === undefined ? elem._accessor : accessorString;
-    switch(typeof selector) {
-    case "function":
-        try {
-            UIATarget.localTarget().pushTimeout(0);
-            return selector(parentElem); // TODO: guarantee isNotNil ?
-        } catch (e) {
-            throw e;
-        } finally {
-            UIATarget.localTarget().popTimeout();
-        }
-    case "object":
-        var ret =  getOneCriteriaSearchResult("getElementFromSelector", getElementsFromCriteria(selector, parentElem, accessorString), selector, true);
-        return ret;
-    default:
-        throw "resolveElement received undefined input type of " + (typeof selector).toString();
-    }
-}
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Object prototype functions
@@ -410,10 +391,13 @@ extendPrototype(UIAElement, {
     /*
      * A note on what a "selector" is:
      *
-     * It can be one of 3 things.
+     * It can be one of 4 things.
      * 1. A lookup function that takes a base element as an argument and returns another UIAElement.
-     * 2. An object containing critera to satisfy UIAElement.find() .
-     * 3. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
+     * 2. A string that contains an expression (starting with "element.") that returns another UIAElement
+     * 3. An object containing critera to satisfy UIAElement.find() .
+     * 4. An array of objects containing UIAElement.find() criteria; elem = mainWindow.find(arr[0]).find(arr[1])...
+     *
+     * Selector types 1 and 2 are considered "hard" selectors -- they can return at most one element
      */
 
     /**
@@ -423,6 +407,7 @@ extendPrototype(UIAElement, {
      * @param criteria
      */
     getChildElements: function (criteria) {
+        if (isHardSelector(criteria)) throw "getChildElements got a hard selector, which cannot return multiple elements";
         criteria = this.preProcessSelector(criteria);
         var accessor = this._accessor === undefined ? "<unknown>" : this._accessor;
         return getElementsFromCriteria(criteria, this, accessor);
@@ -441,6 +426,13 @@ extendPrototype(UIAElement, {
             return this.preProcessSelector(selector)(this); // TODO: guarantee isNotNil ?
         case "object":
             return getOneCriteriaSearchResult(callerName, this.getChildElements(selector), selector, allowZero);
+        case "string":
+            // wrapper function for lookups, only return element if element is visible
+            var visible = function (elem) {
+                return elem.isVisible() ? elem : newUIAElementNil();
+            }
+            var element = this;
+            return eval(selector);
         default:
             throw caller + " received undefined input type of " + (typeof selector).toString();
         }
@@ -576,12 +568,15 @@ extendPrototype(UIAElement, {
             return acc;
         };
 
+        var t0 = getTime();
         UIATarget.localTarget().pushTimeout(0);
         try {
             return reduce_helper(this, initialValue, "");
         } catch(e) {
             throw e;
         } finally {
+            var totalTime = Math.round((getTime() - t0) * 10) / 10;
+            UIALogger.logDebug("_reduce operation on " + this + " completed in " + totalTime + " seconds");
             UIATarget.localTarget().popTimeout();
         }
 
@@ -763,17 +758,18 @@ extendPrototype(UIAElement, {
      *
      * @param timeout the timeout in seconds
      * @param functionName the calling function, for logging purposes
+     * @param inputDescription string describing the input data, for logging purposes (i.e. what isDesiredValue is looking for)
      * @param returnName the name of the value being returned, for logging purposes
      * @param isDesiredValueFunction function that determines whether the returned value is acceptable
      * @param actualValueFunction function that retrieves value from element
      */
-    _waitForReturnFromElement: function (timeout, functionName, returnName, isDesiredValueFunction, actualValueFunction) {
+    _waitForReturnFromElement: function (timeout, functionName, inputDescription, returnName, isDesiredValueFunction, actualValueFunction) {
         var thisObj = this;
         var wrapFn = function () {
             var actual = actualValueFunction(thisObj);
             // TODO: possibly wrap this in try/catch and use it to detect criteria selectors that return multiples
             if (isDesiredValueFunction(actual)) return actual;
-            throw "No acceptable value for " + returnName + " was returned";
+            throw "No acceptable value for " + returnName + " was returned from " + inputDescription;
         };
 
         return waitForReturnValue(timeout, functionName, wrapFn);
@@ -795,7 +791,7 @@ extendPrototype(UIAElement, {
             if (existenceState) return thisObj.getChildElement(selector);
 
             // else we need to check on the special case where criteria might fail by returning multiple elements
-            if ((typeof selector) != "function") {
+            if (!isHardSelector(selector)) {
                 // criteria should return 0 elements -- we will check for 2 elements after
                 return {"criteriaResult": thisObj.getChildElements(selector)};
             }
@@ -813,12 +809,13 @@ extendPrototype(UIAElement, {
             if (existenceState) return isNotNilElement(someObj);
 
             // else, make sure we got 0 elements
-            if ((typeof selector) != "function") {
+            if (!isHardSelector(selector)) {
                 var result = someObj.criteriaResult;
                 switch (Object.keys(result).length) {
                 case 0: return true;
                 case 1: return false;
                 default:
+                    // TODO: throw specific error here: "setup error discovered at runtime"
                     UIALogger.logWarning("Selector (criteria) returned " + Object.keys(result).length + " results, not 0: " + JSON.stringify(result));
                     return false;
                 }
@@ -828,44 +825,21 @@ extendPrototype(UIAElement, {
             return !isNotNilElement(someObj.functionResult);
         };
 
+        var inputDescription;
+        if (isHardSelector(selector)) {
+            inputDescription = selector;
+        } else {
+            inputDescription = JSON.stringify(selector);
+        }
+
         try {
             UIATarget.localTarget().pushTimeout(0);
-            return this._waitForReturnFromElement(timeout, "waitForChildExistence", description, isDesired, actualValFn);
+            return this._waitForReturnFromElement(timeout, "waitForChildExistence", inputDescription, description, isDesired, actualValFn);
         } catch (e) {
             throw e;
         } finally {
             UIATarget.localTarget().popTimeout();
         }
-    },
-
-    /**
-     * Wait for this element to become visible
-     *
-     * @param timeout the timeout in seconds
-     * @param visibility boolean whether we want the item to be visible
-     */
-    waitForVisibility: function (timeout, visibility) {
-        return this._waitForPropertyOfElement(timeout, "waitForVisibility", "isVisible", visibility ? 1 : 0);
-    },
-
-    /**
-     * Wait for this element to become valid
-     *
-     * @param timeout the timeout in seconds
-     * @param validity boolean whether we want the item to be valid
-     */
-    waitForValidity: function (timeout, validity) {
-        return this._waitForPropertyOfElement(timeout, "waitForValidity", "checkIsValid", validity ? 1 : 0);
-    },
-
-    /**
-     * Wait for this element to have the given name
-     *
-     * @param timeout the timeout in seconds
-     * @param name string the name we are waiting for
-     */
-    waitForName: function (timeout, name) {
-        return this._waitForPropertyOfElement(timeout, "waitForName", "name", name);
     },
 
     /**
@@ -901,17 +875,61 @@ extendPrototype(UIAElement, {
             return 0 < Object.keys(resultObj).length;
         };
 
-        var description = "Selectors for (" +  Object.keys(selectors).join(", ") + ")";
+        var description = "any selector";
+
+        // build a somewhat readable list of the inputs
+        var inputArr = [];
+        for (var selectorName in selectors) {
+            var selector = selectors[selectorName];
+
+            if (isHardSelector(selector)) {
+                inputArr.push(selectorName + ": " + selector);
+            } else {
+                inputArr.push(selectorName + ": " + JSON.stringify(selector));
+            }
+        }
+
+        var inputDescription = "selectors {" + inputArr.join(", ") + "}";
 
         try {
             UIATarget.localTarget().pushTimeout(0);
-            return this._waitForReturnFromElement(timeout, "waitForChildSelect", description, foundAtLeastOne, findAll);
+            return this._waitForReturnFromElement(timeout, "waitForChildSelect", inputDescription, description, foundAtLeastOne, findAll);
         } catch (e) {
             throw e;
         } finally {
             UIATarget.localTarget().popTimeout();
         }
 
+    },
+
+    /**
+     * Wait for this element to become visible
+     *
+     * @param timeout the timeout in seconds
+     * @param visibility boolean whether we want the item to be visible
+     */
+    waitForVisibility: function (timeout, visibility) {
+        return this._waitForPropertyOfElement(timeout, "waitForVisibility", "isVisible", visibility ? 1 : 0);
+    },
+
+    /**
+     * Wait for this element to become valid
+     *
+     * @param timeout the timeout in seconds
+     * @param validity boolean whether we want the item to be valid
+     */
+    waitForValidity: function (timeout, validity) {
+        return this._waitForPropertyOfElement(timeout, "waitForValidity", "checkIsValid", validity ? 1 : 0);
+    },
+
+    /**
+     * Wait for this element to have the given name
+     *
+     * @param timeout the timeout in seconds
+     * @param name string the name we are waiting for
+     */
+    waitForName: function (timeout, name) {
+        return this._waitForPropertyOfElement(timeout, "waitForName", "name", name);
     },
 
     /**
