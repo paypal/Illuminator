@@ -763,17 +763,18 @@ extendPrototype(UIAElement, {
      *
      * @param timeout the timeout in seconds
      * @param functionName the calling function, for logging purposes
+     * @param inputDescription string describing the input data, for logging purposes (i.e. what isDesiredValue is looking for)
      * @param returnName the name of the value being returned, for logging purposes
      * @param isDesiredValueFunction function that determines whether the returned value is acceptable
      * @param actualValueFunction function that retrieves value from element
      */
-    _waitForReturnFromElement: function (timeout, functionName, returnName, isDesiredValueFunction, actualValueFunction) {
+    _waitForReturnFromElement: function (timeout, functionName, inputDescription, returnName, isDesiredValueFunction, actualValueFunction) {
         var thisObj = this;
         var wrapFn = function () {
             var actual = actualValueFunction(thisObj);
             // TODO: possibly wrap this in try/catch and use it to detect criteria selectors that return multiples
             if (isDesiredValueFunction(actual)) return actual;
-            throw "No acceptable value for " + returnName + " was returned";
+            throw "No acceptable value for " + returnName + " was returned from " + inputDescription;
         };
 
         return waitForReturnValue(timeout, functionName, wrapFn);
@@ -829,9 +830,16 @@ extendPrototype(UIAElement, {
             return !isNotNilElement(someObj.functionResult);
         };
 
+        var inputDescription;
+        if ((typeof selector) == "function") {
+            inputDescription = selector;
+        } else {
+            inputDescription = JSON.stringify(selector);
+        }
+
         try {
             UIATarget.localTarget().pushTimeout(0);
-            return this._waitForReturnFromElement(timeout, "waitForChildExistence", description, isDesired, actualValFn);
+            return this._waitForReturnFromElement(timeout, "waitForChildExistence", inputDescription, description, isDesired, actualValFn);
         } catch (e) {
             throw e;
         } finally {
@@ -872,11 +880,25 @@ extendPrototype(UIAElement, {
             return 0 < Object.keys(resultObj).length;
         };
 
-        var description = "Selectors for (" +  Object.keys(selectors).join(", ") + ")";
+        var description = "any selector";
+
+        // build a somewhat readable list of the inputs
+        var inputArr = [];
+        for (var selectorName in selectors) {
+            var selector = selectors[selectorName];
+
+            if ((typeof selector) == "function") {
+                inputArr.push(selectorName + ": " + selector);
+            } else {
+                inputArr.push(selectorName + ": " + JSON.stringify(selector));
+            }
+        }
+
+        var inputDescription = "selectors {" + inputArr.join(", ") + "}";
 
         try {
             UIATarget.localTarget().pushTimeout(0);
-            return this._waitForReturnFromElement(timeout, "waitForChildSelect", description, foundAtLeastOne, findAll);
+            return this._waitForReturnFromElement(timeout, "waitForChildSelect", inputDescription, description, foundAtLeastOne, findAll);
         } catch (e) {
             throw e;
         } finally {
