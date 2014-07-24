@@ -1,4 +1,4 @@
-#import "../Common.js";
+#import "../Illuminator.js";
 
 app = appmap.apps["SampleApp"];
 

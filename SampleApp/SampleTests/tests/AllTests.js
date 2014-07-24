@@ -1,3 +1,3 @@
-#import "../Common.js";
+#import "../Illuminator.js";
 #import "../screens/AllScreens.js";
 #import "SampleTests.js";

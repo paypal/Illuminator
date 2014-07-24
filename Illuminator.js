@@ -1,5 +1,5 @@
 #import "buildArtifacts/environment.js"
-// these are here so that everything just imports from Common.js
+// these are here so that everything just imports from Illuminator.js
 #import "Extensions.js";
 #import "Config.js";
 #import "AppMap.js";
