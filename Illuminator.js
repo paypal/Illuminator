@@ -7,6 +7,26 @@
 #import "Bridge.js";
 
 
+/**
+ * Main entry point
+ *
+ * There are no arguments to this function, because it will be controlled by Config arguments
+ * and invoked by testAutomatically.js (a generated file).  See the documentation on how to
+ * set up and run Illuminator.
+ */
+function IlluminatorIlluminate() {
+    // initial sanity checks
+    assertDesiredSimVersion();
+
+    if (0 == (config.tagsAny.length + config.tagsAll.length + config.tagsNone.length)) {
+        UIALogger.logMessage("No tag sets (any / all / none) were defined, so printing some information about defined scenarios");
+        automator.logInfo();
+    } else {
+        automator.runSupportedScenarios(config.tagsAny, config.tagsAll, config.tagsNone, config.automatorSequenceRandomSeed);
+    }
+}
+
+
 function isMatchingVersion(input, prefix, major, minor, rev) {
     var findStr = prefix + major;
 
