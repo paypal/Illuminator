@@ -213,6 +213,72 @@ var debugAppmap = false;
         return ret;
     };
 
+    appmap.toMarkdown = function () {
+        var ret = ["The following apps are defined in the Illuminator AppMap:"];
+
+        var title = function (rank, text) {
+            var total = 4;
+            for (var i = 0; i <= (total - rank); ++i) {
+                ret.push("");
+            }
+            ret.push(Array(rank + 1).join("#") + " " + text);
+        };
+
+        // build device list from the isCorrectScreen map
+        var getDevices = function (action) {
+            var devs = [];
+            for (var d in scn[a].isCorrectScreen) {
+                devs.push(d);
+            }
+            return "`" + devs.join("`, `") + "`";
+        };
+
+        var apps = Object.keys(appmap.apps).sort();
+        for (var i = 0; i < apps.length; ++i) {
+            var appName = apps[i];
+            var app = appmap.apps[appName];
+            title(1, appName);
+            ret.push("This app has the following screens:");
+
+            var screens = Object.keys(app).sort();
+            for (var j = 0; j < screens.length; ++j) {
+                var scnName = screens[j];
+                var scn = app[scnName];
+                title(2, scnName);
+
+                // just use the first action on the screen to get the devices
+                for (var a in scn) {
+                    ret.push("Defined for " + getDevices(act) + ", with the following actions:");
+                    break;
+                }
+
+                var actions = Object.keys(scn).sort();
+                for (var k = 0; k < actions.length; ++k) {
+                    var actName = actions[k];
+                    //UIALogger.logDebug(appName + "." + scnName + "." + actName);
+                    var act = scn[actName];
+                    title(3, actName + (Object.keys(act.params).length > 0 ? " (parameterized)" : ""));
+                    ret.push(getDevices(act) + ": " + act.description);
+
+                    var params = Object.keys(act.params).sort();
+                    if (0 < params.length) {
+                        ret.push(""); // need blank line before bulleted list
+
+                        for (var m = 0; m < params.length; ++m) {
+                            var paramName = params[m];
+                            var par = act.params[paramName];
+                            ret.push("* **" + paramName + "**" + (par.required ? "" : " (optional)") + ": " + par.description);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return ret.join("\n");
+    };
+
+
     // create an action builder to enable easy one-liners for common actions
     //  intended use is to say var ab = appmap.actionBuilder.makeAction;
     //        then in appmap: .withImplementation(ab.verifyElement.visibility({name: "blah"}))

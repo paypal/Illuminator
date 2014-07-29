@@ -29,6 +29,13 @@ function IlluminatorIlluminate() {
         }
         break;
 
+    case "describe":
+        var now = Math.round(getTime());
+        var appMapMarkdownPath = config.tmpDir + "/appMap-" + now + ".md";
+        writeToFile(appMapMarkdownPath, appmap.toMarkdown());
+        UIALogger.logMessage("Wrote AppMap definitions to " + appMapMarkdownPath);
+        break;
+
     default:
         throw "Unknown Illuminator entry point specified: " + config.entryPoint;
     }
@@ -60,8 +67,20 @@ function assertDesiredSimVersion() {
     }
 }
 
-function getPlistData(path) {
+/**
+ * Write data to a file
+ *
+ * @param path the path that should be (over)written
+ * @data the data of the file to write
+ * @todo: check for max length that can be written, write in chunks if necessary
+ */
+function writeToFile(path, data) {
+    var b64data = Base64.encode(data);
+    UIALogger.logDebug("Writing " + data.length + " bytes to " + path);
+    target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c", "echo $0 | base64 -D -o $1", b64data, path], 5);
+}
 
+function getPlistData(path) {
     var jsonOutput;
     var scriptPath = automatorRoot + "/scripts/plist_to_json.sh";
     UIALogger.logDebug("Running " + scriptPath + " '" + path + "'");
