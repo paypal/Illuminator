@@ -76,19 +76,6 @@ function getPlistData(path) {
     return jsonOutput;
 }
 
-/**
- * Build an action on an element based on an element selector and a function to apply
- *
- * selector is passed to resolveElement to get an element
- * work_fn takes an element and an object containing any necessary function parameters
- */
-function makeActionOnElement(selector, work_fn) {
-    return function(param) {
-        var elem = resolveElement(selector);
-        work_fn(elem, param);
-    }
-}
-
 function actionCompareScreenshotToMaster(parm) {
     var masterPath   = parm.masterPath;
     var maskPath     = parm.maskPath;
