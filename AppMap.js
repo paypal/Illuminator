@@ -221,7 +221,19 @@ var debugAppmap = false;
             for (var i = 0; i <= (total - rank); ++i) {
                 ret.push("");
             }
-            ret.push(Array(rank + 1).join("#") + " " + text);
+
+            switch (rank) {
+            case 1:
+                ret.push(text);
+                ret.push(Array(Math.max(10, text.length) + 1).join("="));
+                break;
+            case 2:
+                ret.push(text);
+                ret.push(Array(Math.max(10, text.length) + 1).join("-"));
+                break;
+            default:
+                ret.push(Array(rank + 1).join("#") + " " + text);
+            }
         };
 
         // build device list from the isCorrectScreen map
