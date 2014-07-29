@@ -42,7 +42,13 @@ class AutomationConfig
     @plistStorage.addParameterToStorage 'customConfig', customConfig
   end
 
-  def defineTags  tagsAny, tagsAll, tagsNone,
+  def setEntryPoint entryPoint
+    @plistStorage.addParameterToStorage 'entryPoint', entryPoint
+  end
+
+  def defineTags  tagsAny, tagsAll, tagsNone
+    self.setEntryPoint 'runTestsByTag'
+
     # tags
     tagDefs = {'automatorTagsAny' => tagsAny, 'automatorTagsAll' => tagsAll, 'automatorTagsNone' => tagsNone}
     tagDefs.each do |name, value|

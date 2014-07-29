@@ -18,11 +18,19 @@ function IlluminatorIlluminate() {
     // initial sanity checks
     assertDesiredSimVersion();
 
-    if (0 == (config.tagsAny.length + config.tagsAll.length + config.tagsNone.length)) {
-        UIALogger.logMessage("No tag sets (any / all / none) were defined, so printing some information about defined scenarios");
-        automator.logInfo();
-    } else {
-        automator.runSupportedScenarios(config.tagsAny, config.tagsAll, config.tagsNone, config.automatorSequenceRandomSeed);
+    switch (config.entryPoint) {
+
+    case "runTestsByTag":
+        if (0 == (config.automatorTagsAny.length + config.automatorTagsAll.length + config.automatorTagsNone.length)) {
+            UIALogger.logMessage("No tag sets (any / all / none) were defined, so printing some information about defined scenarios");
+            automator.logInfo();
+        } else {
+            automator.runSupportedScenarios(config.automatorTagsAny, config.automatorTagsAll, config.automatorTagsNone, config.automatorSequenceRandomSeed);
+        }
+        break;
+
+    default:
+        throw "Unknown Illuminator entry point specified: " + config.entryPoint;
     }
 }
 
