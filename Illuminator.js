@@ -32,8 +32,11 @@ function IlluminatorIlluminate() {
     case "describe":
         var now = Math.round(getTime());
         var appMapMarkdownPath = config.tmpDir + "/appMap-" + now + ".md";
+        var automatorMarkdownPath = config.tmpDir + "/automator-" + now + ".md";
         writeToFile(appMapMarkdownPath, appmap.toMarkdown());
         UIALogger.logMessage("Wrote AppMap definitions to " + appMapMarkdownPath);
+        writeToFile(automatorMarkdownPath, automator.toMarkdown());
+        UIALogger.logMessage("Wrote automator definitions to " + automatorMarkdownPath);
         break;
 
     default:

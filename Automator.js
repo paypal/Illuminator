@@ -330,8 +330,74 @@ function fail(message) {
         //UIATarget.localTarget().logElementTree(); // ugly
         UIALogger.logDebug(target().elementReferenceDump("target()"));
         UIALogger.logDebug(target().elementReferenceDump("target()", true));
-    }
+    };
 
+
+    automator.toMarkdown = function () {
+        var ret = ["The following scenarios are defined in the Illuminator Automator:"];
+
+        var title = function (rank, text) {
+            var total = 4;
+            for (var i = 0; i <= (total - rank); ++i) {
+                ret.push("");
+            }
+
+            switch (rank) {
+            case 1:
+                ret.push(text);
+                ret.push(Array(Math.max(10, text.length) + 1).join("="));
+                break;
+            case 2:
+                ret.push(text);
+                ret.push(Array(Math.max(10, text.length) + 1).join("-"));
+                break;
+            default:
+                ret.push(Array(rank + 1).join("#") + " " + text);
+            }
+        };
+
+        title(1, "Automator Scenarios");
+        // iterate over scenarios
+        for (var i = 0; i < automator.allScenarios.length; ++i) {
+            var scenario = automator.allScenarios[i];
+            title(2, scenario.title);
+            ret.push("Tags: `" + scenario.tags.join("`, `") + "`");
+            ret.push("");
+
+            // iterate over steps (actions)
+            for (var j = 0; j < scenario.steps.length; ++j) {
+                var step = scenario.steps[j];
+                ret.push((j + 1).toString() + ". **" + step.action.screenName + "." + step.action.name + "**: " + step.action.description);
+
+                // iterate over parameters in the action
+                for (var k in step.parameters) {
+                    var val = step.parameters[k];
+                    var v;
+
+                    // formatting based on datatype of parameter
+                    switch ((typeof val).toString()) {
+                    case "number":
+                    case "boolean":
+                        v = val; // no change
+                        break;
+                    case "function":
+                    case "string":
+                        v = "`" + val + "`"; // backtick-quote
+                        break;
+                    default:
+                        v = "`" + JSON.stringify(val) + "`"; // stringify and annotate with type
+                        if (val instanceof Array) {
+                            v += " (Array)";
+                        } else {
+                            v += " (" + (typeof val) + ")";
+                        }
+                    }
+                    ret.push("    * `" + k + "` = " + v);
+                }
+            }
+        }
+        return ret.join("\n");
+    };
 
     // run function: the tag that matches
     automator.runAllWithTag = function(givenTag) {
