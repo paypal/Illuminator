@@ -61,12 +61,12 @@ class AutomationConfig
   end
 
   def defineTests testList
-    self.setEntryPoint('runTestsByName')
+    self.setEntryPoint 'runTestsByName'
     @plistStorage.addParameterToStorage("automatorScenarioNames", testList)
   end
 
   def defineDescribe
-    self.setEntryPoint('describe')
+    self.setEntryPoint 'describe'
   end
 
   def configPath
