@@ -25,7 +25,7 @@ function IlluminatorIlluminate() {
             UIALogger.logMessage("No tag sets (any / all / none) were defined, so printing some information about defined scenarios");
             automator.logInfo();
         } else {
-            automator.runSupportedScenarios(config.automatorTagsAny, config.automatorTagsAll, config.automatorTagsNone, config.automatorSequenceRandomSeed);
+            automator.runTaggedScenarios(config.automatorTagsAny, config.automatorTagsAll, config.automatorTagsNone, config.automatorSequenceRandomSeed);
         }
         break;
 
