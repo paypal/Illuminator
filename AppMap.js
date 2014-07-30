@@ -216,7 +216,9 @@ var debugAppmap = false;
     appmap.toMarkdown = function () {
         var ret = ["The following apps are defined in the Illuminator AppMap:"];
 
+        // formatting the title, making good looking markdown
         var title = function (rank, text) {
+            // insert blank lines before the title
             var total = 4;
             for (var i = 0; i <= (total - rank); ++i) {
                 ret.push("");
@@ -236,15 +238,14 @@ var debugAppmap = false;
             }
         };
 
-        // build device list from the isCorrectScreen map
-        var getDevices = function (action) {
-            var devs = [];
-            for (var d in scn[a].isCorrectScreen) {
-                devs.push(d);
-            }
-            return "`" + devs.join("`, `") + "`";
+        // if an action is defined on the same devices as its parent screen (not just a subset)
+        var onSameDevices = function (action) {
+            if ("default" == Object.keys(action.actionFn)[0]) return true;
+            for (d in action.isCorrectScreen) if (undefined === action.actionFn[d]) return false;
+            return true;
         };
 
+        // iterate over apps
         var apps = Object.keys(appmap.apps).sort();
         for (var i = 0; i < apps.length; ++i) {
             var appName = apps[i];
@@ -252,35 +253,33 @@ var debugAppmap = false;
             title(1, appName);
             ret.push("This app has the following screens:");
 
+            // iterate over screens
             var screens = Object.keys(app).sort();
             for (var j = 0; j < screens.length; ++j) {
                 var scnName = screens[j];
                 var scn = app[scnName];
                 title(2, scnName);
 
-                // just use the first action on the screen to get the devices
-                for (var a in scn) {
-                    ret.push("Defined for " + getDevices(act) + ", with the following actions:");
-                    break;
-                }
+                // just use the first action on the screen to get the devices - from isCorrectScreen map
+                var screenDevices = "`" + Object.keys(scn[Object.keys(scn)[0]].isCorrectScreen).join("`, `") + "`";
+                ret.push("Defined for " + screenDevices + ", with the following actions:");
+                ret.push(""); // need blank line before bulleted lists
 
+                // iterate over actions
                 var actions = Object.keys(scn).sort();
                 for (var k = 0; k < actions.length; ++k) {
                     var actName = actions[k];
-                    //UIALogger.logDebug(appName + "." + scnName + "." + actName);
                     var act = scn[actName];
-                    title(3, actName + (Object.keys(act.params).length > 0 ? " (parameterized)" : ""));
-                    ret.push(getDevices(act) + ": " + act.description);
+                    var actionDevices = onSameDevices(act) ? "" : " `" + Object.keys(act.actionFn).join("`, `") + "`";
+                    var parms = Object.keys(act.params).length == 0 ? "" : " (parameterized)";
+                    ret.push("* **" + actName + "**" + parms + actionDevices + ": " + act.description);
 
+                    // iterate over parameters
                     var params = Object.keys(act.params).sort();
-                    if (0 < params.length) {
-                        ret.push(""); // need blank line before bulleted list
-
-                        for (var m = 0; m < params.length; ++m) {
-                            var paramName = params[m];
-                            var par = act.params[paramName];
-                            ret.push("* **" + paramName + "**" + (par.required ? "" : " (optional)") + ": " + par.description);
-                        }
+                    for (var m = 0; m < params.length; ++m) {
+                        var paramName = params[m];
+                        var par = act.params[paramName];
+                        ret.push("    * `" + paramName + "`" + (par.required ? "" : " (optional)") + ": " + par.description);
                     }
                 }
 
