@@ -237,13 +237,10 @@ function fail(message) {
                            ];
             var slength = automator.lastScenario.steps.length;
             if (0 < slength) {
-                failmsg.push(" after step ");
-                failmsg.push(automator.lastScenario.steps[slength - 1].action.screenName);
-                failmsg.push(".");
-                failmsg.push(automator.lastScenario.steps[slength - 1].action.name);
+                var goodAction = automator.lastScenario.steps[slength - 1].action;
+                failmsg.push(" after step " + goodAction.screenName + "." + goodAction.name);
             }
             fail(failmsg.join(""));
-
         }
 
         if (debugAutomator) {
