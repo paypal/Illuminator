@@ -65,6 +65,10 @@ class AutomationConfig
     @plistStorage.addParameterToStorage("automatorScenarioNames", testList)
   end
 
+  def defineDescribe
+    self.setEntryPoint('describe')
+  end
+
   def configPath
     return @automatorRoot + '/buildArtifacts/generatedConfig.plist'
   end
