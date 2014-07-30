@@ -210,7 +210,7 @@ function actionLogAccessors(parm) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Appmap additions - common capabilities
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-appmap.createOrAugmentApp("ios-automator").withScreen("do")
+appmap.createOrAugmentApp("Illuminator").withScreen("do")
     .onDevice("iPhone", function() { return true; })
     .onDevice("iPad", function() { return true; })
 
