@@ -67,16 +67,12 @@
     for (var k in expectedKeys) {
         if (jsonConfig[k] !== undefined) {
             config.setField(k, jsonConfig[k]);
-        } else {
-            if (expectedKeys[k]) {
-                UIALogger.logMessage("Couldn't read " + k + " from generated config");
-            } else {
-                UIALogger.logMessage("Didn't read (optional) " + k + " from generated config");
-            }
+        } else if (expectedKeys[k]) {
+                UIALogger.logWarning("Couldn't read " + k + " from generated config");
         }
     }
 
-    //
+    // set the custom config from the plist
     try {
         config.setCustomConfig(jsonConfig.customConfig);
     } catch (e) {
