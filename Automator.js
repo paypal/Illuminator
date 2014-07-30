@@ -237,13 +237,10 @@ function fail(message) {
                            ];
             var slength = automator.lastScenario.steps.length;
             if (0 < slength) {
-                failmsg.push(" after step ");
-                failmsg.push(automator.lastScenario.steps[slength - 1].action.screenName);
-                failmsg.push(".");
-                failmsg.push(automator.lastScenario.steps[slength - 1].action.name);
+                var goodAction = automator.lastScenario.steps[slength - 1].action;
+                failmsg.push(" after step " + goodAction.screenName + "." + goodAction.name);
             }
             fail(failmsg.join(""));
-
         }
 
         if (debugAutomator) {
@@ -325,43 +322,152 @@ function fail(message) {
 
     };
 
-    // log screen information, such as when a test fails
+
+    /**
+     * Log information about the currently-shown iOS screen
+     *
+     */
     automator.logScreenInfo = function () {
         //UIATarget.localTarget().logElementTree(); // ugly
         UIALogger.logDebug(target().elementReferenceDump("target()"));
         UIALogger.logDebug(target().elementReferenceDump("target()", true));
-    }
-
-
-    // run function: the tag that matches
-    automator.runAllWithTag = function(givenTag) {
-        automator.checkInit();
-        UIALogger.logMessage("Automator running all test scenarios tagged '" + givenTag + "'");
-        var scenariosForTag = automator.scenarios[givenTag];
-
-        // be helpful if the tag name isn't understood
-        if (undefined === scenariosForTag) {
-            all_keys = [];
-            for (key in automator.scenarios) {
-                all_keys.push(key);
-            }
-            fail(["Tried to test undefined tag called '",
-                  givenTag,
-                  "'; possible choices are: ['",
-                  all_keys.join("', '"),
-                  "']"
-                  ].join(""));
-        }
-
-        automator.runScenarioList(scenariosForTag);
-
-        UIALogger.logMessage("Automator completed running all test scenarios tagged '" + givenTag + "'");
-
-        return this;
     };
 
 
-    // run a given list of scenarios, if randomSeed is provided then randomize them
+    /**
+     * Render the automator scenarios (and their steps, and parameters) to markdown
+     *
+     * @return string containing markdown
+     */
+    automator.toMarkdown = function () {
+        var ret = ["The following scenarios are defined in the Illuminator Automator:"];
+
+        var title = function (rank, text) {
+            var total = 4;
+            for (var i = 0; i <= (total - rank); ++i) {
+                ret.push("");
+            }
+
+            switch (rank) {
+            case 1:
+                ret.push(text);
+                ret.push(Array(Math.max(10, text.length) + 1).join("="));
+                break;
+            case 2:
+                ret.push(text);
+                ret.push(Array(Math.max(10, text.length) + 1).join("-"));
+                break;
+            default:
+                ret.push(Array(rank + 1).join("#") + " " + text);
+            }
+        };
+
+        title(1, "Automator Scenarios");
+        // iterate over scenarios
+        for (var i = 0; i < automator.allScenarios.length; ++i) {
+            var scenario = automator.allScenarios[i];
+            title(2, scenario.title);
+            ret.push("Tags: `" + scenario.tags.join("`, `") + "`");
+            ret.push("");
+
+            // iterate over steps (actions)
+            for (var j = 0; j < scenario.steps.length; ++j) {
+                var step = scenario.steps[j];
+                ret.push((j + 1).toString() + ". **" + step.action.screenName + "." + step.action.name + "**: " + step.action.description);
+
+                // iterate over parameters in the action
+                for (var k in step.parameters) {
+                    var val = step.parameters[k];
+                    var v;
+
+                    // formatting based on datatype of parameter
+                    switch ((typeof val).toString()) {
+                    case "number":
+                    case "boolean":
+                        v = val; // no change
+                        break;
+                    case "function":
+                    case "string":
+                        v = "`" + val + "`"; // backtick-quote
+                        break;
+                    default:
+                        v = "`" + JSON.stringify(val) + "`"; // stringify and annotate with type
+                        if (val instanceof Array) {
+                            v += " (Array)";
+                        } else {
+                            v += " (" + (typeof val) + ")";
+                        }
+                    }
+                    ret.push("    * `" + k + "` = " + v);
+                }
+            }
+        }
+        return ret.join("\n");
+    };
+
+
+    /**
+     * ENTRY POINT: Run tagged scenarios
+     *
+     * Run scenarios that match 3 sets of provided tags
+     *
+     * @param tagsAny array - any scenario with any matching tag will run (if tags=[], run all)
+     * @param tagsAll array - any scenario with AT LEAST the same tags will run
+     * @param tagsNone array - any scenario with NONE of these tags will run
+     * @param randomSeed integer - if provided, will be used to randomize the run order
+     */
+    automator.runTaggedScenarios = function(tagsAny, tagsAll, tagsNone, randomSeed) {
+        automator.checkInit();
+        UIALogger.logMessage("Automator running scenarios with tagsAny: [" + tagsAny.join(", ") + "]"
+                             + ", tagsAll: [" + tagsAll.join(", ") + "]"
+                             + ", tagsNone: [" + tagsNone.join(", ") + "]");
+
+        // filter the list by criteria
+        var onesToRun = [];
+        for (var i = 0; i < automator.allScenarios.length; ++i) {
+            var scenario = automator.allScenarios[i];
+            if (automator.scenarioMatchesCriteria(scenario, tagsAny, tagsAll, tagsNone)
+                && automator.deviceSupportsScenario(scenario)) {
+                onesToRun.push(scenario);
+            }
+        }
+
+        automator.runScenarioList(onesToRun, randomSeed);
+    };
+
+    /**
+     * ENTRY POINT: Run named scenarios
+     *
+     * Run scenarios that match the names of those provided
+     *
+     * @param scenarioNames array - the list of named scenarios to run
+     * @param randomSeed integer - if provided, will be used to randomize the run order
+     */
+    automator.runNamedScenarios = function(scenarioNames, randomSeed) {
+        automator.checkInit();
+        UIALogger.logMessage("Automator running " + scenarioNames.length + " scenarios by name");
+
+        // filter the list by name
+        var onesToRun = [];
+        for (var i = 0; i < automator.allScenarios.length; ++i) {
+            var scenario = automator.allScenarios[i];
+            for (var j = 0; j < scenarioNames.length; ++j) {
+                if (scenario.title == scenarioNames[j] && automator.deviceSupportsScenario(scenario)) {
+                    onesToRun.push(scenario);
+                }
+            }
+        }
+
+        automator.runScenarioList(onesToRun, randomSeed);
+    };
+
+
+    /**
+     * run a given list of scenarios, optionally in randomized order
+     *
+     * @param senarioList array of scenarios to run, in order
+     * @param ramdomSeed optional number, if provided the test run order will be randomized with this as a seed
+     */
     automator.runScenarioList = function(scenarioList, randomSeed) {
         // randomize if asked
         if (randomSeed !== undefined) {
@@ -401,71 +507,12 @@ function fail(message) {
     };
 
 
-    // run a set of scenarios by tags
-    automator.runTags = function(tags) {
-        automator.checkInit();
-        UIALogger.logMessage("Automator running the following tags: [" + tags.join(", ") + "]");
-        for (var i = 0; i < tags.length; ++i) {
-            automator.runAllWithTag(tags[i]);
-        }
-        UIALogger.logMessage("Automator completed running the following tags: ["
-                             + tags.join(", ") + "]");
-    };
-
-    // top-level run function: all tags, even if they duplicate scenarios
-    automator.runAllTags = function() {
-        automator.checkInit();
-        UIALogger.logMessage("Automator running all tag scenarios individually");
-        for (var tag in automator.scenarios) {
-            automator.runAllWithTag(tag);
-        }
-        UIALogger.logMessage("Automator completed running all tag scenarios individually");
-    };
-
-
-
-    // PREFFERED ENTRY POINT
-    //  tagsAny: any scenario with any matching tag will run (if tags=[], run all)
-    //  tagsAll: any scenario with AT LEAST the same tags will run
-    //  tagsNone: any scenario with NONE of these tags will run
-    // randomSeed: if provided, will be used to randomize the run order
-    automator.runSupportedScenarios = function(tagsAny, tagsAll, tagsNone, randomSeed) {
-        automator.checkInit();
-        UIALogger.logMessage("Automator running scenarios with tagsAny: [" + tagsAny.join(", ") + "]"
-                             + ", tagsAll: [" + tagsAll.join(", ") + "]"
-                             + ", tagsNone: [" + tagsNone.join(", ") + "]");
-
-
-        // filter the list by criteria
-        var onesToRun = [];
-        for (var i = 0; i < automator.allScenarios.length; ++i) {
-            var scenario = automator.allScenarios[i];
-            if (automator.scenarioMatchesCriteria(scenario, tagsAny, tagsAll, tagsNone)
-                && automator.deviceSupportsScenario(scenario)) {
-                onesToRun.push(scenario);
-            }
-        }
-
-        automator.runScenarioList(onesToRun, randomSeed);
-
-        UIALogger.logMessage("Automator running scenarios with tagsAny: [" + tagsAny.join(", ") + "]"
-                             + ", tagsAll: [" + tagsAll.join(", ") + "]"
-                             + ", tagsNone: [" + tagsNone.join(", ") + "]");
-
-    };
-
-
-    // most efficient way to run all tests
-    automator.runAll = function() {
-        automator.checkInit();
-        UIALogger.logMessage("Automator running all defined test scenarios");
-        automator.runScenarioList(automator.allScenarios);
-        UIALogger.logMessage("Automator completed running all defined test scenarios");
-        return this;
-    };
-
-
-    // run one scenario
+    /**
+     * Run a single scenario and record its pass/fail status
+     *
+     * @param scenario an automator scenario
+     * @param message string a message to print at the beginning of the test, immediately after the start
+     */
     automator.runScenario = function(scenario, message) {
         automator.checkInit();
         automator._deferredFailures = []; // reset any deferred errors
@@ -589,8 +636,12 @@ function fail(message) {
     };
 
 
-    // knuth shuffle implementation
-    // uses a PRNG
+    /**
+     * Shuffle an array - Knuth Shuffle implementation using a PRNG
+     *
+     * @param array the array to be shuffled
+     * @param seed number to seed the PRNG
+     */
     automator.shuffle = function(array, seed) {
         var idx = array.length;
         var tmp;

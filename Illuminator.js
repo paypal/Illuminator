@@ -1,10 +1,52 @@
 #import "buildArtifacts/environment.js"
-// these are here so that everything just imports from Common.js
+// these are here so that everything just imports from Illuminator.js
 #import "Extensions.js";
 #import "Config.js";
 #import "AppMap.js";
 #import "Automator.js";
 #import "Bridge.js";
+
+
+/**
+ * Main entry point
+ *
+ * There are no arguments to this function, because it will be controlled by Config arguments
+ * and invoked by testAutomatically.js (a generated file).  See the documentation on how to
+ * set up and run Illuminator.
+ */
+function IlluminatorIlluminate() {
+    // initial sanity checks
+    assertDesiredSimVersion();
+
+    switch (config.entryPoint) {
+
+    case "runTestsByTag":
+        if (0 == (config.automatorTagsAny.length + config.automatorTagsAll.length + config.automatorTagsNone.length)) {
+            UIALogger.logMessage("No tag sets (any / all / none) were defined, so printing some information about defined scenarios");
+            automator.logInfo();
+        } else {
+            automator.runTaggedScenarios(config.automatorTagsAny, config.automatorTagsAll, config.automatorTagsNone, config.automatorSequenceRandomSeed);
+        }
+        break;
+
+    case "runTestsByName":
+        automator.runNamedScenarios(config.automatorScenarioNames, config.automatorSequenceRandomSeed);
+        break;
+
+    case "describe":
+        var now = Math.round(getTime());
+        var appMapMarkdownPath = config.tmpDir + "/appMap-" + now + ".md";
+        var automatorMarkdownPath = config.tmpDir + "/automator-" + now + ".md";
+        writeToFile(appMapMarkdownPath, appmap.toMarkdown());
+        UIALogger.logMessage("Wrote AppMap definitions to " + appMapMarkdownPath);
+        writeToFile(automatorMarkdownPath, automator.toMarkdown());
+        UIALogger.logMessage("Wrote automator definitions to " + automatorMarkdownPath);
+        break;
+
+    default:
+        throw "Unknown Illuminator entry point specified: " + config.entryPoint;
+    }
+}
 
 
 function isMatchingVersion(input, prefix, major, minor, rev) {
@@ -32,8 +74,48 @@ function assertDesiredSimVersion() {
     }
 }
 
-function getPlistData(path) {
+/**
+ * Write data to a file
+ *
+ * @param path the path that should be (over)written
+ * @data the data of the file to write
+ */
+function writeToFile(path, data) {
+    var chunkSize = Math.floor(262144 * 0.74) - (path.length + 100); // `getconf ARG_MAX`, adjusted for b64
 
+    if (data.length < chunkSize) {
+        var b64data = Base64.encode(data);
+        UIALogger.logDebug("Writing " + data.length + " bytes to " + path + " as " + b64data.length + " bytes of b64");
+        target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c", "echo $0 | base64 -D -o $1", b64data, path], 5);
+    } else {
+        // split into chunks to avoid making the command line too long
+        splitRegex = function(str, len) {
+            var regex = new RegExp('[\\s\\S]{1,' + len + '}', 'g');
+            return str.match(regex);
+        }
+
+        // write each chunk to a file
+        var chunks = splitRegex(data, chunkSize);
+        var chunkFiles = [];
+        for (var i = 0; i < chunks.length; ++i) {
+            var chunk = chunks[i];
+            var chunkFile = path + ".chunk" + i;
+            var b64data = Base64.encode(chunk);
+            UIALogger.logDebug("Writing " + chunk.length + " bytes to " + chunkFile + " as " + b64data.length + " bytes of b64");
+            target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c", "echo $0 | base64 -D -o $1", b64data, chunkFile], 5);
+            chunkFiles.push(chunkFile);
+        }
+
+        // concatenate all the chunks
+        var unchunkCmd = "cat \"" + chunkFiles.join("\" \"") + "\" > $0";
+        UIALogger.logDebug("Concatenating and deleting " + chunkFiles.length + " chunks, writing " + path);
+        target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c", unchunkCmd, path], 5);
+        target().host().performTaskWithPathArgumentsTimeout("/bin/rm", chunkFiles, 5);
+    }
+
+}
+
+function getPlistData(path) {
     var jsonOutput;
     var scriptPath = automatorRoot + "/scripts/plist_to_json.sh";
     UIALogger.logDebug("Running " + scriptPath + " '" + path + "'");
@@ -46,19 +128,6 @@ function getPlistData(path) {
     }
 
     return jsonOutput;
-}
-
-/**
- * Build an action on an element based on an element selector and a function to apply
- *
- * selector is passed to resolveElement to get an element
- * work_fn takes an element and an object containing any necessary function parameters
- */
-function makeActionOnElement(selector, work_fn) {
-    return function(param) {
-        var elem = resolveElement(selector);
-        work_fn(elem, param);
-    }
 }
 
 function actionCompareScreenshotToMaster(parm) {
@@ -145,7 +214,7 @@ function actionLogAccessors(parm) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Appmap additions - common capabilities
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-appmap.createOrAugmentApp("ios-automator").withScreen("do")
+appmap.createOrAugmentApp("Illuminator").withScreen("do")
     .onDevice("iPhone", function() { return true; })
     .onDevice("iPad", function() { return true; })
 
