@@ -435,6 +435,32 @@ function fail(message) {
         automator.runScenarioList(onesToRun, randomSeed);
     };
 
+    /**
+     * ENTRY POINT: Run named scenarios
+     *
+     * Run scenarios that match the names of those provided
+     *
+     * @param scenarioNames array - the list of named scenarios to run
+     * @param randomSeed integer - if provided, will be used to randomize the run order
+     */
+    automator.runNamedScenarios = function(scenarioNames, randomSeed) {
+        automator.checkInit();
+        UIALogger.logMessage("Automator running " + scenarioNames.length + " scenarios by name");
+
+        // filter the list by name
+        var onesToRun = [];
+        for (var i = 0; i < automator.allScenarios.length; ++i) {
+            var scenario = automator.allScenarios[i];
+            for (var j = 0; j < scenarioNames.length; ++j) {
+                if (scenario.title == scenarioNames[j] && automator.deviceSupportsScenario(scenario)) {
+                    onesToRun.push(scenario);
+                }
+            }
+        }
+
+        automator.runScenarioList(onesToRun, randomSeed);
+    };
+
 
     /**
      * run a given list of scenarios, optionally in randomized order

@@ -29,6 +29,10 @@ function IlluminatorIlluminate() {
         }
         break;
 
+    case "runTestsByName":
+        automator.runNamedScenarios(config.automatorScenarioNames, config.automatorSequenceRandomSeed);
+        break;
+
     case "describe":
         var now = Math.round(getTime());
         var appMapMarkdownPath = config.tmpDir + "/appMap-" + now + ".md";

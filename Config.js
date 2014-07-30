@@ -46,6 +46,7 @@
         "automatorTagsAny": false,
         "automatorTagsAll": false,
         "automatorTagsNone": false,
+        "automatorScenarioNames": false,
         "automatorSequenceRandomSeed": false,
         "customConfig": false,
     };
@@ -58,7 +59,7 @@
     // check for keys we don't expect
     for (var k in jsonConfig) {
         if (expectedKeys[k] === undefined) {
-            UIALogger.logMessage("Config got unexpected key " + k);
+            UIALogger.logWarning("Config got unexpected key " + k);
         }
     }
 
