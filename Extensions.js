@@ -619,7 +619,7 @@ extendPrototype(UIAElement, {
      * Find elements by given criteria.  Known criteria options are:
      *  * UIAType: the class name of the UIAElement
      *  * nameRegex: a regular expression that will be applied to the name() method
-     *  * rect, hasKeyboardFocus, isEnabled, isValid, label, name, value:
+     *  * rect, hasKeyboardFocus, isEnabled, isValid, isVisible, label, name, value:
      *        these correspond to the values of the UIAelement methods of the same names.
      *
      * Return associative array {accessor: element} of results
