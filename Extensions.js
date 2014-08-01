@@ -484,6 +484,7 @@ extendPrototype(UIAElement, {
         if (this.toString() != elem2.toString()) return false; // element type
         if (this.name() != elem2.name()) return false;
         if (JSON.stringify(this.rect()) != JSON.stringify(elem2.rect())) return false; // possible false positives!
+        if (this.isVisible() != elem2.isVisible()) return false; // hopefully a way to beat false positives
         if (0 == maxRecursion) return true; // stop recursing?
         if (-100 == maxRecursion) UIALogger.logWarning("Passed 100 recursions in UIAElement.equals");
         return this.parent() === null || this.parent().equals(elem2.parent(), maxRecursion - 1); // check parent elem
@@ -618,7 +619,7 @@ extendPrototype(UIAElement, {
      * Find elements by given criteria.  Known criteria options are:
      *  * UIAType: the class name of the UIAElement
      *  * nameRegex: a regular expression that will be applied to the name() method
-     *  * rect, hasKeyboardFocus, isEnabled, isValid, label, name, value:
+     *  * rect, hasKeyboardFocus, isEnabled, isValid, isVisible, label, name, value:
      *        these correspond to the values of the UIAelement methods of the same names.
      *
      * Return associative array {accessor: element} of results
@@ -740,7 +741,9 @@ extendPrototype(UIAElement, {
             for (var i = 0; i < desiredValues.length; ++i) {
                 if (desiredValues[i] === actual) return;
             }
-            var msg = "Value of property '" + propertyName + "' is (" + (typeof actual) + ") '" + actual + "'";
+            var msg = ["Value of property '", propertyName, "'",
+                       " on ", thisObj, " \"", thisObj.name(), "\"",
+                       " is (" + (typeof actual) + ") '" + actual + "'"].join("");
             if (desiredValue instanceof Array) {
                 msg += ", not one of the desired values ('" + desiredValues.join("', '") + "')";
             } else {
@@ -769,7 +772,7 @@ extendPrototype(UIAElement, {
             var actual = actualValueFunction(thisObj);
             // TODO: possibly wrap this in try/catch and use it to detect criteria selectors that return multiples
             if (isDesiredValueFunction(actual)) return actual;
-            throw "No acceptable value for " + returnName + " was returned from " + inputDescription;
+            throw "No acceptable value for " + returnName + " on " + thisObj + " \"" + thisObj.name() + "\" was returned from " + inputDescription;
         };
 
         return waitForReturnValue(timeout, functionName, wrapFn);
@@ -956,7 +959,7 @@ extendPrototype(UIAElement, {
                 throw e;
             }
         }
-        this.tap();
+        this.vtap(timeout);
     },
 
     /**
