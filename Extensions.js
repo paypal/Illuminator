@@ -484,6 +484,7 @@ extendPrototype(UIAElement, {
         if (this.toString() != elem2.toString()) return false; // element type
         if (this.name() != elem2.name()) return false;
         if (JSON.stringify(this.rect()) != JSON.stringify(elem2.rect())) return false; // possible false positives!
+        if (this.isVisible() != elem2.isVisible()) return false; // hopefully a way to beat false positives
         if (0 == maxRecursion) return true; // stop recursing?
         if (-100 == maxRecursion) UIALogger.logWarning("Passed 100 recursions in UIAElement.equals");
         return this.parent() === null || this.parent().equals(elem2.parent(), maxRecursion - 1); // check parent elem
