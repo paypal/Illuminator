@@ -959,7 +959,7 @@ extendPrototype(UIAElement, {
                 throw e;
             }
         }
-        this.tap();
+        this.vtap(timeout);
     },
 
     /**
