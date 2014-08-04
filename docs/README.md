@@ -25,7 +25,7 @@ In this example, we assume that an app has only two screens: a login screen (use
 ```javascript
 #import "path/to/Illuminator.js";
 
-var ab = appmap.actionBuilder.makeAction;  // shortcut name to action builder -- it builds action functions
+var ab = appmap.actionBuilder.makeAction;  // shortcut name to action builder -- it builds action functions
 
 function actionEnterCredentials(param) {
     mainWindow().getOneChildElement({name: "username", UIAType: "UIATextField"}).typeString(param.username);
