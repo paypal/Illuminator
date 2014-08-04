@@ -23,7 +23,7 @@ There are some test actions that can't be done through screen interactions alone
 Other Features
 --------------
 
-* [JUnit](http://windyroad.com.au/2011/02/07/apache-ant-junit-xml-schema/)-formatted test reports 
+* [JUnit](http://windyroad.com.au/2011/02/07/apache-ant-junit-xml-schema/)-formatted test reports
 * [Cobertura](http://cobertura.github.io/cobertura/)-formatted coverage reports
 * Screenshot comparison capability with the ability to mask certain screen areas
 
@@ -36,7 +36,7 @@ Installation
 
 Further Documentation
 ---------------------
-* [Quick start guide](docs/Quickstart.md)
+* [Quick start guide](docs/README.md)
 * [Working with elements](docs/Extensions.md)
 * [Defining screens](docs/AppMap.md)
 * [Writing tests](docs/Automator.md)
