@@ -215,8 +215,10 @@ function actionLogAccessors(parm) {
 // Appmap additions - common capabilities
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 appmap.createOrAugmentApp("Illuminator").withScreen("do")
-    .onDevice("iPhone", function() { return true; })
-    .onDevice("iPad", function() { return true; })
+    .onTarget(config.implementation, function() { return true; })
+    // onTarget(config.implementation...) is a HACK.
+    // Illuminator doesn't define implementations, so we use what we're given.
+    //   (i.e. you shouldn't copy/paste this example into your project code)
 
     .withAction("delay", "Delay a given amount of time")
     .withParam("seconds", "Number of seconds to delay", true, true)

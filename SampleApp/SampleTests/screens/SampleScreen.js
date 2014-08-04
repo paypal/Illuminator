@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 var ab = appmap.actionBuilder.makeAction;
 appmap.createOrAugmentApp("SampleApp").withScreen("homeScreen")
-    .onDevice("iPhone", ab.screenIsActive.byElement("homeScreen",
+    .onTarget("iPhone", ab.screenIsActive.byElement("homeScreen",
                                                     "Automator Sample App",
                                                     {name: "Automator Sample App", UIAType: "UIAStaticText"},
                                                     10))
