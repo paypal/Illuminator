@@ -384,7 +384,7 @@ var debugAppmap = false;
     // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
     //
     // return an action that takes 'expected' (bool) as a parameter
-    appmap.actionBuilder.makeAction.verifyElement.predicate = function(selector, elemName, predicate_fn, predicateDesc, retryDelay) {
+    appmap.actionBuilder.makeAction.verifyElement._predicate = function(selector, elemName, predicate_fn, predicateDesc, retryDelay) {
         return function(parm) {
             var elem = appmap.actionBuilder._getElement(selector, retryDelay);
 
@@ -401,7 +401,7 @@ var debugAppmap = false;
     // work_fn is a function that takes an element as an argument plus
     // workDesc is a description of the function for logging
     // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
-    appmap.actionBuilder.makeAction.element.act = function(selector, elemName, work_fn, retryDelay) {
+    appmap.actionBuilder.makeAction.element._interaction = function(selector, elemName, work_fn, retryDelay) {
         return function(parm) {
             var elem = appmap.actionBuilder._getElement(selector, retryDelay);
             work_fn(elem, parm);
@@ -426,41 +426,41 @@ var debugAppmap = false;
 
     // return an action that takes 'expected' (bool) as a parameter
     appmap.actionBuilder.makeAction.verifyElement.editability = function(selector, elemName, retryDelay) {
-        return appmap.actionBuilder.makeAction.verifyElement.predicate(selector, elemName, function (elem) {
+        return appmap.actionBuilder.makeAction.verifyElement._predicate(selector, elemName, function (elem) {
             return elem.checkIsEditable();
         }, "isEditable", retryDelay);
     };
 
     // return an action that takes 'expected' (bool) as a parameter
     appmap.actionBuilder.makeAction.verifyElement.enabled = function(selector, elemName, retryDelay) {
-        return appmap.actionBuilder.makeAction.verifyElement.predicate(selector, elemName, function (elem) {
+        return appmap.actionBuilder.makeAction.verifyElement._predicate(selector, elemName, function (elem) {
             return elem.isEnabled();
         }, "isEnabled", retryDelay);
     };
 
     // return an action that takes no parameters
     appmap.actionBuilder.makeAction.element.tap = function(selector, elemName, retryDelay) {
-        return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
+        return appmap.actionBuilder.makeAction.element._interaction(selector, elemName, function (elem, parm) {
             elem.tap()
         }, retryDelay);
     };
 
     // return an action that takes no parameters
     appmap.actionBuilder.makeAction.element.vtap = function(selector, elemName, retryDelay) {
-        return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
+        return appmap.actionBuilder.makeAction.element._interaction(selector, elemName, function (elem, parm) {
             elem.vtap(4)
         }, retryDelay);
     };
 
     appmap.actionBuilder.makeAction.element.svtap = function(selector, elemName, retryDelay) {
-        return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
+        return appmap.actionBuilder.makeAction.element._interaction(selector, elemName, function (elem, parm) {
             elem.svtap(4)
         }, retryDelay);
     };
 
     // return an action that takes "text" and "clear" (bool) as parameters
     appmap.actionBuilder.makeAction.element.typeString = function(selector, elemName, retryDelay) {
-        return appmap.actionBuilder.makeAction.element.act(selector, elemName, function (elem, parm) {
+        return appmap.actionBuilder.makeAction.element._interaction(selector, elemName, function (elem, parm) {
             elem.typeString(parm.text, parm.clear === true);
         }, retryDelay);
     };
