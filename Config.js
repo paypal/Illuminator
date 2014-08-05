@@ -2,8 +2,6 @@
 //
 // loads configuration from a generated file, provides sensible defaults
 
-#import "buildArtifacts/environment.js"
-
 (function() {
 
     var root = this,
@@ -16,7 +14,7 @@
         config = root.config = {};
     }
 
-    config.implementation = 'iPhone';
+    config.implementation = 'Unspecified_iOS_Device';
     config.automatorTagsAny = []; // run all by default
     config.automatorTagsAll = []; // none by default
     config.automatorTagsNone = [];
