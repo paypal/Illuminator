@@ -99,3 +99,11 @@ $ ruby scripts/automationTests.rb
 This should launch an instance of the simulator (possibly requiring credentials from OSX) and
 then run the test script, outputting the log to the terminal.
 
+Further Documentation
+---------------------
+* [Working with elements](Extensions.md)
+* [Defining screens](AppMap.md)
+* [Writing tests](Automator.md)
+* [Ruby scripts](Commandline.md)
+* [The RPC channel](Bridge.md)
+* [Troubleshooting](Troubleshooting.md)
