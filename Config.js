@@ -2,8 +2,6 @@
 //
 // loads configuration from a generated file, provides sensible defaults
 
-#import "buildArtifacts/environment.js"
-
 (function() {
 
     var root = this,
@@ -16,7 +14,7 @@
         config = root.config = {};
     }
 
-    config.implementation = 'iPhone';
+    config.implementation = 'Unspecified_iOS_Device';
     config.automatorTagsAny = []; // run all by default
     config.automatorTagsAll = []; // none by default
     config.automatorTagsNone = [];
@@ -42,7 +40,7 @@
         "implementation": true,
         "automatorDesiredSimDevice": true,
         "automatorDesiredSimVersion": true,
-        "hardwareID": true,
+        "hardwareID": false,
         "automatorTagsAny": false,
         "automatorTagsAll": false,
         "automatorTagsNone": false,
@@ -76,7 +74,7 @@
     try {
         config.setCustomConfig(jsonConfig.customConfig);
     } catch (e) {
-        UIALogger.logMessage("Didn't read (optional) customConfig from generated config");
+        UIALogger.logMessage("(optional) customConfig was not supplied in generated config; skipping.")
     }
 
 

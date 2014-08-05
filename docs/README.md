@@ -4,17 +4,18 @@ ILLUMINATOR Quick Start Guide
 This is the minimal crash course you need to get started writing and executing Illuminator test scenarios.
 
 ### The Basics
-* The **AppMap** defines how an iOS app is automated
-    * An **app** has **screens**.
+* The **[AppMap](docs/AppMap.md)** defines how an iOS app is automated
+    * An **app** has **screen**s that are available on certain **target**s.
     * A **screen** has a function to verify whether it is active, and **action**s.
-    * An **action** has a set of **parameter**s and a mapping of **device**s to **implementation**s.
-* The **Automator** defines **test scenario**s comprised of a set of **action**s
+    * An **action** has a set of **parameter**s and a mapping of **target**s to **implementation**s.
+* The **[Automator](docs/Automator.md)** defines **test scenario**s comprised of a set of **action**s
     * A scenario has a **name**, some **tag**s, and a series of **step**s
     * A step is an **action**, possibly with some **parameter**s
-* The command line scripts provide the entry point to testing
+* The [command line scripts](docs/Commandline.md) provide the entry point to testing
 	* Building the executable
 	* Loading the binary into the target execution environment
 	* Running the desired set of **test scenario**s by **name** or by **tag**.
+* The **[Bridge](docs/Bridge.md)** enables RPC functionality between the AppMap, Automator, and your app.
 
 
 Minimal Example
@@ -25,7 +26,7 @@ In this example, we assume that an app has only two screens: a login screen (use
 ```javascript
 #import "path/to/Illuminator.js";
 
-var ab = appmap.actionBuilder.makeAction;  // shortcut name to action builder -- it builds action functions
+var ab = appmap.actionBuilder.makeAction;  // shortcut name to action builder -- it builds action functions
 
 function actionEnterCredentials(param) {
     mainWindow().getOneChildElement({name: "username", UIAType: "UIATextField"}).typeString(param.username);
@@ -39,7 +40,7 @@ function actionVerifyUsername(param) {
 
 // describe the login screen and possible interactions
 appmap.createOrAugmentApp("MyTinyApp").withScreen("login")
-    .onDevice("iPhone", ab.screenIsActive.byElement("login", "login button",  // the screen and element
+    .onTarget("iPhone", ab.screenIsActive.byElement("login", "login button",  // the screen and element
                                                     {name: "Log In", UIAType: "UIAButton"},  // selector
                                                     10))  // timeout for screen to become active
 
@@ -54,7 +55,7 @@ appmap.createOrAugmentApp("MyTinyApp").withScreen("login")
 
 // describe the welcome screen and possible interactions
 appmap.createOrAugmentApp("MyTinyApp").withScreen("welcome")
-    .onDevice("iPhone", ab.screenIsActive.byElement("welcome", "logout button",
+    .onTarget("iPhone", ab.screenIsActive.byElement("welcome", "logout button",
                                                     {name: "Log Out", UIAType: "UIAButton"},
                                                     10))
 
@@ -98,3 +99,11 @@ $ ruby scripts/automationTests.rb
 This should launch an instance of the simulator (possibly requiring credentials from OSX) and
 then run the test script, outputting the log to the terminal.
 
+Further Documentation
+---------------------
+* [Working with elements](Extensions.md)
+* [Defining screens](AppMap.md)
+* [Writing tests](Automator.md)
+* [Ruby scripts](Commandline.md)
+* [The RPC channel](Bridge.md)
+* [Troubleshooting](Troubleshooting.md)

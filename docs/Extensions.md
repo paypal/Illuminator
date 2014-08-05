@@ -241,7 +241,7 @@ function preProcessSelectorWithCurrency(originalSelector) {
         selector = [originalSelector];
     }
 
-    var realSelector = [];
+    var outputSelector = [];
     for (var i = 0; i < selector.length; ++i) {
         var criteria = {};
         for (var k in selector[i]) {
@@ -252,9 +252,9 @@ function preProcessSelectorWithCurrency(originalSelector) {
                 criteria[k] = selector[i][k];
             }
         }
-        realSelector.push(criteria);
+        outputSelector.push(criteria);
     }
-    return realSelector;
+    return outputSelector;
 }
 // immediately place this function inside prototype
 UIAElement.prototype["preProcessSelector"] = preProcessSelectorWithCurrency;

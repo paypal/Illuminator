@@ -2,8 +2,6 @@
 //
 // creates 'automator' which can build and run scenarios
 
-#import "Bridge.js"; // fix indents for nonstandard javascript imports above
-
 var debugAutomator = false;
 
 /**

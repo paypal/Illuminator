@@ -11,7 +11,7 @@ Top 3 features
 
 Illuminator is inspired by [tuneup.js](https://github.com/alexvollmer/tuneup_js) and [mechanic.js](https://github.com/jaykz52/mechanic), combining and improving [the best features of both](docs/Extensions.md).  Accessing UI elements can be done relative to a root element, by a fuzzy search of the element tree (easily extensible for app-specific capabilities), or by some combination of the two -- even if the element has not yet appeared on the screen.
 
-#### 2. Ease of scripting and executing test scenarios across devices
+#### 2. Ease of scripting and executing test scenarios across different target devices
 
 [Test scenarios in Illuminator](docs/Automator.md) are easy to create and easy to read (and if you need to generate hundreds of test cases, it can be done programmatically instead of manually).  Managing a large test bank is simple as well; Illuminator can run test scenarios by name or by tag, and (intelligently) on either iPad or iPhone targets.  Illuminator can even complete test runs in which the app crashes during one of the tests.
 
@@ -23,7 +23,7 @@ There are some test actions that can't be done through screen interactions alone
 Other Features
 --------------
 
-* [JUnit](http://windyroad.com.au/2011/02/07/apache-ant-junit-xml-schema/)-formatted test reports 
+* [JUnit](http://windyroad.com.au/2011/02/07/apache-ant-junit-xml-schema/)-formatted test reports
 * [Cobertura](http://cobertura.github.io/cobertura/)-formatted coverage reports
 * Screenshot comparison capability with the ability to mask certain screen areas
 
@@ -36,7 +36,7 @@ Installation
 
 Further Documentation
 ---------------------
-* [Quick start guide](docs/Quickstart.md)
+* [Quick start guide](docs/README.md)
 * [Working with elements](docs/Extensions.md)
 * [Defining screens](docs/AppMap.md)
 * [Writing tests](docs/Automator.md)

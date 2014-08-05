@@ -2,7 +2,6 @@
 //
 // gives access to (some) native methods in the app, bypassing the UI
 
-#import "Base64.js";
 
 var debugBridge = false;
 
