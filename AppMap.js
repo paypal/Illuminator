@@ -29,7 +29,14 @@ var debugAppmap = false;
     var lastActionName;     // name of last action
     var lastScreenActiveFn; // action function map of last screen
 
-    // create a new app in the appmap with the given name
+    /**
+     * Create a new app in the appmap with the given name.
+     *
+     * All following screen defintions will be associated with this app.
+     *
+     * @param appName the desired app name
+     * @return this
+     */
     appmap.createApp = function(appName) {
         appmap.lastApp = {}; // screens is empty
         appmap.apps[appName] = appmap.lastApp;
@@ -38,25 +45,49 @@ var debugAppmap = false;
         return this;
     };
 
-    // whether an app exists
+    /**
+     * whether an app exists
+     *
+     * @param appName the app name to test
+     * @return bool
+     */
     appmap.hasApp = function(appName) {
         return appName in appmap.apps;
     };
 
-    // function to re-start editing a app
+    /**
+     * All following screen defintions will be associated with this app.
+     *
+     * @param appName the desired app name
+     * @return this
+     */
     appmap.augmentApp = function(appName) {
         appmap.lastApp = appmap.apps[appName];
         appmap.lastAppName = appName;
         return this;
     };
 
-    // function to do the right thing
+    /**
+     * Create a new app if does not already exist.
+     *
+     * All following screen definitions will be associated with this app.
+     *
+     * @param appName the desired app name
+     * @return this
+     */
     appmap.createOrAugmentApp = function(appName) {
         return appmap.hasApp(appName) ? appmap.augmentApp(appName) : appmap.createApp(appName);
     }
 
 
-    // create a new screen in the latest app, with the given name
+    /**
+     * Create a new screen in the appmap with the given name.
+     *
+     * All following device/action defintions will be associated with this screen.
+     *
+     * @param screenName the desired screen name
+     * @return this
+     */
     appmap.withNewScreen = function(screenName) {
         appmap.lastScreen = {};
         appmap.lastScreenName = screenName;
@@ -100,14 +131,19 @@ var debugAppmap = false;
      * All following target / action definitions will be associated with this screen.
      *
      * @param screenName the desired screen name
+     * @return this
      */
     appmap.withScreen = function(screenName) {
         return appmap.hasScreen(appmap.lastAppName, screenName) ? appmap.augmentScreen(screenName) : appmap.withNewScreen(screenName);
     }
 
-
-    // enable the screen on a given target device by setting the isActiveFn()
-    //  isActiveFn() should return true if the screen is currently both visible and accessible
+    /**
+     * Enable the screen on a given target device
+     *
+     * @param targetName the name of the target device (e.g. "iPhone", "iPad")
+     * @param isActiveFn function that should return true when the screen is currently both visible and accessible
+     * @return this
+     */
     appmap.onTarget = function(targetName, isActiveFn) {
         var lastScreenName = appmap.lastScreenName;
         if (debugAppmap) UIALogger.logDebug("  on Target " + targetName);
@@ -139,7 +175,15 @@ var debugAppmap = false;
     };
 
 
-    // create a new action in the latest screen, with the given name, description, and function
+    /**
+     * Create a new action in the appmap with the given name.
+     *
+     * All following implementation / parameter definitions will be associated with this action.
+     *
+     * @param actionName the desired screen name
+     * @param desc the description of this action that will be used for logging purposes
+     * @return this
+     */
     appmap.withNewAction = function(actionName, desc) {
         // we need this hack to prevent problems with the above isCorrectScreen hack --
         //  so that we don't change the original reference, we rebuild the {targetname : function} map manually
@@ -164,7 +208,26 @@ var debugAppmap = false;
         return this;
     };
 
-    // augment an existing action
+
+   /**
+     * whether an action exists
+     *
+     * @param appName the app to look in
+     * @param screenName tge screen to look in
+     * @param actionName the screen name to test
+     * @return bool
+     */
+    appmap.hasAction = function(appName, screenName, actionName) {
+        return appmap.hasScreen(appName, screenName) && (actionName in appmap.apps[appName][screenName]);
+    }
+
+
+    /**
+     * All following implementation / parameter definitions will be associated with this screen
+     *
+     * @param appName the desired app name
+     * @return this
+     */
     appmap.augmentAction = function(actionName) {
         if (debugAppmap) UIALogger.logDebug("  augmenting action " + actionName);
         appmap.lastAction = appmap.lastScreen[actionName];
@@ -172,33 +235,28 @@ var debugAppmap = false;
         return this;
     }
 
-    // whether an action exists
-    appmap.hasAction = function(appName, screenName, actionName) {
-        return appmap.hasScreen(appName, screenName) && (actionName in appmap.apps[appName][screenName]);
-    }
-
-    // do the right thing
+    /**
+     * Create a new action in the appmap with the given name if does not already exist.
+     *
+     * All following implementation / parameter definitions will be associated with this action.
+     *
+     * @param actionName the desired screen name
+     * @param desc the description of this action that will be used for logging purposes
+     * @return this
+     */
     appmap.withAction = function(actionName, desc) {
         return appmap.hasAction(appmap.lastAppName, appmap.lastScreenName, actionName) ? appmap.augmentAction(actionName) : appmap.withNewAction(actionName, desc);
     }
 
-
-    // create a new parameter in the latest action, with the given varname and description
-    // optionally, useInSummary to indiciate whether the parameter should be printed in the step description
-    appmap.withParam = function(paramName, desc, required, useInSummary) {
-        if (debugAppmap) UIALogger.logDebug("   adding parameter " + paramName);
-        useInSummmary = useInSummary === undefined ? false : useInSummary;
-        appmap.lastAction.params[paramName] = {
-            description: desc,
-            required: required,
-            useInSummary: useInSummary
-        };
-        return this;
-    };
-
-
-    // create a new implementation for the latest action
-    // actFn will take one optional argument -- an associative array
+    /**
+     * Set the function that will carry out the current action on the given target device
+     *
+     * targetName is optional; if omitted, the function will be used for all target devices
+     *
+     * @param actFn function that should be executed when the current action is requested to run
+     * @param targetName optional the name of the target device (e.g. "iPhone", "iPad")
+     * @return this
+     */
     appmap.withImplementation = function(actFn, targetName) {
         targetName = targetName === undefined ? "default" : targetName;
 
@@ -219,18 +277,48 @@ var debugAppmap = false;
         return this;
     }
 
+    /**
+     * Define a new parameter in the latest action with the given attributes
+     *
+     * @param paramName the name of the parameter
+     * @param desc a description of the parameter
+     * @param required bool whether the parameter is required for the action
+     * @param useInSummary whether the value of the parameter should be logged when the action executes
+     */
+    appmap.withParam = function(paramName, desc, required, useInSummary) {
+        if (debugAppmap) UIALogger.logDebug("   adding parameter " + paramName);
+        useInSummmary = useInSummary === undefined ? false : useInSummary;
+        appmap.lastAction.params[paramName] = {
+            description: desc,
+            required: required,
+            useInSummary: useInSummary
+        };
+        return this;
+    };
+
+    /**
+     * return an array of all defined apps
+     */
     appmap.getApps = function() {
         var ret = [];
         for (d in appmap.apps) ret.push(d);
         return ret;
     };
 
+    /**
+     * return an array of all defined screens for the given app
+     *
+     * @param app the app name
+     */
     appmap.getScreens = function(app) {
         var ret = [];
         for (s in appmap.apps[app]) ret.push(s);
         return ret;
     };
 
+    /**
+     * Returns Markdown string describing all the apps, screens, targets, actions, implementations, and parameters
+     */
     appmap.toMarkdown = function () {
         var ret = ["The following apps are defined in the Illuminator AppMap:"];
 
@@ -319,7 +407,12 @@ var debugAppmap = false;
     appmap.actionBuilder.makeAction.screenIsActive = {};
 
 
-    // resolve an element
+    /**
+     * Internal function for getting child elements and raising the appropriate errors
+     *
+     * @param selector the selector to get the element
+     * @param retryDelay optional integer, if provided and the selector fails then the selector will be retried
+     */
     appmap.actionBuilder._getElement = function(selector, retryDelay) {
         try {
             return target().getOneChildElement(selector);
@@ -337,7 +430,56 @@ var debugAppmap = false;
         }
     };
 
-    // create a screenIsActive function
+
+    /**
+     * Internal function for building actions that verify predicate functions
+     *
+     * @param selector the element to select
+     * @param elemName the name of what is being selected
+     * @param predicateFn the function (taking an element as an argument, returning a boolean) that should be evaluated
+     * @param predicateDesc the name of the predicate function, for logging purposes
+     * @param retryDelay optional integer, if provided and the selector fails then the selector will be retried
+     * @return a function (taking an object with fields {expected: boolean} as its only argument) that asserts the predicate
+     */
+    appmap.actionBuilder.makeAction.verifyElement._predicate = function(selector, elemName, predicateFn, predicateDesc, retryDelay) {
+        return function(parm) {
+            var elem = appmap.actionBuilder._getElement(selector, retryDelay);
+
+            // prevent any funny business with integer comparisons
+            if ((predicateFn(elem) == true) != (parm.expected == true)) {
+                throw "Element " + elemName + " failed predicate " + predicateDesc + " (expected value: " + parm.expected + ")";
+            }
+        };
+    };
+
+
+    /**
+     * Internal function for building actions that interact with elements
+     *
+     * @param selector the element to select
+     * @param elemName the name of what is being selected
+     * @param workFn the function (taking an element as an argument) that should be performed
+     * @param retryDelay optional integer, if provided and the selector fails then the selector will be retried
+     * @param return a function (taking no arguments) that executes the work function on the selected element
+     */
+    appmap.actionBuilder.makeAction.element._interaction = function(selector, elemName, workFn, retryDelay) {
+        return function(parm) {
+            var elem = appmap.actionBuilder._getElement(selector, retryDelay);
+            workFn(elem, parm);
+        };
+    };
+
+
+
+    /**
+     * create a screenIsActive function by looking for a specific element.
+     *
+     * @param screenName the screen name, for logging purposes
+     * @param elementName what is being selected, for logging purposes
+     * @param selector the selector to watch
+     * @param timeout how long to wait
+     * @return a no-argument function that returns a boolean
+     */
     appmap.actionBuilder.makeAction.screenIsActive.byElement = function (screenName, elementName, selector, timeout) {
         switch (typeof timeout) {
         case "number": break;
@@ -355,12 +497,30 @@ var debugAppmap = false;
         };
     };
 
-    // build an existence function action
-    // selector is for resolveElement
-    // elemName is the name for logging purposes
-    // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
-    //
-    // return an action that takes 'expected' (bool) as a parameter
+
+    /**
+     * build an action function that verifies whether an element is enabled
+     *
+     * @param selector reference to the element
+     * @param elemName the name of what we are looking for
+     * @param retryDelay optional integer how long to wait before a retry if selector fails
+     * @return a function that takes an object with fields {expected: boolean} as its argument
+     */
+    appmap.actionBuilder.makeAction.verifyElement.enabled = function(selector, elemName, retryDelay) {
+        return appmap.actionBuilder.makeAction.verifyElement._predicate(selector, elemName, function (elem) {
+            return elem.isEnabled();
+        }, "isEnabled", retryDelay);
+    };
+
+
+    /**
+     * build an action function that verifies element existence
+     *
+     * @param selector reference to the element
+     * @param elemName the name of what we are looking for
+     * @param retryDelay optional integer how long to wait before a retry if selector fails
+     * @return a function that takes an object with fields {expected: boolean} as its argument
+     */
     appmap.actionBuilder.makeAction.verifyElement.existence = function(selector, elemName, retryDelay) {
         return function(parm) {
             var msg = "";
@@ -376,40 +536,14 @@ var debugAppmap = false;
     };
 
 
-    // build a predicate function action
-    // selector is for resolveElement
-    // elemName is the name for logging purposes
-    // predicate_fn is a function that takes an element as an argument
-    // predicateDesc is a description of the function for logging
-    // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
-    //
-    // return an action that takes 'expected' (bool) as a parameter
-    appmap.actionBuilder.makeAction.verifyElement._predicate = function(selector, elemName, predicate_fn, predicateDesc, retryDelay) {
-        return function(parm) {
-            var elem = appmap.actionBuilder._getElement(selector, retryDelay);
-
-            // prevent any funny business with integer comparisons
-            if ((predicate_fn(elem) == true) != (parm.expected == true)) {
-                throw "Element " + elemName + " failed predicate " + predicateDesc + " (expected value: " + parm.expected + ")";
-            }
-        };
-    };
-
-    // build an element method action
-    // selector is for resolveElement
-    // elemName is the name for logging purposes
-    // work_fn is a function that takes an element as an argument plus
-    // workDesc is a description of the function for logging
-    // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
-    appmap.actionBuilder.makeAction.element._interaction = function(selector, elemName, work_fn, retryDelay) {
-        return function(parm) {
-            var elem = appmap.actionBuilder._getElement(selector, retryDelay);
-            work_fn(elem, parm);
-        };
-    };
-
-
-    // return an action that takes 'expected' (bool) as a parameter
+    /**
+     * build an action function that verifies element visibility
+     *
+     * @param selector reference to the element
+     * @param elemName the name of what we are looking for
+     * @param retryDelay optional integer how long to wait before a retry if selector fails
+     * @return a function that takes an object with fields {expected: boolean} as its argument
+     */
     appmap.actionBuilder.makeAction.verifyElement.visibility = function(selector, elemName, retryDelay) {
         return function(parm) {
             var msg = "";
@@ -424,48 +558,83 @@ var debugAppmap = false;
         };
     };
 
-    // return an action that takes 'expected' (bool) as a parameter
+    /**
+     * build an action function that verifies element editability
+     *
+     * @param selector reference to the element
+     * @param elemName the name of what we are looking for
+     * @param retryDelay optional integer how long to wait before a retry if selector fails
+     * @return a function that takes an object with fields {expected: boolean} as its argument
+     */
     appmap.actionBuilder.makeAction.verifyElement.editability = function(selector, elemName, retryDelay) {
         return appmap.actionBuilder.makeAction.verifyElement._predicate(selector, elemName, function (elem) {
             return elem.checkIsEditable();
         }, "isEditable", retryDelay);
     };
 
-    // return an action that takes 'expected' (bool) as a parameter
-    appmap.actionBuilder.makeAction.verifyElement.enabled = function(selector, elemName, retryDelay) {
-        return appmap.actionBuilder.makeAction.verifyElement._predicate(selector, elemName, function (elem) {
-            return elem.isEnabled();
-        }, "isEnabled", retryDelay);
-    };
-
-    // return an action that takes no parameters
+    /**
+     * build an action function that taps an element
+     *
+     * @param selector reference to the element
+     * @param elemName the name of what we are looking for
+     * @param retryDelay optional integer how long to wait before a retry if selector fails
+     * @return a no-argument function
+     */
     appmap.actionBuilder.makeAction.element.tap = function(selector, elemName, retryDelay) {
         return appmap.actionBuilder.makeAction.element._interaction(selector, elemName, function (elem, parm) {
             elem.tap()
         }, retryDelay);
     };
 
-    // return an action that takes no parameters
+    /**
+     * build an action function that vtaps an element
+     *
+     * @param selector reference to the element
+     * @param elemName the name of what we are looking for
+     * @param retryDelay optional integer how long to wait before a retry if selector fails
+     * @return a no-argument function
+     */
     appmap.actionBuilder.makeAction.element.vtap = function(selector, elemName, retryDelay) {
         return appmap.actionBuilder.makeAction.element._interaction(selector, elemName, function (elem, parm) {
             elem.vtap(4)
         }, retryDelay);
     };
 
+    /**
+     * build an action function that svtaps an element
+     *
+     * @param selector reference to the element
+     * @param elemName the name of what we are looking for
+     * @param retryDelay optional integer how long to wait before a retry if selector fails
+     * @return a no-argument function
+     */
     appmap.actionBuilder.makeAction.element.svtap = function(selector, elemName, retryDelay) {
         return appmap.actionBuilder.makeAction.element._interaction(selector, elemName, function (elem, parm) {
             elem.svtap(4)
         }, retryDelay);
     };
 
-    // return an action that takes "text" and "clear" (bool) as parameters
+    /**
+     * build an action function that types text in an element
+     *
+     * @param selector reference to the element
+     * @param elemName the name of what we are looking for
+     * @param retryDelay optional integer how long to wait before a retry if selector fails
+     * @return a function that takes an object with fields {text: string, clear: boolean} as its argument
+     */
     appmap.actionBuilder.makeAction.element.typeString = function(selector, elemName, retryDelay) {
         return appmap.actionBuilder.makeAction.element._interaction(selector, elemName, function (elem, parm) {
             elem.typeString(parm.text, parm.clear === true);
         }, retryDelay);
     };
 
-    // return an action that takes a selector as a parameter
+    /**
+     * build an action function that checks the existence of a child selector
+     *
+     * @param retryDelay optional integer how long to wait before a retry if selector fails
+     * @param parentSelector reference to the parent element
+     * @return a function that takes an object with fields {selector: selector} as its argument
+     */
     appmap.actionBuilder.makeAction.selector.verifyExists = function(retryDelay, parentSelector) {
         return function(parm) {
             var fullSelector;

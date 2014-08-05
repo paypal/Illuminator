@@ -1,68 +1,166 @@
+AppMap.js Reference
+===================
 
-Creating Screens and Actions
+
+Automation Methodology in Illuminator
+-------------------------------------
+
+There are 4 general classes of errors that Illuminator can highlight in your app.
+
+1. **Right element, wrong interaction** -- instances of screen elements failing to interact as expected.  For example:
+    * A button that can't be tapped because has failed to become enabled
+    * A textbox that isn't editable
+    * A static text with the wrong text
+2. **Right screen, wrong element(s)** -- instances of screen elements failing to match their expected structure.  For example:
+    * An incorrect number of cells in a table
+    * Duplicate instances of an element in the tree
+    * Elements being laid out in an incorrect order or with the wrong type
+3. **Right app, wrong screen** -- instances of app screens being visible at the wrong times. For example:
+    * Being unable to advance to the next screen
+    * Not seeing an error screen after supplying bad input data
+    * Seeing an initial setup screen more than once
+4. **Fatal errors** -- instances of problems that are outside the realm of the app.  For example:
+    * Segmentation faults
+    * Unexpected instances of the app going into the background
+
+With the exception of fatal errors (since they *always* indicate a problem), the AppMap is the repository of what constitutes the "right screen", "right element(s)", and "right interaction(s)" in your app. Essentially, it names all the actions that your app can perform and the screens (roughly, the states) in which those actions are valid.  These actions can be parameterized (e.g. for entering variable strings, waiting a variable length of time, defining expected values, etc).
+
+
+Building your apps in the AppMap
+--------------------------------
+
+The overview of building the AppMap is as follows:
+
+1. Define your **app**
+2. Define one or more **screen**s for your app
+3. Define what **target** devices will have this screen
+4. Define one or more **action**s will be available on this screen
+5. Define what **implementation** this action will use for each target device on which it is supported
+6. Define zero or more **parameter**s that control the action
+
+For an example of this, see the [Quick Start guide](README.md).
+
+Note 1:
+> All **target**s must be defined for a screen before the first **action** is defined.
+
+Note 2: 
+> The AppMap adds two special **action**s to each **screen** automatically: `verifyIsActive` and `verifyNotActive`.  These actions assert that the given screen is respectively active or not active  (based on the `isActiveFn` provided to `.onTarget`) -- throwing exceptions otherwise.  A `verifyIsActive` assertion is run implicitly before any action defined with `.withAction`, so it is most commonly used to verify that the last step of an automation test ended on the appropriate screen.
+
+Note 3:
+> All action functions in AppMap may take either *no* arguments, or *one* argument -- an associative array of named parameters.
+
+AppMap Method Reference
+-----------------------
+
+The AppMap is a singleton object.  Its methods -- most meant to be chained together -- are as follows:
+
+#### `.createApp(appName)`
+Create a new app with the given `appName`, and indicate that any following screen definitions should be associated with this new app.  Returns a reference to the AppMap.
+
+#### `.hasApp(appName)`
+Return true if `appName` is defined in the AppMap.
+
+#### `.augmentApp(appName)`
+Indicate that any following screen definitions should be associated with the app called `appName`.  Returns a reference to the AppMap.
+
+#### `.createOrAugmentApp(appName)`
+Create a new app with the given `appName` if it does not already exist, and indicate that any following screen definitions should be associated with this new app.  Returns a reference to the AppMap.
+
+#### `.withNewScreen(screenName)`
+Create a new screen with the given `screenName`, and indicate that any following target or action definitions should be associated with this new screen.  Returns a reference to the AppMap.
+
+#### `.hasScreen(appName, screenName)`
+Return true if `screenName` is defined in the AppMap for `appName`.
+
+#### `.augmentScreen(screenName)`
+Indicate that any following target or action definitions should be associated with the screen called `screenName`.  Returns a reference to the AppMap.
+
+#### `.withScreen(screenName)`
+Create a new screen with the given `screenName` if it does not already exist, and indicate that any following target or action definitions should be associated with this new screen.  Returns a reference to the AppMap.
+
+#### `.onTarget(targetName, isActiveFn)`
+Enable the screen on the target device called `targetName`, relying on the function defined by `isActiveFn` to return `true` when the screen is currently active.  Returns a reference to the AppMap.
+
+#### `.withNewAction(actionName, desc)`
+Create a new action with the given `actionName`, use the `desc`ription for logging purposes, and indicate that any following implementation or parameter definitions should be associated with this new action.  Returns a reference to the AppMap.
+
+#### `.hasAction(appName, screenName, actionName)`
+Return true if the action called `actionName` is defined in the AppMap for `appName` and the screen  `screenName`.
+
+#### `.augmentScreen(actionName)`
+Indicate that any following implementation or parameter definitions should be associated with the action called `actionName`.  Returns a reference to the AppMap.
+
+#### `.withAction(actionName)`
+Create a new action with the given `actionName` if it does not already exist, and indicate that any following implementation or parameter definitions should be associated with this new action.  Returns a reference to the AppMap.
+
+#### `.withImplementation(actionFunction, targetName)`
+Use the given function `actionFunction` as the implementation for the current action when the target device is `targetName`.  `targetName` is optional -- if omitted, the `actionFunction` will carry out the named action on *every* target device.  Returns a reference to the AppMap.
+
+Notes on `actionFunction`s
+
+* If a parameterized action function is desired for an implementation, that function may take a single argument -- an associative array containing the named parameters.  
+* It is acceptable to use a no-argument function for an implementation if no parameters are required.  
+* Any return value of action functions is ignored.
+
+One further note on implementation of actions:
+> Actions are not expected to have an implementation for every device type; it is entirely appropriate to leave some actions undefined for certain targets that do not in fact support those actions.  This will not result in test failure, because the [Automator](Automator.md) will not run test scenarios whose sequence of actions are unsupported on the target device.
+
+
+#### `.withParam(paramName, desc, required, useInSummary)`
+Define a parameter on the current action, named `paramName` and having the description `desc`.  If `required`, the Automator will throw an exception if this parameter is not provided to the action.  `useInSummary` controls whether the Automator should log the value of this parameter to the console (e.g. the user might prefer to set this to `false` in cases where the value of the parameter will be a large amount of text or a function definition).  `useInSummary` is optional and defaults to `false`.  Returns a reference to the AppMap.
+
+#### `.getApps()`
+Returns an array of the app names that are defined in the AppMap.
+
+#### `.getScreens(appName)`
+Returns an array of the screen names that are defined in the app `appName` in the AppMap.
+
+#### `.toMarkdown()`
+Returns a string containing a markdown description of all the apps, screens, targets, actions, implementations, and parameters in the AppMap.
+
+
+
+
+ActionBuilder Reference
 ----------------------------
 
-All screens and actions (including the devices on which these screens and actions exists) are defined using the `appmap`.  The files in which these definitions are laid out are in `apps/` (e.g. `apps/PayPalHere.js`).
+The implementation of every action is a function.  However, most such functions will involve simple interactions with screen elements -- saying whether they exist, tapping them, typing on them, etc.  AppMap provides the **ActionBuilder** to factor out the boilerplate code required for such functions.
 
-Creating an app in the AppMap is straightforward:
+The ActionBuilder is located at `appmap.actionBuilder.makeAction`.  It has the following submodules:
 
-```javascript
-#import "../common/AppMap.js";
+* `screenIsActive`: containing functions to build functions to indicate whether a screen is active
+* `.verifyElement`: containing functions to build actions for verifying element properties
+* `.element`: containing functions to build actions for interactions with elements
+* `.selector`: containing functions that perform actions in response to a selector
 
-appmap.createApp("PayPalHere");
-```
+The following functions are defined relative to the ActionBuilder.
 
-Defining a device screen is also straightforward:
+#### `.screenIsActive.byElement(screenName, elementName, selector, timeout)`
+Return a function (taking no arguments) that waits up to `timeout` seconds for `selector` to become valid.  If the `selector` becomes valid, the function returns true.  Otherwise, it logs a message about `screenName` not being active because the selector referring to `elementName` did not become valid, and returns false.
 
-```javascript
-appmap.augmentApp("PayPalHere").withScreen("login")
-    .onDevice("iPhone", loginScreenIsActive)
-    .onDevice("iPad", loginScreenIsActiveIpad)
+#### `.verifyElement.editability(selector, elementName, retryDelay)`
+Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the element returned by the `selector` called `elementName` matches the editability state `expected`.
 
-    .withAction("withCredentials", "Log in with given user/password")
-    .withImplementation(actionLoginWithCredentials, "iPhone")
-    .withImplementation(actionLoginWithCredentialsIpad, "iPad")
-    .withParam("username", "username to use for login", true, true)
-    .withParam("password", "password for login", true)
-    .withParam("clear", "Whether to clear the field first", false);
-```
+#### `.verifyElement.enabled(selector, elementName, retryDelay)`
+Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the element returned by the `selector` called `elementName` matches the `.enabled()` state `expected`.
 
-In this example, the `withScreen` method takes 1 argument: the screen name.
+#### `.verifyElement.existence(selector, elementName, retryDelay)`
+Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the `selector` called `elementName` produces an element (or not) according to `expected`.
 
-`onDevice` takes 2 arguments: device on which this function will be used, and the function (taking no arguments, returning boolean) that will specify at runtime whether the screen is currently active.
+#### `.verifyElement.visibility(selector, elementName, retryDelay)`
+Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the element returned by the `selector` called `elementName` matches the `.isVisible()` state `expected`.
 
-The `withAction` method takes 2 arguments: the action name, the text that will be displayed in the automator when the action is run.
+#### `.element.svtap(selector, elementName, retryDelay)`
+Return a function (taking no arguments) that `.svtap(4)`s the element returned by the `selector` called `elementName`.
 
-The `withImplementation` function takes the function (which can take one optional argument -- an associative array) that is the action itself, and the device that will use this implementation.  The device must match one of the defined `onDevice` devices.  If this argment is not provided, a default value will be used -- it will be considered to be part of every device.
+#### `.element.tap(selector, elementName, retryDelay)`
+Return a function (taking no arguments) that `.tap()`s the element returned by the `selector` called `elementName`.
 
-The `withParam` method specifies the parameters that may be given (as associative array keys) to the action.  The 4 arguments are the key name, the description of the parameter, whether the parameter is required, and whether the parameter's value should be included in the action description.
+#### `.element.typeString(selector, elementName, retryDelay)`
+Return a function (taking an object with fields {`text`: string, `clear`: boolean} as its only argument) that types the `text` into the element returned by the `selector` called `elementName` (`clear`ing it first if desired).
 
-Some actions are simple enough to be defined in-line, and some helper functions exist to define simple action functions (like navbar button presses).  All other actions should be defined in files located in `screens/` and that file listed in the imports section of `screens/AllScreens.js`.
+#### `.element.vtap(selector, elementName, retryDelay)`
+Return a function (taking no arguments) that `.vtap(4)`s the element returned by the `selector` called `elementName`.
 
-**Note:** All screens come with 2 automatically-defined actions: `verifyIsActive` and `verifyNotActive`.  These actions do nothing but run the screen's defined function for verifiying whether the screen is active, and throw an error if it does not meet the expectation of active or inactive.  `verifyIsActive` is run implicitly before any action defined with `.withAction`, so it is most commonly used to verify that the last step of an automation test ended on the appropriate screen.
-
-
-Common Actions
---------------
-
-Many actions are simple -- tapping a button, entering text, verifying that an element is visible, etc.  Rather than create action functions that wrap this behavior (and then refer to that function in the AppMap), the AppMap provides an `actionBuilder` module to allow creation of action functions in a more straightforward syntax.
-
-```javascript
- var ab = appmap.actionBuilder.makeAction;  // abbrieviate the module name for the action builder
-
- appmap.createOrAugmentApp("PayPalHere").withScreen("itemOptionValue")
-     .onDevice("iPhone", itemOptionValueScreenIsActive, "iPhone")
-
-     .withAction("verifyDeleteButton", "Verify that the delete button is visible or not visible")
-     .withImplementation(ab.verifyElement.visibility({name: "Delete", UIAtype: "UIAButton"}, "Delete"))
-     .withParam("expected", "The expected visibility state", true, true)
-
-     .withAction("enterName", "Enter an option value name")
-     .withImplementation(ab.element.typeString({name: "Item Option Name"}, "Item option name"))
-     .withParam("text", "The text to enter.", true, true)
-     .withParam("clear", "Whether to clear the textbox first.", false, true)
-
-     .withAction("done", "Save item option value entry and go back to previous screen")
-     .withImplementation(ab.element.tap({name: "Done", UIAType: "UIAButton"}, "Done button"))
- ```
-
+#### `.selector.verifyExists(retryDelay, parentSelector)`
+Return a function (taking an object with fields {`selector`: selector} as its only argument) that asserts the existence of the element returned by the `selector` from the element returned by the `parentSelector`.
