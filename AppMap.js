@@ -318,6 +318,25 @@ var debugAppmap = false;
     appmap.actionBuilder.makeAction.selector = {};
     appmap.actionBuilder.makeAction.screenIsActive = {};
 
+
+    // resolve an element
+    appmap.actionBuilder._getElement = function(selector, retryDelay) {
+        try {
+            return target().getOneChildElement(selector);
+        } catch (e) {
+            // it's possible that the selector returned multiple things, so re-raise that
+            if ("function" != typeof (selector)) {
+                var elems = target().getChildElements(selector);
+                if (Object.keys(getUniqueElements(elems)).length > 1) throw e;
+            }
+
+            // one consequence-free failure allowed if retryDelay was specified
+            if (retryDelay === undefined) throw e;
+            delay(retryDelay);
+            return target().getOneChildElement(selector);
+        }
+    };
+
     // create a screenIsActive function
     appmap.actionBuilder.makeAction.screenIsActive.byElement = function (screenName, elementName, selector, timeout) {
         switch (typeof timeout) {
@@ -336,27 +355,6 @@ var debugAppmap = false;
         };
     };
 
-    // resolve an element
-    appmap.actionBuilder.getElement = function(selector, retryDelay) {
-        var err;
-        try {
-            return target().getOneChildElement(selector);
-        } catch (e) {
-            err = e;
-            // it's possible that the selector returned multiple things, so re-raise that
-            if ("function" != typeof (selector)) {
-                var elems = target().getChildElements(selector);
-                if (Object.keys(getUniqueElements(elems)).length > 1) throw e;
-            }
-
-            // one consequence-free failure allowed if retryDelay was specified
-            if (retryDelay === undefined) throw err;
-            delay(retryDelay);
-            return target().getOneChildElement(selector);
-        }
-    };
-
-
     // build an existence function action
     // selector is for resolveElement
     // elemName is the name for logging purposes
@@ -367,7 +365,7 @@ var debugAppmap = false;
         return function(parm) {
             var msg = "";
             try {
-                var elem = appmap.actionBuilder.getElement(selector, retryDelay);
+                var elem = appmap.actionBuilder._getElement(selector, retryDelay);
                 if (parm.expected === true) return;
             } catch (e) {
                 msg = ": " + e.toString();
@@ -388,7 +386,7 @@ var debugAppmap = false;
     // return an action that takes 'expected' (bool) as a parameter
     appmap.actionBuilder.makeAction.verifyElement.predicate = function(selector, elemName, predicate_fn, predicateDesc, retryDelay) {
         return function(parm) {
-            var elem = appmap.actionBuilder.getElement(selector, retryDelay);
+            var elem = appmap.actionBuilder._getElement(selector, retryDelay);
 
             // prevent any funny business with integer comparisons
             if ((predicate_fn(elem) == true) != (parm.expected == true)) {
@@ -405,7 +403,7 @@ var debugAppmap = false;
     // retryDelay is an optional delay to pause and retry if the selector comes up empty handed
     appmap.actionBuilder.makeAction.element.act = function(selector, elemName, work_fn, retryDelay) {
         return function(parm) {
-            var elem = appmap.actionBuilder.getElement(selector, retryDelay);
+            var elem = appmap.actionBuilder._getElement(selector, retryDelay);
             work_fn(elem, parm);
         };
     };
@@ -416,7 +414,7 @@ var debugAppmap = false;
         return function(parm) {
             var msg = "";
             try {
-                var elem = appmap.actionBuilder.getElement(selector, retryDelay);
+                var elem = appmap.actionBuilder._getElement(selector, retryDelay);
                 if ((elem && elem.isVisible()) == parm.expected) return;
             } catch (e) {
                 msg = ": " + e.toString();
