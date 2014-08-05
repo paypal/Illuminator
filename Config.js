@@ -40,7 +40,7 @@
         "implementation": true,
         "automatorDesiredSimDevice": true,
         "automatorDesiredSimVersion": true,
-        "hardwareID": true,
+        "hardwareID": false,
         "automatorTagsAny": false,
         "automatorTagsAll": false,
         "automatorTagsNone": false,
@@ -74,7 +74,7 @@
     try {
         config.setCustomConfig(jsonConfig.customConfig);
     } catch (e) {
-        UIALogger.logMessage("Didn't read (optional) customConfig from generated config");
+        UIALogger.logMessage("(optional) customConfig was not supplied in generated config; skipping.")
     }
 
 
