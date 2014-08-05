@@ -3,7 +3,7 @@
 Architecture of an Automation Test Sequence
 -------------------------------------------
 
-The central component of integration testing is the `automator`.  `automator` contains a set of test scenario, each scenario tagged with some number of text tags (*e.g.* `["nohardware", "invoice"]`).
+The central component of integration testing is the `automator`.  `automator` contains a set of test scenario, each scenario tagged with some number of text tags (*e.g.* `["login", "mainsettings"]`).
 
 Each test scenario is made of a sequence of steps, called actions.  Actions describe one possible interaction that a user may have with a given screen in the app. For example, the `orderEntry` screen has automation actions for keying in an amount to charge, and selecting a payment type.
 
