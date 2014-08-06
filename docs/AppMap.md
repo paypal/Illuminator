@@ -31,7 +31,7 @@ There are 4 general classes of errors that Illuminator can highlight in your app
 Building your apps in the AppMap
 --------------------------------
 
-The overview of building the AppMap is as follows:
+The overview of building apps in the AppMap is as follows:
 
 1. Define your **app**
 2. Define one or more **screen**s for your app
@@ -54,7 +54,7 @@ Note 3:
 AppMap Method Reference
 -----------------------
 
-The AppMap is a singleton object.  Its methods -- most meant to be chained together -- are as follows:
+The AppMap is a singleton object called `appmap`.  Its methods -- most meant to be chained together -- are as follows:
 
 #### `.createApp(appName)`
 Create a new app with the given `appName`, and indicate that any following screen definitions should be associated with this new app.  Returns a reference to the AppMap.
