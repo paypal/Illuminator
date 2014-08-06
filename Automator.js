@@ -69,29 +69,13 @@ function fail(message) {
     };
 
 
-    // to allow deferred failures
-    automator._deferredFailures = [];
-
-    automator.deferFailure = function(err) {
-        UIALogger.logDebug("Deferring an error: " + err);
-        automator.logScreenInfo();
-
-        if (automator._state.internal["currentStepName"] && automator._state.internal["currentStepNumber"]) {
-            var msg = "Step " + automator._state.internal["currentStepNumber"];
-            msg += " (" + automator._state.internal["currentStepName"] + "): ";
-            automator._deferredFailures.push(msg + err);
-        } else {
-            automator._deferredFailures.push("<Undefined step>: " + err);
-        }
-    }
-
     // functions to handle automator state -- ways for scenario steps to register side effects
     automator._state = {};
     automator._state.external = {};
 
-    automator.resetState = function() {
+    automator._resetState = function() {
         automator._state.external = {};
-        automator._state.internal = {};
+        automator._state.internal = {"deferredFailures": []};
     };
 
     automator.setState = function(key, value) {
@@ -108,6 +92,20 @@ function fail(message) {
         UIALogger.logDebug("Automator state '" + key + "' not found, returning default");
         return defaultValue;
     };
+
+    automator.deferFailure = function(err) {
+        UIALogger.logDebug("Deferring an error: " + err);
+        automator.logScreenInfo();
+
+        if (automator._state.internal["currentStepName"] && automator._state.internal["currentStepNumber"]) {
+            var msg = "Step " + automator._state.internal["currentStepNumber"];
+            msg += " (" + automator._state.internal["currentStepName"] + "): ";
+            automator._state.internal.deferredFailures.push(msg + err);
+        } else {
+            automator._state.internal.deferredFailures.push("<Undefined step>: " + err);
+        }
+    }
+
 
 
     // create a blank scenario with:
@@ -513,7 +511,6 @@ function fail(message) {
      */
     automator.runScenario = function(scenario, message) {
         automator.checkInit();
-        automator._deferredFailures = []; // reset any deferred errors
 
         var testname = [scenario.title, " [", scenario.tags.join(", "), "]"].join("");
         UIALogger.logDebug("###############################################################");
@@ -532,7 +529,7 @@ function fail(message) {
         // initialize the scenario
         UIALogger.logMessage("STEP 0: Reset automator for new scenario");
         try {
-            automator.resetState();
+            automator._resetState();
             automator.callback["prescenario"]();
         } catch (e) {
             automator.logScreenInfo();
@@ -603,14 +600,14 @@ function fail(message) {
             }
 
             // check for any deferred errors
-            if (0 == automator._deferredFailures.length) {
+            if (0 == automator._state.internal.deferredFailures.length) {
                 UIALogger.logPass(testname);
             } else {
-                for (var i = 0; i < automator._deferredFailures.length; ++i) {
-                    UIALogger.logMessage("Deferred Failure " + (i + 1).toString() + ": " + automator._deferredFailures[i]);
+                for (var i = 0; i < automator._state.internal.deferredFailures.length; ++i) {
+                    UIALogger.logMessage("Deferred Failure " + (i + 1).toString() + ": " + automator._state.internal.deferredFailures[i]);
                 }
                 UIALogger.logFail(["The test completed all its steps, but",
-                                   automator._deferredFailures.length.toString(),
+                                   automator._state.internal.deferredFailures.length.toString(),
                                    "failures were deferred"].join(" "));
             }
 
@@ -626,6 +623,16 @@ function fail(message) {
             automator.logScreenInfo();
             UIATarget.localTarget().captureScreenWithName(step.name);
             UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+            // check for any deferred errors
+            if (0 < automator._state.internal.deferredFailures.length) {
+                for (var i = 0; i < automator._state.internal.deferredFailures.length; ++i) {
+                    UIALogger.logMessage("Deferred Failure " + (i + 1).toString() + ": " + automator._state.internal.deferredFailures[i]);
+                }
+
+                longmsg += [" ::", automator._state.internal.deferredFailures.length.toString(),
+                            "other failures had been deferred"].join(" ");
+            }
             UIALogger.logDebug(longmsg);
             UIALogger.logFail(longmsg);
        }
