@@ -4,18 +4,18 @@ ILLUMINATOR Quick Start Guide
 This is the minimal crash course you need to get started writing and executing Illuminator test scenarios.
 
 ### The Basics
-* The **[AppMap](docs/AppMap.md)** defines how an iOS app is automated
-    * An **app** has **screen**s that are available on certain **target**s.
-    * A **screen** has a function to verify whether it is active, and **action**s.
-    * An **action** has a set of **parameter**s and a mapping of **target**s to **implementation**s.
-* The **[Automator](docs/Automator.md)** defines **test scenario**s comprised of a set of **action**s
-    * A scenario has a **name**, some **tag**s, and a series of **step**s
+* The **[AppMap](docs/AppMap.md)** defines the functionality of an iOS App
+    * An **app** has **screen**s that are available on certain **target**s
+    * A **screen** has a function to verify whether it is active, and **action**s
+    * An **action** has a set of **parameter**s and a mapping of **target**s to **implementation**s
+* The **[Automator](docs/Automator.md)** defines **test scenario**s
+    * A test scenario has a **name**, some **tag**s, and a series of **step**s
     * A step is an **action**, possibly with some **parameter**s
 * The [command line scripts](docs/Commandline.md) provide the entry point to testing
 	* Building the executable
 	* Loading the binary into the target execution environment
-	* Running the desired set of **test scenario**s by **name** or by **tag**.
-* The **[Bridge](docs/Bridge.md)** enables RPC functionality between the AppMap, Automator, and your app.
+	* Running the desired set of **test scenario**s, by **name** or by **tag**, for a desired **implementation**
+* The **[Bridge](docs/Bridge.md)** enables RPC functionality between the AppMap, Automator, and your app
 
 
 Minimal Example
@@ -24,7 +24,7 @@ Minimal Example
 In this example, we assume that an app has only two screens: a login screen (username field, password field, and login button), and a welcome screen (with static text "Welcome *username*" and a logout button).
 
 ```javascript
-#import "path/to/Illuminator.js";
+/* Example.js */
 
 var ab = appmap.actionBuilder.makeAction;  // shortcut name to action builder -- it builds action functions
 
@@ -40,7 +40,7 @@ function actionVerifyUsername(param) {
 
 // describe the login screen and possible interactions
 appmap.createOrAugmentApp("MyTinyApp").withScreen("login")
-    .onTarget("iPhone", ab.screenIsActive.byElement("login", "login button",  // the screen and element
+    .onTarget("MyIphone", ab.screenIsActive.byElement("login", "login button",  // the screen and element
                                                     {name: "Log In", UIAType: "UIAButton"},  // selector
                                                     10))  // timeout for screen to become active
 
@@ -55,7 +55,7 @@ appmap.createOrAugmentApp("MyTinyApp").withScreen("login")
 
 // describe the welcome screen and possible interactions
 appmap.createOrAugmentApp("MyTinyApp").withScreen("welcome")
-    .onTarget("iPhone", ab.screenIsActive.byElement("welcome", "logout button",
+    .onTarget("MyIphone", ab.screenIsActive.byElement("welcome", "logout button",
                                                     {name: "Log Out", UIAType: "UIAButton"},
                                                     10))
 
@@ -85,14 +85,9 @@ automator.createScenario("Bad password doesn't get to welcome screen", ["myTestT
 
 A script is available to run integration test files from the command line: `automationTests.rb`.
 
-Example usage from of sample app project directory:
+Example usage of the `Example.js` file above:
 ```
-$ ruby ../../scripts/automationTests.rb -x /Applications/Xcode.app -p /path/to/Example.js -a MyTinyApp -s MyTinyApp -i iPhone -t myTestTag
-```
-
-To see a list of defined tags, run the command with no arguments (or `--skip-build` to save time if you've already compiled):
-```
-$ ruby scripts/automationTests.rb
+$ ruby ./scripts/automationTests.rb -x /Applications/Xcode.app -p /path/to/Example.js -a MyTinyApp -s MyTinyApp -i MyIphone -t myTestTag
 ```
 
 

@@ -1,6 +1,8 @@
 AppMap.js Reference
 ===================
 
+To explain the AppMap, it's necessary to understand Illuminator's automation methodology.
+
 
 Automation Methodology in Illuminator
 -------------------------------------
@@ -23,13 +25,13 @@ There are 4 general classes of errors that Illuminator can highlight in your app
     * Segmentation faults
     * Unexpected instances of the app going into the background
 
-With the exception of fatal errors (since they *always* indicate a problem), the AppMap is the repository of what constitutes the "right screen", "right element(s)", and "right interaction(s)" in your app. Essentially, it names all the actions that your app can perform and the screens (roughly, the states) in which those actions are valid.  These actions can be parameterized (e.g. for entering variable strings, waiting a variable length of time, defining expected values, etc).
+**The AppMap is the repository of what constitutes the "right screen", "right element(s)", and "right interaction(s)" in your app** (not including fatal errors, since they *always* indicate a problem). Essentially, the AppMap names all the actions that your app can perform, and the screens (corresponding roughly to the states) in which those actions are valid.
 
 
 Building your apps in the AppMap
 --------------------------------
 
-The overview of building the AppMap is as follows:
+The overview of building apps in the AppMap is as follows:
 
 1. Define your **app**
 2. Define one or more **screen**s for your app
@@ -47,12 +49,12 @@ Note 2:
 > The AppMap adds two special **action**s to each **screen** automatically: `verifyIsActive` and `verifyNotActive`.  These actions assert that the given screen is respectively active or not active  (based on the `isActiveFn` provided to `.onTarget`) -- throwing exceptions otherwise.  A `verifyIsActive` assertion is run implicitly before any action defined with `.withAction`, so it is most commonly used to verify that the last step of an automation test ended on the appropriate screen.
 
 Note 3:
-> All action functions in AppMap may take either *no* arguments, or *one* argument -- an associative array of named parameters.
+> Actions can be parameterized (e.g. for entering variable strings, waiting a variable length of time, defining expected values, etc).  All functions that implement AppMap actions must take either *no* arguments, or *one* argument -- an associative array of named parameters.
 
 AppMap Method Reference
 -----------------------
 
-The AppMap is a singleton object.  Its methods -- most meant to be chained together -- are as follows:
+The AppMap is a singleton object called `appmap`.  Its methods -- most meant to be chained together -- are as follows:
 
 #### `.createApp(appName)`
 Create a new app with the given `appName`, and indicate that any following screen definitions should be associated with this new app.  Returns a reference to the AppMap.
