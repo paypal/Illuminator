@@ -114,7 +114,7 @@ function fail(message) {
     //  example: tags = ['alpha', 'beta', 'fake', 'nohardware']
     //    the test will run if ['alpha', 'gamma'] are specified as tagsAny
     //     but it will not run if ['fake', 'YES hardware'] are specified as tagsAll
-    automator.createScenario = function(scenarioName, tags, attributes) {
+    automator.createScenario = function(scenarioName, tags) {
         if (automator.allScenarioNames[scenarioName]) throw "Can't createScenario '" + scenarioName + "', because that name already exists";
         automator.allScenarioNames[scenarioName] = true;
 
@@ -123,12 +123,6 @@ function fail(message) {
             steps: []
         };
         if (tags === undefined) tags = ["_untagged"]; // always have a tag
-        if (attributes !== undefined) {
-            UIALogger.logMessage("Scenario attributes are DEPRECATED -- just combine them with the tags.  in scenario: " + scenarioName);
-            for (var i = 0; i < attributes.length; ++i) {
-                tags.push(attributes[i]);
-            }
-        }
 
         if (debugAutomator) {
             UIALogger.logDebug(["Automator creating scenario '", scenarioName, "'",
