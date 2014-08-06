@@ -144,6 +144,76 @@ function fail(message) {
     };
 
 
+    automator._assertAllRequiredParameters = function (screenAction, suppliedParameters) {
+        for (var ap in screenAction.params) {
+            if (screenAction.params[ap].required && (undefined === suppliedParameters || undefined === suppliedParameters[ap])) {
+                failmsg = ["In scenario '",
+                           automator.lastScenario.title,
+                           "' in step ", automator.lastScenario.steps.length + 1,
+                           " (", screenAction.name, ") ",
+                           "missing required parameter '",
+                           ap,
+                           "'; ",
+                           automator.paramsToString(screenAction.params)
+                          ].join("");
+                fail(failmsg);
+            }
+        }
+    };
+
+
+    automator._assertAllKnownParameters = function (screenAction, suppliedParameters) {
+        for (var p in suppliedParameters) {
+            if (undefined === screenAction.params[p]) {
+                failmsg = ["In scenario '",
+                           automator.lastScenario.title,
+                           "' in step ", automator.lastScenario.steps.length + 1,
+                           " (", screenAction.name, ") ",
+                           "received undefined parameter '",
+                           p,
+                           "'; ",
+                           automator.paramsToString(screenAction.params)
+                          ].join("");
+                fail(failmsg);
+            }
+        }
+    };
+
+
+    automator.withStep = function(screenAction, desiredParameters) {
+        // generate a helpful error message if the screen action isn't defined
+        if (undefined === screenAction || typeof screenAction === 'string') {
+            var failmsg = ["withStep received an undefined screen action in scenario '",
+                           automator.lastScenario.title,
+                           "'"
+                           ];
+            var slength = automator.lastScenario.steps.length;
+            if (0 < slength) {
+                var goodAction = automator.lastScenario.steps[slength - 1].action;
+                failmsg.push(" after step " + goodAction.screenName + "." + goodAction.name);
+            }
+            fail(failmsg.join(""));
+        }
+
+        // debug if necessary
+        if (debugAutomator) {
+            UIALogger.logDebug("screenAction is " + JSON.stringify(screenAction));
+            UIALogger.logDebug("screenAction.params is " + JSON.stringify(screenAction.params));
+        }
+
+        // create a step and check parameters
+        var step = {action: screenAction};
+        automator._assertAllRequiredParameters(screenAction, desiredParameters);
+        if (desiredParameters !== undefined) {
+            automator._assertAllKnownParameters(screenAction, desiredParameters);
+            step.parameters = desiredParameters;
+        }
+
+        // add step to scenario
+        automator.lastScenario.steps.push(step);
+        return this;
+    };
+
     //whether a given scenario is supported by the desired implementation
     automator.deviceSupportsScenario = function(scenario) {
         // if any actions are neither defined for the current device nor "default"
@@ -216,73 +286,6 @@ function fail(message) {
                 "]"].join("");
     };
 
-
-    // add a step to the most recently created scenario
-    automator.withStep = function(screenaction, testparameters) {
-        // generate a helpful error message if the screen action isn't defined
-        if (undefined === screenaction || typeof screenaction === 'string') {
-            var failmsg = ["withStep received an undefined screen action in scenario '",
-                           automator.lastScenario.title,
-                           "'"
-                           ];
-            var slength = automator.lastScenario.steps.length;
-            if (0 < slength) {
-                var goodAction = automator.lastScenario.steps[slength - 1].action;
-                failmsg.push(" after step " + goodAction.screenName + "." + goodAction.name);
-            }
-            fail(failmsg.join(""));
-        }
-
-        if (debugAutomator) {
-            UIALogger.logDebug("screenaction is " + JSON.stringify(screenaction));
-            UIALogger.logDebug("screenaction.params is " + JSON.stringify(screenaction.params));
-        }
-
-        // check that parameters required by the screen action are present
-        for (var ap in screenaction.params) {
-            if (screenaction.params[ap].required && (undefined === testparameters || undefined === testparameters[ap])) {
-                failmsg = ["In scenario '",
-                           automator.lastScenario.title,
-                           "' in step ", automator.lastScenario.steps.length + 1,
-                           " (", screenaction.name, ") ",
-                           "missing required parameter '",
-                           ap,
-                           "'; ",
-                           automator.paramsToString(screenaction.params)
-                           ].join("");
-                fail(failmsg);
-            }
-        }
-
-        var step = {
-            action: screenaction
-        };
-
-        // check that all params provided by the test are known by the action
-        if (testparameters !== undefined) {
-
-            for (var p in testparameters) {
-                if (undefined === screenaction.params[p]) {
-                    failmsg = ["In scenario '",
-                               automator.lastScenario.title,
-                               "' in step ", automator.lastScenario.steps.length + 1,
-                               " (", screenaction.name, ") ",
-                               "received undefined parameter '",
-                               p,
-                               "'; ",
-                               automator.paramsToString(screenaction.params)
-                               ].join("");
-                    fail(failmsg);
-                }
-            }
-
-            step.parameters = testparameters;
-        }
-
-        automator.lastScenario.steps.push(step);
-
-        return this;
-    };
 
 
     // log some information about the automation environment
