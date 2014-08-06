@@ -36,31 +36,42 @@ function fail(message) {
         automator = root.automator = {};
     }
 
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Callbacks for test initialization - customizing Illuminator's behavior
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
+    // table of callbacks that are used by automator.  sensible defaults.
     automator.callback = {
-        init: function() { UIALogger.logDebug("Warning: running default automator 'init' callback"); },
-        prescenario: function() { UIALogger.logDebug("Warning: running default automator 'prescenario' callback"); }
+        init: function() { UIALogger.logDebug("Running default automator 'init' callback"); },
+        prescenario: function() { UIALogger.logDebug("Running default automator 'prescenario' callback"); }
     };
 
-    automator.didInit = false;
-
-    automator.scenarios = {
-        _untagged: []
-    }; // each of scenarios[tag] is an array of scenarios
-    automator.allScenarios = []; // flat list of scenarios
-    automator.lastScenario = null; // state variable for building scenarios of steps
-    automator.allScenarioNames = {}; // for ensuring name uniqueness
-
-    automator.lastRunScenario = null;
-
-    // a few functions to handle callbacks (automator customization)
+    /**
+     * set the callback for Automator initialization, to be called only once -- before any scenarios execute
+     *
+     * @param fn the callback function, taking no arguments and whose return value is ignored
+     */
     automator.setCallbackInit = function(fn) {
         automator.callback["init"] = fn;
     };
 
+    /**
+     * set the callback function for pre-scenario initialization -- called before each scenario run
+     *
+     * @param fn the callback function, taking no arguments and whose return value is ignored
+     */
     automator.setCallbackPreScenario = function(fn) {
         automator.callback["prescenario"] = fn;
     };
 
+
+    automator.didInit = false;
+    /**
+     * call the initial callback if it has not already done so
+     */
     automator.checkInit = function() {
         if (!automator.didInit) {
             automator.didInit = true;
@@ -69,23 +80,48 @@ function fail(message) {
     };
 
 
-    // functions to handle automator state -- ways for scenario steps to register side effects
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Functions to handle automator state -- ways for scenario steps to register side effects
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////
     automator._state = {};
     automator._state.external = {};
 
+    /**
+     * Reset the automator state for a new test scenario to run
+     */
     automator._resetState = function() {
         automator._state.external = {};
         automator._state.internal = {"deferredFailures": []};
     };
 
+    /**
+     * Store a named state in automator
+     *
+     * @param key the name of the state
+     * @param value the value of the state
+     */
     automator.setState = function(key, value) {
         automator._state.external[key] = value;
     };
 
+    /**
+     * Predicate, whether there is a stored state for a key
+     *
+     * @param key the key to check
+     * @return bool whether there is a state with that key
+     */
     automator.hasState = function(key) {
         return undefined !== automator._state.external[key];
     };
 
+    /**
+     * Get the state with the given name.  If it doesn't exist, return the default value
+     *
+     * @param key the name of the state
+     * @param defaultValue the value to return if key is undefined
+     */
     automator.getState = function(key, defaultValue) {
         if (automator.hasState(key)) return automator._state.external[key];
 
@@ -93,6 +129,11 @@ function fail(message) {
         return defaultValue;
     };
 
+    /**
+     * Defer a failure until the end of the test scenario
+     *
+     * @param err the error object
+     */
     automator.deferFailure = function(err) {
         UIALogger.logDebug("Deferring an error: " + err);
         automator.logScreenInfo();
@@ -104,16 +145,26 @@ function fail(message) {
         } else {
             automator._state.internal.deferredFailures.push("<Undefined step>: " + err);
         }
-    }
+    };
 
 
-
-    // create a blank scenario with:
-    //  tags -- an array of labels denoting named groups for scenarios to be run (OR'd)
+    ////////////////////////////////////////////////////////////////////////////////////////////
     //
-    //  example: tags = ['alpha', 'beta', 'fake', 'nohardware']
-    //    the test will run if ['alpha', 'gamma'] are specified as tagsAny
-    //     but it will not run if ['fake', 'YES hardware'] are specified as tagsAll
+    // Functions to build test scenarios
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
+    automator.allScenarios = []; // flat list of scenarios
+    automator.lastScenario = null; // state variable for building scenarios of steps
+    automator.allScenarioNames = {}; // for ensuring name uniqueness
+
+    /**
+     * Create an empty scenario with the given name and tags
+     *
+     * @param scenarioName the name for the scenario - must be unique
+     * @param tags array of tags for the scenario
+     * @return this
+     */
     automator.createScenario = function(scenarioName, tags) {
         if (tags === undefined) tags = ["_untagged"]; // always have a tag
 
@@ -144,6 +195,12 @@ function fail(message) {
     };
 
 
+    /**
+     * Throw an exception if any parameters required for the screen action are not supplied
+     *
+     * @param screenAction an AppMap screen action
+     * @param suppliedParameters associative array of parameters
+     */
     automator._assertAllRequiredParameters = function (screenAction, suppliedParameters) {
         for (var ap in screenAction.params) {
             if (screenAction.params[ap].required && (undefined === suppliedParameters || undefined === suppliedParameters[ap])) {
@@ -162,6 +219,12 @@ function fail(message) {
     };
 
 
+    /**
+     * Throw an exception if any parameters supplied to the screen action are unrecognized
+     *
+     * @param screenAction an AppMap screen action
+     * @param suppliedParameters associative array of parameters
+     */
     automator._assertAllKnownParameters = function (screenAction, suppliedParameters) {
         for (var p in suppliedParameters) {
             if (undefined === screenAction.params[p]) {
@@ -180,6 +243,13 @@ function fail(message) {
     };
 
 
+    /**
+     * Add a step to the most recently created scenario
+     *
+     * @param screenAction an AppMap screen action
+     * @param desiredParameters associative array of parameters
+     * @return this
+     */
     automator.withStep = function(screenAction, desiredParameters) {
         // generate a helpful error message if the screen action isn't defined
         if (undefined === screenAction || typeof screenAction === 'string') {
@@ -214,190 +284,17 @@ function fail(message) {
         return this;
     };
 
-    //whether a given scenario is supported by the desired implementation
-    automator.deviceSupportsScenario = function(scenario) {
-        // if any actions are neither defined for the current device nor "default"
-        for (var i = 0; i < scenario.steps.length; ++i) {
-            var s = scenario.steps[i];
-            // device not defined
-            if (undefined === s.action.isCorrectScreen[config.implementation]) {
-                UIALogger.logDebug(["Skipping scenario '", scenario.title,
-                                    "' because screen '", s.action.screenName, "'",
-                                    " doesn't have a screenIsActive function for ", config.implementation].join(""));
-                return false;
-            }
-
-            // action not defined for device
-            if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) {
-                UIALogger.logDebug(["Skipping scenario '", scenario.title, "' because action '",
-                                    s.action.screenName, ".", s.action.name,
-                                    "' isn't suppored on ", config.implementation].join(""));
-                return false;
-            }
-        }
-
-        return true;
-    };
-
-    // whether a given scenario is a match for the given tags
-    automator.scenarioMatchesCriteria = function(scenario, tagsAny, tagsAll, tagsNone) {
-        // if any tagsAll are missing from scenario, fail
-        for (var i = 0; i < tagsAll.length; ++i) {
-            var t = tagsAll[i];
-            if (!(t in scenario.tags_obj)) return false;
-        }
-
-        // if any tagsNone are present in scenario, fail
-        for (var i = 0; i < tagsNone.length; ++i) {
-            var t = tagsNone[i];
-            if (t in scenario.tags_obj) return false;
-        }
-
-        // if no tagsAny specified, special case for ALL tags
-        if (0 == tagsAny.length) return true;
-
-        // if any tagsAny are present in scenario, pass
-        for (var i = 0; i < tagsAny.length; ++i) {
-            var t = tagsAny[i];
-            if (t in scenario.tags_obj) return true;
-        }
-
-        return false; // no tags matched
-    };
 
 
 
-    // generate a readable parameter list
-    automator.paramsToString = function(actionparams) {
-        var param_list = [];
-        for (var p in actionparams) {
-            var pp = actionparams[p];
-            param_list.push([p,
-                             " (",
-                             pp.required ? "required" : "optional",
-                             ": ",
-                             pp.description,
-                             ")"
-                             ].join(""));
-        }
-
-        return ["parameters are: [",
-                param_list.join(", "),
-                "]"].join("");
-    };
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Functions to run test scenarios
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-    // log some information about the automation environment
-    automator.logInfo = function () {
-        UIALogger.logMessage("Device info: " +
-                             "name='" + target().name() + "', " +
-                             "model='" + target().model() + "', " +
-                             "systemName='" + target().systemName() + "', " +
-                             "systemVersion='" + target().systemVersion() + "', ");
-
-        var tags = {};
-        for (var s = 0; s < automator.allScenarios.length; ++s) {
-            var scenario = automator.allScenarios[s];
-
-            // get all tags
-            for (var k in scenario.tags_obj) {
-                tags[k] = 1;
-            }
-        }
-
-        var tagsArr = [];
-        for (var k in tags) {
-            tagsArr.push(k);
-        }
-
-        UIALogger.logMessage("Defined tags: '" + tagsArr.join("', '") + "'");
-
-    };
-
-
-    /**
-     * Log information about the currently-shown iOS screen
-     *
-     */
-    automator.logScreenInfo = function () {
-        //UIATarget.localTarget().logElementTree(); // ugly
-        UIALogger.logDebug(target().elementReferenceDump("target()"));
-        UIALogger.logDebug(target().elementReferenceDump("target()", true));
-    };
-
-
-    /**
-     * Render the automator scenarios (and their steps, and parameters) to markdown
-     *
-     * @return string containing markdown
-     */
-    automator.toMarkdown = function () {
-        var ret = ["The following scenarios are defined in the Illuminator Automator:"];
-
-        var title = function (rank, text) {
-            var total = 4;
-            for (var i = 0; i <= (total - rank); ++i) {
-                ret.push("");
-            }
-
-            switch (rank) {
-            case 1:
-                ret.push(text);
-                ret.push(Array(Math.max(10, text.length) + 1).join("="));
-                break;
-            case 2:
-                ret.push(text);
-                ret.push(Array(Math.max(10, text.length) + 1).join("-"));
-                break;
-            default:
-                ret.push(Array(rank + 1).join("#") + " " + text);
-            }
-        };
-
-        title(1, "Automator Scenarios");
-        // iterate over scenarios
-        for (var i = 0; i < automator.allScenarios.length; ++i) {
-            var scenario = automator.allScenarios[i];
-            title(2, scenario.title);
-            ret.push("Tags: `" + Object.keys(scenario.tags_obj).join("`, `") + "`");
-            ret.push("");
-
-            // iterate over steps (actions)
-            for (var j = 0; j < scenario.steps.length; ++j) {
-                var step = scenario.steps[j];
-                ret.push((j + 1).toString() + ". **" + step.action.screenName + "." + step.action.name + "**: " + step.action.description);
-
-                // iterate over parameters in the action
-                for (var k in step.parameters) {
-                    var val = step.parameters[k];
-                    var v;
-
-                    // formatting based on datatype of parameter
-                    switch ((typeof val).toString()) {
-                    case "number":
-                    case "boolean":
-                        v = val; // no change
-                        break;
-                    case "function":
-                    case "string":
-                        v = "`" + val + "`"; // backtick-quote
-                        break;
-                    default:
-                        v = "`" + JSON.stringify(val) + "`"; // stringify and annotate with type
-                        if (val instanceof Array) {
-                            v += " (Array)";
-                        } else {
-                            v += " (" + (typeof val) + ")";
-                        }
-                    }
-                    ret.push("    * `" + k + "` = " + v);
-                }
-            }
-        }
-        return ret.join("\n");
-    };
-
+    automator.lastRunScenario = null;
 
     /**
      * ENTRY POINT: Run tagged scenarios
@@ -639,6 +536,72 @@ function fail(message) {
 
 
     /**
+     * whether a given scenario is supported by the desired target implementation
+     *
+     * @param scenario an automator scenario
+     * @return bool
+     */
+    automator.deviceSupportsScenario = function(scenario) {
+        // if any actions are neither defined for the current device nor "default"
+        for (var i = 0; i < scenario.steps.length; ++i) {
+            var s = scenario.steps[i];
+            // device not defined
+            if (undefined === s.action.isCorrectScreen[config.implementation]) {
+                UIALogger.logDebug(["Skipping scenario '", scenario.title,
+                                    "' because screen '", s.action.screenName, "'",
+                                    " doesn't have a screenIsActive function for ", config.implementation].join(""));
+                return false;
+            }
+
+            // action not defined for device
+            if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) {
+                UIALogger.logDebug(["Skipping scenario '", scenario.title, "' because action '",
+                                    s.action.screenName, ".", s.action.name,
+                                    "' isn't suppored on ", config.implementation].join(""));
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+
+    /**
+     * Whether a given scenario is a match for the given tags
+     *
+     * @param scenario an automator scenario
+     * @param tagsAny array - any scenario with any matching tag will run (if tags=[], run all)
+     * @param tagsAll array - any scenario with AT LEAST the same tags will run
+     * @param tagsNone array - any scenario with NONE of these tags will run
+     * @return bool
+     */
+    automator.scenarioMatchesCriteria = function(scenario, tagsAny, tagsAll, tagsNone) {
+        // if any tagsAll are missing from scenario, fail
+        for (var i = 0; i < tagsAll.length; ++i) {
+            var t = tagsAll[i];
+            if (!(t in scenario.tags_obj)) return false;
+        }
+
+        // if any tagsNone are present in scenario, fail
+        for (var i = 0; i < tagsNone.length; ++i) {
+            var t = tagsNone[i];
+            if (t in scenario.tags_obj) return false;
+        }
+
+        // if no tagsAny specified, special case for ALL tags
+        if (0 == tagsAny.length) return true;
+
+        // if any tagsAny are present in scenario, pass
+        for (var i = 0; i < tagsAny.length; ++i) {
+            var t = tagsAny[i];
+            if (t in scenario.tags_obj) return true;
+        }
+
+        return false; // no tags matched
+    };
+
+
+    /**
      * Shuffle an array - Knuth Shuffle implementation using a PRNG
      *
      * @param array the array to be shuffled
@@ -663,5 +626,150 @@ function fail(message) {
 
         return array;
     };
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Functions to describe the Automator
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * generate a readable description of the parameters that an action expects
+     *
+     * @param actionParams an associative array of parameters that an action defines
+     * @return string
+     */
+    automator.paramsToString = function (actionParams) {
+        var param_list = [];
+        for (var p in actionParams) {
+            var pp = actionParams[p];
+            param_list.push([p,
+                             " (",
+                             pp.required ? "required" : "optional",
+                             ": ",
+                             pp.description,
+                             ")"
+                             ].join(""));
+        }
+
+        return ["parameters are: [",
+                param_list.join(", "),
+                "]"].join("");
+    };
+
+
+    /**
+     * log some information about the automation environment
+     */
+    automator.logInfo = function () {
+        UIALogger.logMessage("Device info: " +
+                             "name='" + target().name() + "', " +
+                             "model='" + target().model() + "', " +
+                             "systemName='" + target().systemName() + "', " +
+                             "systemVersion='" + target().systemVersion() + "', ");
+
+        var tags = {};
+        for (var s = 0; s < automator.allScenarios.length; ++s) {
+            var scenario = automator.allScenarios[s];
+
+            // get all tags
+            for (var k in scenario.tags_obj) {
+                tags[k] = 1;
+            }
+        }
+
+        var tagsArr = [];
+        for (var k in tags) {
+            tagsArr.push(k);
+        }
+
+        UIALogger.logMessage("Defined tags: '" + tagsArr.join("', '") + "'");
+
+    };
+
+
+    /**
+     * Log information about the currently-shown iOS screen
+     *
+     */
+    automator.logScreenInfo = function () {
+        //UIATarget.localTarget().logElementTree(); // ugly
+        UIALogger.logDebug(target().elementReferenceDump("target()"));
+        UIALogger.logDebug(target().elementReferenceDump("target()", true));
+    };
+
+
+    /**
+     * Render the automator scenarios (and their steps, and parameters) to markdown
+     *
+     * @return string containing markdown
+     */
+    automator.toMarkdown = function () {
+        var ret = ["The following scenarios are defined in the Illuminator Automator:"];
+
+        var title = function (rank, text) {
+            var total = 4;
+            for (var i = 0; i <= (total - rank); ++i) {
+                ret.push("");
+            }
+
+            switch (rank) {
+            case 1:
+                ret.push(text);
+                ret.push(Array(Math.max(10, text.length) + 1).join("="));
+                break;
+            case 2:
+                ret.push(text);
+                ret.push(Array(Math.max(10, text.length) + 1).join("-"));
+                break;
+            default:
+                ret.push(Array(rank + 1).join("#") + " " + text);
+            }
+        };
+
+        title(1, "Automator Scenarios");
+        // iterate over scenarios
+        for (var i = 0; i < automator.allScenarios.length; ++i) {
+            var scenario = automator.allScenarios[i];
+            title(2, scenario.title);
+            ret.push("Tags: `" + Object.keys(scenario.tags_obj).join("`, `") + "`");
+            ret.push("");
+
+            // iterate over steps (actions)
+            for (var j = 0; j < scenario.steps.length; ++j) {
+                var step = scenario.steps[j];
+                ret.push((j + 1).toString() + ". **" + step.action.screenName + "." + step.action.name + "**: " + step.action.description);
+
+                // iterate over parameters in the action
+                for (var k in step.parameters) {
+                    var val = step.parameters[k];
+                    var v;
+
+                    // formatting based on datatype of parameter
+                    switch ((typeof val).toString()) {
+                    case "number":
+                    case "boolean":
+                        v = val; // no change
+                        break;
+                    case "function":
+                    case "string":
+                        v = "`" + val + "`"; // backtick-quote
+                        break;
+                    default:
+                        v = "`" + JSON.stringify(val) + "`"; // stringify and annotate with type
+                        if (val instanceof Array) {
+                            v += " (Array)";
+                        } else {
+                            v += " (" + (typeof val) + ")";
+                        }
+                    }
+                    ret.push("    * `" + k + "` = " + v);
+                }
+            }
+        }
+        return ret.join("\n");
+    };
+
 
 }).call(this);
