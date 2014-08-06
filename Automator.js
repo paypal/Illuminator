@@ -115,6 +115,9 @@ function fail(message) {
     //    the test will run if ['alpha', 'gamma'] are specified as tagsAny
     //     but it will not run if ['fake', 'YES hardware'] are specified as tagsAll
     automator.createScenario = function(scenarioName, tags) {
+        if (tags === undefined) tags = ["_untagged"]; // always have a tag
+
+        // check uniqueness
         if (automator.allScenarioNames[scenarioName]) throw "Can't createScenario '" + scenarioName + "', because that name already exists";
         automator.allScenarioNames[scenarioName] = true;
 
@@ -122,7 +125,6 @@ function fail(message) {
             title: scenarioName,
             steps: []
         };
-        if (tags === undefined) tags = ["_untagged"]; // always have a tag
 
         if (debugAutomator) {
             UIALogger.logDebug(["Automator creating scenario '", scenarioName, "'",
@@ -130,11 +132,9 @@ function fail(message) {
                                 ].join(""));
         }
 
-        automator.lastScenario.tags     = [];
         automator.lastScenario.tags_obj = {}; // convert tags to object
         for (var i = 0; i < tags.length; ++i) {
             var t = tags[i];
-            automator.lastScenario.tags.push(t);
             automator.lastScenario.tags_obj[t] = true;
         }
 
@@ -357,7 +357,7 @@ function fail(message) {
         for (var i = 0; i < automator.allScenarios.length; ++i) {
             var scenario = automator.allScenarios[i];
             title(2, scenario.title);
-            ret.push("Tags: `" + scenario.tags.join("`, `") + "`");
+            ret.push("Tags: `" + Object.keys(scenario.tags_obj).join("`, `") + "`");
             ret.push("");
 
             // iterate over steps (actions)
@@ -506,7 +506,7 @@ function fail(message) {
     automator.runScenario = function(scenario, message) {
         automator.checkInit();
 
-        var testname = [scenario.title, " [", scenario.tags.join(", "), "]"].join("");
+        var testname = [scenario.title, " [", Object.keys(scenario.tags_obj).join(", "), "]"].join("");
         UIALogger.logDebug("###############################################################");
         UIALogger.logStart(testname);
         if(undefined !== message) {
