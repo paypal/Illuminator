@@ -481,8 +481,8 @@ function fail(message) {
             s -= m * 60;
 
             h = h > 0 ? (h + ":") : "";
-            m = (m > 10 ? m.toString() : ("0" + m)) + ":";
-            s = (s > 10 ? s.toString() : ("0" + s));
+            m = (m >= 10 ? m.toString() : ("0" + m)) + ":";
+            s = (s >= 10 ? s.toString() : ("0" + s));
             return h + m + s;
         }
 
