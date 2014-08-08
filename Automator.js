@@ -365,19 +365,6 @@ function fail(message) {
             onesToRun = automator.shuffle(scenarioList, randomSeed);
         }
 
-        var hms = function(t) {
-            var s = Math.floor(t);
-            var h = Math.floor(s / 3600);
-            s -= h * 3600;
-            var m = Math.floor(s / 60);
-            s -= m * 60;
-
-            h = h > 0 ? (h + ":") : "";
-            m = (m >= 10 ? m.toString() : ("0" + m)) + ":";
-            s = (s >= 10 ? s.toString() : ("0" + s));
-            return h + m + s;
-        }
-
         var dt;
         var t0 = getTime();
         // iterate through scenarios and run them
@@ -388,10 +375,21 @@ function fail(message) {
             var t1 = getTime();
             automator.runScenario(scenario, message);
             dt = getTime() - t1;
-            UIALogger.logDebug("Scenario completed in " + hms(dt));
+            UIALogger.logDebug("Scenario completed in " + secondsToHMS(dt));
         }
         dt = getTime() - t0;
-        UIALogger.logMessage("Automation completed in " + hms(dt));
+        UIALogger.logMessage("Automation completed in " + secondsToHMS(dt));
+
+        UIALogger.logDebug("Criteria selector time cost report");
+        var selectorReport = extensionProfiler.getCriteriaCost();
+        var totalSelectorTime = 0;
+        for (var i = 0; i < selectorReport.length; ++i) {
+            var rec = selectorReport[i];
+            totalSelectorTime += rec.time;
+            UIALogger.logDebug(secondsToHMS(rec.time) + " - " + rec.criteria);
+        }
+
+        UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime));
         bridge.runNativeMethod("automationEnded:");
         return this;
     };
@@ -465,6 +463,7 @@ function fail(message) {
                 UIALogger.logDebug("----------------------------------------------------------------");
                 UIALogger.logMessage(["STEP ", i + 1, " of ",
                                       scenario.steps.length, ": ",
+                                      "(", step.action.appName, ".", step.action.screenName, ".", step.action.name, ") ",
                                       step.action.description,
                                       parameters_str
                                       ].join(""));
