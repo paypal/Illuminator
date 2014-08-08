@@ -195,6 +195,11 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
         elemAccessor = "<root elem>";
     }
 
+    // search in the appropriate way
+    if (!(criteria instanceof Array)) {
+        criteria = [criteria];
+    }
+
     // perform a find in several stages
     var segmentedFind = function (criteriaArray, initialElem, initialAccessor) {
         var intermElems = {};
@@ -214,11 +219,6 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
             intermElems = getUniqueElements(tmp);
         }
         return intermElems;
-    }
-
-    // search in the appropriate way
-    if (!(criteria instanceof Array)) {
-        criteria = [criteria];
     }
 
     try {
