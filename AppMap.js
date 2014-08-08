@@ -39,6 +39,7 @@ var debugAppmap = false;
      */
     appmap.createApp = function(appName) {
         appmap.lastApp = {}; // screens is empty
+        appmap.lastAppName = appName;
         appmap.apps[appName] = appmap.lastApp;
         appmap.lastScreen = null;
         appmap.lastAction = null;
@@ -197,6 +198,7 @@ var debugAppmap = false;
         appmap.lastAction = {
             name: actionName,
             isCorrectScreen: isActiveMap,
+            appName: appmap.lastAppName,
             screenName: appmap.lastScreenName,
             actionFn: {},
             description: desc,

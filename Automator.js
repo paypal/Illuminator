@@ -465,6 +465,7 @@ function fail(message) {
                 UIALogger.logDebug("----------------------------------------------------------------");
                 UIALogger.logMessage(["STEP ", i + 1, " of ",
                                       scenario.steps.length, ": ",
+                                      "(", step.action.appName, ".", step.action.screenName, ".", step.action.name, ") ",
                                       step.action.description,
                                       parameters_str
                                       ].join(""));
