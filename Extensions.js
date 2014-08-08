@@ -30,6 +30,27 @@ function getTime() {
 }
 
 /**
+ * convert a number of seconds to hh:mm:ss.ss
+ *
+ * @param seconds the number of seconds (decimal OK)
+ */
+function secondsToHMS(seconds) {
+    var s = Math.floor(seconds);
+    var f = seconds - s;
+    var h = Math.floor(s / 3600);
+    s -= h * 3600;
+    var m = Math.floor(s / 60);
+    s -= m * 60;
+
+    // build strings
+    h = h > 0 ? (h + ":") : "";
+    m = (m > 9 ? m.toString() : ("0" + m.toString())) + ":";
+    s = s > 9 ? s.toString() : ("0" + s.toString());
+    f = f > 0 ? ("." + Math.round(f * 100).toString()) : "";
+    return h + m + s + f;
+}
+
+/**
  * Extend an object prototype with an associative array of properties
  *
  * @param baseClass a javascript class

@@ -365,19 +365,6 @@ function fail(message) {
             onesToRun = automator.shuffle(scenarioList, randomSeed);
         }
 
-        var hms = function(t) {
-            var s = Math.floor(t);
-            var h = Math.floor(s / 3600);
-            s -= h * 3600;
-            var m = Math.floor(s / 60);
-            s -= m * 60;
-
-            h = h > 0 ? (h + ":") : "";
-            m = (m >= 10 ? m.toString() : ("0" + m)) + ":";
-            s = (s >= 10 ? s.toString() : ("0" + s));
-            return h + m + s;
-        }
-
         var dt;
         var t0 = getTime();
         // iterate through scenarios and run them
@@ -388,10 +375,10 @@ function fail(message) {
             var t1 = getTime();
             automator.runScenario(scenario, message);
             dt = getTime() - t1;
-            UIALogger.logDebug("Scenario completed in " + hms(dt));
+            UIALogger.logDebug("Scenario completed in " + secondsToHMS(dt));
         }
         dt = getTime() - t0;
-        UIALogger.logMessage("Automation completed in " + hms(dt));
+        UIALogger.logMessage("Automation completed in " + secondsToHMS(dt));
         bridge.runNativeMethod("automationEnded:");
         return this;
     };
