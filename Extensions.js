@@ -29,6 +29,93 @@ function getTime() {
     return (new Date).getTime() / 1000;
 }
 
+
+/**
+ * EXTENSION PROFILER
+ */
+(function() {
+
+    var root = this,
+        extensionProfiler = null;
+
+    // put extensionProfiler in namespace of importing code
+    if (typeof exports !== 'undefined') {
+        extensionProfiler = exports;
+    } else {
+        extensionProfiler = root.extensionProfiler = {};
+    }
+
+    /**
+     * reset the stored criteria costs
+     */
+    extensionProfiler.resetCriteriaCost = function () {
+        extensionProfiler._criteriaTotalCost = {}
+        extensionProfiler._criteriaCost = {};
+        extensionProfiler._bufferCriteria = false;
+    };
+    extensionProfiler.resetCriteriaCost(); // initialize it
+
+
+    /**
+     * sometimes critera are evaluated in a loop because we are waiting for something; don't count that
+     *
+     * indicates that we should store ONLY THE MOST RECENT lookup times in an array
+     */
+    extensionProfiler.bufferCriteriaCost = function() {
+        extensionProfiler._bufferCriteria = true;
+    };
+
+
+    /**
+     * sometimes critera are evaluated in a loop because we are waiting for something; don't count that
+     *
+     * indicates that we should store ONLY THE MOST RECENT lookup times in an array
+     */
+    extensionProfiler.UnbufferCriteriaCost = function() {
+        extensionProfiler._bufferCriteria = false;
+        // replay the most recent values into the totals
+        for (var c in extensionProfiler._criteriaCost) {
+            extensionProfiler.recordCriteriaCost(c, extensionProfiler._criteriaCost[c]);
+        }
+        extensionProfiler._criteriaCost = {};
+    };
+
+
+    /**
+     * keep track of the cumulative time spent looking for criteria
+     *
+     * @param criteria the criteria object or object array
+     * @param time the time spent looking up that criteria
+     */
+    extensionProfiler.recordCriteriaCost = function (criteria, time) {
+        var key = JSON.stringify(criteria);
+        if (extensionProfiler._bufferCriteria) {
+            extensionProfiler._criteriaCost[key] = time; // only store the most recent one, we'll merge later
+        } else {
+            if (undefined === extensionProfiler._criteriaTotalCost[key]) {
+                extensionProfiler._criteriaTotalCost[key] = 0;
+            }
+            extensionProfiler._criteriaTotalCost[key] += time;
+        }
+    };
+
+    /**
+     * return an array of objects indicating the cumulative time spent looking for criteria -- high time to low
+     *
+     * @return array of {criteria: x, time: y} objects
+     */
+    extensionProfiler.getCriteriaCost = function () {
+        var ret = [];
+        for (var criteria in extensionProfiler._criteriaTotalCost) {
+            ret.push({"criteria": criteria, "time": extensionProfiler._criteriaTotalCost[criteria]});
+        }
+        ret.sort(function(a, b) { return b.time - a.time; });
+        return ret;
+    };
+
+}).call(this);
+
+
 /**
  * convert a number of seconds to hh:mm:ss.ss
  *
@@ -195,6 +282,7 @@ function getOneCriteriaSearchResult(callerName, elemObject, originalCriteria, al
     return newUIAElementNil();
 }
 
+
 /**
  * Resolve an expression to a set of UIAElements
  *
@@ -242,6 +330,7 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
         return intermElems;
     }
 
+    var startTime = getTime();
     try {
         UIATarget.localTarget().pushTimeout(0);
         return segmentedFind(criteria, parentElem, elemAccessor);
@@ -249,6 +338,8 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
         throw e;
     } finally {
         UIATarget.localTarget().popTimeout();
+        var cost = getTime() - startTime;
+        extensionProfiler.recordCriteriaCost(criteria, cost);
     }
 }
 
@@ -858,11 +949,13 @@ extendPrototype(UIAElement, {
 
         try {
             UIATarget.localTarget().pushTimeout(0);
+            extensionProfiler.bufferCriteriaCost();
             return this._waitForReturnFromElement(timeout, "waitForChildExistence", inputDescription, description, isDesired, actualValFn);
         } catch (e) {
             throw e;
         } finally {
             UIATarget.localTarget().popTimeout();
+            extensionProfiler.UnbufferCriteriaCost();
         }
     },
 
@@ -917,11 +1010,13 @@ extendPrototype(UIAElement, {
 
         try {
             UIATarget.localTarget().pushTimeout(0);
+            extensionProfiler.bufferCriteriaCost();
             return this._waitForReturnFromElement(timeout, "waitForChildSelect", inputDescription, description, foundAtLeastOne, findAll);
         } catch (e) {
             throw e;
         } finally {
             UIATarget.localTarget().popTimeout();
+            extensionProfiler.UnbufferCriteriaCost();
         }
 
     },
