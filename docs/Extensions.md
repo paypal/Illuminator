@@ -105,6 +105,12 @@ UIAElement Method Extensions Reference
 
 This is a function reference, not a class reference; the classes to which these functions belong will be indicated.
 
+#### `.captureImage(imageName)`
+Capture a screenshot of just this element, using `imageName` as the name for the resultant image file.
+
+#### `.captureImageTree(imageName)`
+Capture a screenshot of this element and all its child elements, using `imageName` as the base name for all the resultant image files.  Each image file will include the accessor string in the filename.
+
 #### `.checkIsEditable()` - UIAElement
 Tap the element and return true if a keyboard is displayed.
 

@@ -145,6 +145,9 @@ function actionLogAccessors(parm) {
     UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", visibleOnly));
 }
 
+function actionCaptureElementTree(parm) {
+    target().captureImageTree(parm.imageBaseName);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Appmap additions - common capabilities
@@ -170,6 +173,10 @@ appmap.createOrAugmentApp("Illuminator").withScreen("do")
     .withParam("visibleOnly", "Whether to log only the visible elements", false, true)
     .withParam("delay", "Number of seconds to delay before logging", false, true)
     .withImplementation(actionLogAccessors)
+
+    .withAction("captureElementTree", "Take individual screenshots of all screen elements")
+    .withParam("imageBaseName", "The base name for the image files", true, true)
+    .withImplementation(actionCaptureElementTree)
 
     .withAction("fail", "Unconditionally fail the current test for debugging purposes")
     .withImplementation(function() { throw "purposely-thrown exception to halt the test scenario"; })
