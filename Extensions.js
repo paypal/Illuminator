@@ -778,6 +778,29 @@ extendPrototype(UIAElement, {
     },
 
     /**
+     * Take a screen shot of this element
+     *
+     * @param imageName A string to use as the name for the resultant image file
+     */
+    captureImage: function (imageName) {
+        target().captureRectWithName(this.rect(), imageName);
+    },
+
+    /**
+     * Capture images for this element and all its child elements
+     *
+     * @param imageName A string to use as the base name for the resultant image files
+     */
+    captureImageTree: function (imageName) {
+        var captureFn = function (acc, element, prefix, _) {
+            element.captureImage(imageName + " element" + prefix);
+            return acc;
+        };
+
+        this._reduce(captureFn, undefined, true);
+    },
+
+    /**
      * Get a list of valid element references in .js format for copy/paste use in code
      * @param varname is used as the first element in the canonical name
      * @param visibleOnly boolean whether to only get visible elements
@@ -786,12 +809,12 @@ extendPrototype(UIAElement, {
     getChildElementReferences: function (varName, visibleOnly) {
         varName = varName === undefined ? "<root element>" : varName;
 
-        var collect_fn = function (acc, _, prefix, __) {
+        var collectFn = function (acc, _, prefix, __) {
             acc.push(varName + prefix)
             return acc;
         };
 
-        return this._reduce(collect_fn, [], visibleOnly);
+        return this._reduce(collectFn, [], visibleOnly);
     },
 
 
