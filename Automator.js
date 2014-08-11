@@ -382,7 +382,7 @@ function fail(message) {
 
         // create a CSV report for the amount of time spent evaluating selectors
         var totalSelectorTime = 0;
-        var selectorReportCsvPath = config.tmpDir + "/selectorTimeCostReport-" + Math.round(getTime()) + ".csv";
+        var selectorReportCsvPath = config.tmpDir + "/selectorTimeCostReport.csv";
         var csvLines = ["\"Total time (seconds)\",Count,\"Average time\",Selector"];
         var selectorReport = extensionProfiler.getCriteriaCost();
         for (var i = 0; i < selectorReport.length; ++i) {
