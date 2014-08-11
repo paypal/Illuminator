@@ -49,8 +49,9 @@ function getTime() {
      * reset the stored criteria costs
      */
     extensionProfiler.resetCriteriaCost = function () {
-        extensionProfiler._criteriaTotalCost = {}
         extensionProfiler._criteriaCost = {};
+        extensionProfiler._criteriaTotalCost = {}
+        extensionProfiler._criteriaTotalHits = {};
         extensionProfiler._bufferCriteria = false;
     };
     extensionProfiler.resetCriteriaCost(); // initialize it
@@ -88,26 +89,31 @@ function getTime() {
      * @param time the time spent looking up that criteria
      */
     extensionProfiler.recordCriteriaCost = function (criteria, time) {
-        var key = JSON.stringify(criteria);
+        // criteria can be a string if it comes from our buffered array, so allow it.
+        var key = (typeof criteria) == "string" ? criteria : JSON.stringify(criteria);
         if (extensionProfiler._bufferCriteria) {
             extensionProfiler._criteriaCost[key] = time; // only store the most recent one, we'll merge later
         } else {
             if (undefined === extensionProfiler._criteriaTotalCost[key]) {
                 extensionProfiler._criteriaTotalCost[key] = 0;
+                extensionProfiler._criteriaTotalHits[key] = 0;
             }
             extensionProfiler._criteriaTotalCost[key] += time;
+            extensionProfiler._criteriaTotalHits[key]++;
         }
     };
 
     /**
      * return an array of objects indicating the cumulative time spent looking for criteria -- high time to low
      *
-     * @return array of {criteria: x, time: y} objects
+     * @return array of {criteria: x, time: y, hits: z} objects
      */
     extensionProfiler.getCriteriaCost = function () {
         var ret = [];
         for (var criteria in extensionProfiler._criteriaTotalCost) {
-            ret.push({"criteria": criteria, "time": extensionProfiler._criteriaTotalCost[criteria]});
+            ret.push({"criteria": criteria,
+                      "time": extensionProfiler._criteriaTotalCost[criteria],
+                      "hits": extensionProfiler._criteriaTotalHits[criteria]});
         }
         ret.sort(function(a, b) { return b.time - a.time; });
         return ret;
