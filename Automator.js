@@ -380,16 +380,20 @@ function fail(message) {
         dt = getTime() - t0;
         UIALogger.logMessage("Automation completed in " + secondsToHMS(dt));
 
-        UIALogger.logDebug("Criteria selector time cost report");
-        var selectorReport = extensionProfiler.getCriteriaCost();
+        // create a CSV report for the amount of time spent evaluating selectors
         var totalSelectorTime = 0;
+        var selectorReportCsvPath = config.tmpDir + "/selectorTimeCostReport-" + Math.round(getTime()) + ".csv";
+        var csvLines = ["\"Total time (seconds)\",Count,\"Average time\",Selector"];
+        var selectorReport = extensionProfiler.getCriteriaCost();
         for (var i = 0; i < selectorReport.length; ++i) {
             var rec = selectorReport[i];
             totalSelectorTime += rec.time;
-            UIALogger.logDebug(secondsToHMS(rec.time) + " - " + rec.criteria);
+            csvLines.push(rec.time.toString() + "," + rec.hits + "," + (rec.time / rec.hits) + ",\"" + rec.criteria.replace(/"/g, '""') + '"');
         }
+        writeToFile(selectorReportCsvPath, csvLines.join("\n"));
+        UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime)
+                             + " - full report at " + selectorReportCsvPath);
 
-        UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime));
         bridge.runNativeMethod("automationEnded:");
         return this;
     };
