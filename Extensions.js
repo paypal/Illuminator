@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * shortcut function to get target, sets _accessor
+ * shortcut function to get UIATarget.localTarget(), sets _accessor
  */
 function target() {
     var ret = UIATarget.localTarget();
@@ -15,16 +15,27 @@ function target() {
     return ret;
 }
 
+/**
+ * shortcut function to get UIATarget.localTarget().frontMostApp().mainWindow(), sets _accessor
+ */
 function mainWindow() {
     var ret = UIATarget.localTarget().frontMostApp().mainWindow();
     ret._accessor = "mainWindow()";
     return ret;
 }
 
+/**
+ * delay for a number of seconds
+ *
+ * @param seconds float how long to wait
+ */
 function delay(seconds) {
     target().delay(seconds);
 }
 
+/**
+ * get the current time: seconds since epoch, with decimal for millis
+ */
 function getTime() {
     return (new Date).getTime() / 1000;
 }
