@@ -1,3 +1,108 @@
+// Extensions.js - Extensions to Apple's UIAutomation library
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Exceptions
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Decode a stack trace into something readable
+ *
+ * UIAutomation has a decent `.backtrace` property for errors, but ONLY for the `Error` class.
+ * As of this writing, many attempts to produce that property on user-defined error classes have failed.
+ * This function decodes the somewhat-readable `.stack` property into something better
+ *
+ * Decode the following known types of stack lines:
+ *  - built-in functions in this form: funcName@[native code]
+ *  - anonymous functions in this form: file://<path>/file.js:line:col
+ *  - named functions in this form: funcName@file://<path>/file.js:line:col
+ *  - top-level calls in this form: global code@file://<path>/file.js:line:col
+ *
+ * @param trace string returned by the "stack" property of a caught exception
+ * @return object
+ *  { isOK:      boolean, whether any errors at all were encountered
+ *    message:   string describing any error encountered
+ *    errorName: string name of the error
+ *    stack:     array of trace objects [
+ *               { functionName: string name of function, or undefined if the function was anonymous
+ *                 nativeCode:   boolean whether the function was defined in UIAutomation binary code
+ *                 file:         if not native code, the basename of the file containing the function
+ *                 line:         if not native code, the line where the function is defined
+ *                 column:       if not native code, the column where the function is defined
+ *               }
+ *         ]
+ *  }
+ *
+ */
+function decodeStackTrace(err) {
+    if ("string" == (typeof err)) {
+        return {isOK: false, message: "[caught string error, not an error class]", stack: []};
+    }
+
+    if (err.stack === undefined) {
+        return {isOK: false, message: "[caught an error without a stack]", stack: []};
+    }
+
+    var ret = {isOK: true, stack: []};
+    if (err.name !== undefined) {
+        ret.errorName = err.name;
+        ret.message = "<why are you reading this? there is nothing wrong.>";
+    } else {
+        ret.errorName = "<unnamed>";
+        ret.message = "[Error class was unnamed]";
+    }
+
+    var lines = err.stack.split("\n");
+
+    for (var i = 0; i < lines.length; ++i) {
+        var l = lines[i];
+        var r = {};
+        var location;
+
+        // extract @ symbol if it exists, which defines whether function is anonymous
+        var atPos = l.indexOf("@");
+        if (-1 == atPos) {
+            location = l;
+        } else {
+            r.functionName = l.substring(0, atPos);
+            location = l.substring(atPos + 1);
+        }
+
+        // check whether the function is built in to UIAutomation
+        r.nativeCode = ("[native code]" == location);
+
+        // extract file, line, and column if not native code
+        if (!r.nativeCode) {
+            var tail = location.substring(location.lastIndexOf("/") + 1);
+            var items = tail.split(":");
+            r.file = items[0];
+            r.line = items[1];
+            r.column = items[2];
+        }
+
+
+        //string.substring(string.indexOf("_") + 1)
+        ret.stack.push(r);
+    }
+
+    return ret;
+}
+
+
+/**
+ * Get a stack trace (this function omitted) from any location in code
+ *
+ * @return just the stack property of decodeStackTrace
+ */
+function getStackTrace() {
+    try {
+        throw new Error("base");
+    } catch (e) {
+        return decodeStackTrace(e).stack.slice(1);
+    }
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

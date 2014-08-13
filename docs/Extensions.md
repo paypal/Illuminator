@@ -93,12 +93,31 @@ Returns the number of seconds (with decimal milliseconds) since Jan 1st, 1970.
 #### `isNotNilElement(elem)`
 Returns `true` if the given element is a valid non-nil `UIAElement`.
 
-### `isHardSelector(selector)`
+#### `isHardSelector(selector)`
 Returns `true` if the given selector is a lookup function or string -- returning at most only one element.
 
-### `newUIAElementNil()`
+#### `newUIAElementNil()`
 Returns what you'd expect `new UIAElementNil()` to return, since it doesn't.
 
+#### `decodeStackTrace(err)`
+Returns an object describing the stack information contained in the caught error object `err`.  The fields in the return value are as follows:
+
+* `isOK`: boolean, whether any errors at all were encountered
+* `message`: string describing any error encountered
+* `errorName`: string name of the error
+* `stack`: an array of trace objects in the order that represents the stack
+
+The objects in the `stack` array have fields as follows:
+
+* `functionName`: string name of function, or undefined if the function was anonymous
+* `nativeCode`: boolean whether the function was defined in UIAutomation binary code
+* `file`: if not native code, the basename of the file containing the function
+* `line`: if not native code, the line where the function is defined
+* `column`: if not native code, the column where the function is defined
+
+
+#### `getStackTrace()`
+Return the current stack trace (minus this function itself) at any point in code.  The return value is the same format as the `stack` field from `decodeStackTrace()`
 
 UIAElement Method Extensions Reference
 --------------------------------
