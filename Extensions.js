@@ -8,6 +8,53 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Shortcut to defining simple error classes
+ *
+ * @param className string name for the new error class
+ * @return a function that is used to construct new error instances
+ */
+function makeErrorClass(className) {
+    return function (message) {
+        this.name = className;
+        this.message = message;
+        this.toString = function() { return this.name + ": " + this.message; };
+    };
+}
+
+/**
+ * Shortcut to defining error classes that indicate the function/file/line that triggered them
+ *
+ * These are for cases where the errors are expected to be caught by the global error handler
+ *
+ * @param fileName string basename of the file where the function is defined (gets stripped out)
+ * @param className string name for the new error class
+ * @return a function that is used to construct new error instances
+ */
+function makeErrorClassWithGlobalLocator(fileName, className) {
+
+    var _getCallingFunction = function () {
+        var stack = getStackTrace();
+        for (var i = 0; i < stack.length; ++i) {
+            var l = stack[i];
+            if (!(l.nativeCode || fileName == l.file)) {
+                return "In " + l.functionName + " at " + l.file + " line " + l.line + " col " + l.column + ": ";
+            }
+        }
+        return "";
+    };
+
+   return function (message) {
+        this.name = className;
+        this.message = _getCallingFunction() + message;
+        this.toString = function() { return this.name + ": " + this.message; };
+    };
+}
+
+IlluminatorSetupException = makeErrorClass("IlluminatorSetupException");
+IlluminatorRuntimeFailureException = makeErrorClass("IlluminatorRuntimeFailureException");
+IlluminatorRuntimeVerificationException = makeErrorClass("IlluminatorRuntimeVerificationException");
+
+/**
  * Decode a stack trace into something readable
  *
  * UIAutomation has a decent `.backtrace` property for errors, but ONLY for the `Error` class.
@@ -323,7 +370,7 @@ function waitForReturnValue(timeout, functionName, functionReturningValue) {
 
     switch (typeof timeout) {
     case "number": break;
-    default: throw "waitForReturnValue got a bad timeout type: (" + (typeof timeout) + ") " + timeout;
+    default: throw new IlluminatorSetupException("waitForReturnValue got a bad timeout type: (" + (typeof timeout) + ") " + timeout);
     }
 
     var stopTime = myGetTime() + timeout;
@@ -343,7 +390,7 @@ function waitForReturnValue(timeout, functionName, functionReturningValue) {
         delay(0.1); // max 10 Hz
     }
 
-    throw functionName + " failed by timeout after " + timeout + " seconds: " + caught;
+    throw new IlluminatorRuntimeFailureException(functionName + " failed by timeout after " + timeout + " seconds: " + caught);
 }
 
 
@@ -393,7 +440,7 @@ function getOneCriteriaSearchResult(callerName, elemObject, originalCriteria, al
             }
             msg += "\n}";
         }
-        throw msg;
+        throw new IlluminatorRuntimeFailureException(msg);
     }
 
     // they're all the same, so return just one
@@ -483,7 +530,8 @@ var typeString = function (text, clear) {
 
     // make sure we can type (side effect: brings up keyboard)
     if (!this.checkIsEditable(2)) {
-        throw "typeString couldn't get the keyboard to appear for element " + this.toString() + " with name '" + this.name() + "'";
+        throw new IlluminatorRuntimeFailureException("typeString couldn't get the keyboard to appear for element "
+                                                     + this.toString() + " with name '" + this.name() + "'");
     }
 
     var kb, db; // keyboard, deleteButton
@@ -525,7 +573,7 @@ var typeString = function (text, clear) {
     }
 
     // report any errors that prevented success
-    if (0 > maxAttempts && null !== failMsg) throw "typeString caught error: " + failMsg.toString();
+    if (0 > maxAttempts && null !== failMsg) throw new IlluminatorRuntimeFailureException("typeString caught error: " + failMsg);
 
     // now type the rest of the string
     try {
@@ -553,7 +601,8 @@ var typeString = function (text, clear) {
 var pickDate = function (year, month, day) {
     // make sure we can type (side effect: brings up picker)
     if (!this.checkIsPickable(2)) {
-        throw "pickDate couldn't get the picker to appear for element " + this.toString() + " with name '" + this.name() + "'";
+        throw new IlluminatorRuntimeFailureException("pickDate couldn't get the picker to appear for element "
+                                                     + this.toString() + " with name '" + this.name() + "'");
     }
 
     var wheel = target().frontMostApp().windows()[1].pickers()[0].wheels();
@@ -641,7 +690,7 @@ extendPrototype(UIAElement, {
      * @param criteria
      */
     getChildElements: function (criteria) {
-        if (isHardSelector(criteria)) throw "getChildElements got a hard selector, which cannot return multiple elements";
+        if (isHardSelector(criteria)) throw new IlluminatorSetupException("getChildElements got a hard selector, which cannot return multiple elements");
         criteria = this.preProcessSelector(criteria);
         var accessor = this._accessor === undefined ? "<unknown>" : this._accessor;
         return getElementsFromCriteria(criteria, this, accessor);
@@ -668,7 +717,7 @@ extendPrototype(UIAElement, {
             var element = this;
             return eval(selector);
         default:
-            throw caller + " received undefined input type of " + (typeof selector).toString();
+            throw new IlluminatorSetupException(caller + " received undefined input type of " + (typeof selector).toString());
         }
     },
 
@@ -982,7 +1031,7 @@ extendPrototype(UIAElement, {
         // actualValueFunction overrides default behavior: just grab the property name and call it
         if (undefined === actualValueFunction) {
             actualValueFunction = function (obj) {
-                if (undefined === obj[propertyName]) throw "Couldn't get property '" + propertyName + "' of object " + obj;
+                if (undefined === obj[propertyName]) throw new IlluminatorSetupException("Couldn't get property '" + propertyName + "' of object " + obj);
                 return obj[propertyName]();
             }
         }
@@ -1006,7 +1055,7 @@ extendPrototype(UIAElement, {
             } else {
                 msg += ", not the desired value (" + (typeof desiredValue) + ") '" + desiredValue + "'";
             }
-            throw msg;
+            throw new IlluminatorRuntimeVerificationException(msg);
         };
 
         waitForReturnValue(timeout, functionName, wrapFn);
@@ -1029,7 +1078,9 @@ extendPrototype(UIAElement, {
             var actual = actualValueFunction(thisObj);
             // TODO: possibly wrap this in try/catch and use it to detect criteria selectors that return multiples
             if (isDesiredValueFunction(actual)) return actual;
-            throw "No acceptable value for " + returnName + " on " + thisObj + " \"" + thisObj.name() + "\" was returned from " + inputDescription;
+            throw new IlluminatorRuntimeFailureException("No acceptable value for " + returnName + " on "
+                                                         + thisObj + " \"" + thisObj.name()
+                                                         + "\" was returned from " + inputDescription);
         };
 
         return waitForReturnValue(timeout, functionName, wrapFn);
@@ -1044,7 +1095,7 @@ extendPrototype(UIAElement, {
      * @param selector the selector for the element whose existence will be checked
      */
     waitForChildExistence: function (timeout, existenceState, description, selector) {
-        if (undefined === selector) throw "waitForChildExistence: No selector was specified";
+        if (undefined === selector) throw new IlluminatorSetupException("waitForChildExistence: No selector was specified");
 
         var actualValFn = function (thisObj) {
             // if we expect existence, try to get the element.
@@ -1075,8 +1126,8 @@ extendPrototype(UIAElement, {
                 case 0: return true;
                 case 1: return false;
                 default:
-                    // TODO: throw specific error here: "setup error discovered at runtime"
-                    UIALogger.logWarning("Selector (criteria) returned " + Object.keys(result).length + " results, not 0: " + JSON.stringify(result));
+                    throw new IlluminatorSetupException("Selector (criteria) returned " + Object.keys(result).length + " results, not 0: "
+                                                        + JSON.stringify(result));
                     return false;
                 }
             }
@@ -1113,7 +1164,8 @@ extendPrototype(UIAElement, {
      * @param selectors associative array of {label: selector}
      */
     waitForChildSelect: function (timeout, selectors) {
-        if ((typeof selectors) != "object") throw "waitForChildSelect expected selectors to be an object, but got: " + (typeof selectors);
+        if ((typeof selectors) != "object") throw new IlluminatorSetupException("waitForChildSelect expected selectors to be an object, "
+                                                                                + "but got: " + (typeof selectors));
 
         // composite find function
         var findAll = function (thisObj) {

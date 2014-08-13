@@ -20,6 +20,11 @@ var debugAppmap = false;
         appmap = root.appmap = {};
     }
 
+    // Exception classes
+    appmap.SetupException = makeErrorClassWithGlobalLocator("AppMap.js", "AppMapSetupException");
+    appmap.ParameterException = makeErrorClass("AppMapParameterException");
+
+    // internal variables
     appmap.apps = {};       // all possible apps, keyed by string
     var lastApp;            // state variable for building app
     var lastAppName;        // name of last app
@@ -159,7 +164,9 @@ var debugAppmap = false;
         // slightly hacky, withImplementation expects actions to come AFTER all the onTarget calls
         appmap.lastAction.isCorrectScreen[targetName] = isActiveFn;
         appmap.withImplementation(function() {
-                      if (isActiveFn()) throw "Failed assertion that '" + lastScreenName + "' is NOT active ";
+                      if (isActiveFn()) {
+                          throw new IlluminatorRuntimeVerificationException("Failed assertion that '" + lastScreenName + "' is NOT active ");
+                      }
                   }, targetName);
 
         // now modify verifyNotActive's isCorrectScreen array to always return true.  slighly hacky.
@@ -271,7 +278,7 @@ var debugAppmap = false;
             var msg = "Screen " + appmap.lastAppName + "." + appmap.lastScreenName;
             msg += " only has defined targets: '" + targets.join("', '") + "' but tried to add an implementation";
             msg += " for target device '" + targetName + "' in action '" + appmap.lastActionName + "'";
-            throw msg;
+            throw new appmap.SetupException(msg);
         }
 
         if (debugAppmap) UIALogger.logDebug("   adding implementation on " + targetName);
@@ -449,7 +456,8 @@ var debugAppmap = false;
 
             // prevent any funny business with integer comparisons
             if ((predicateFn(elem) == true) != (parm.expected == true)) {
-                throw "Element " + elemName + " failed predicate " + predicateDesc + " (expected value: " + parm.expected + ")";
+                throw new IlluminatorRuntimeVerificationException("Element " + elemName + " failed predicate " + predicateDesc
+                                                                  + " (expected value: " + parm.expected + ")");
             }
         };
     };
@@ -485,7 +493,7 @@ var debugAppmap = false;
     appmap.actionBuilder.makeAction.screenIsActive.byElement = function (screenName, elementName, selector, timeout) {
         switch (typeof timeout) {
         case "number": break;
-        default: throw "makeAction.screenIsActive.byElement got a bad timeout value: (" + (typeof timeout) + ") " + timeout;
+        default: throw new appmap.SetupException("makeAction.screenIsActive.byElement got a bad timeout value: (" + (typeof timeout) + ") " + timeout);
         }
 
         return function () {
@@ -533,7 +541,8 @@ var debugAppmap = false;
                 msg = ": " + e.toString();
                 if (!(parm.expected === true)) return;
             }
-            throw "Element " + elemName + " failed existence check (expected: " + parm.expected + ")" + msg;
+            throw new IlluminatorRuntimeVerificationException("Element " + elemName + " failed existence check "
+                                                              + "(expected: " + parm.expected + ")" + msg);
         };
     };
 
@@ -556,7 +565,8 @@ var debugAppmap = false;
                 msg = ": " + e.toString();
                 if (!(parm.expected === true)) return;
             }
-            throw "Element " + elemName + " failed visibility check (expected: " + parm.expected + ")" + msg;
+            throw new IlluminatorRuntimeVerificationException("Element " + elemName + " failed visibility check "
+                                                              + "(expected: " + parm.expected + ")" + msg);
         };
     };
 
@@ -657,7 +667,7 @@ var debugAppmap = false;
 
             // react to number of elements
             switch (Object.keys(elemsObj).length) {
-            case 0: throw "Selector found no elements: " + JSON.stringify(fullSelector);
+            case 0: throw new IlluminatorRuntimeFailureException("Selector found no elements: " + JSON.stringify(fullSelector));
             case 1: return;
             default: UIALogger.logMessage("Selector (for existence) found multiple elements: " + JSON.stringify(elemsObj));
             }

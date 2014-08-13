@@ -4,26 +4,6 @@
 
 var debugAutomator = false;
 
-/**
- * The exception thrown when a 'fail' is used.
- *
- * @param message - reason the test failed/aborted
- */
-function FailureException(message) {
-    this.name = 'FailureException';
-    this.message = message;
-    this.toString = function() {
-        return this.name + ': "' + this.message + '"';
-    };
-}
-
-/**
- * Fail the test with the given message
- */
-function fail(message) {
-  throw new FailureException(message);
-}
-
 (function() {
 
     var root = this,
@@ -35,6 +15,14 @@ function fail(message) {
     } else {
         automator = root.automator = {};
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Exception classes and helpers
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
+    automator.ScenarioSetupException = makeErrorClassWithGlobalLocator("Automator.js", "ScenarioSetupException");
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -137,6 +125,7 @@ function fail(message) {
     automator.deferFailure = function(err) {
         UIALogger.logDebug("Deferring an error: " + err);
         automator.logScreenInfo();
+        automator.logStackInfo(getStackTrace());
 
         if (automator._state.internal["currentStepName"] && automator._state.internal["currentStepNumber"]) {
             var msg = "Step " + automator._state.internal["currentStepNumber"];
@@ -169,7 +158,9 @@ function fail(message) {
         if (tags === undefined) tags = ["_untagged"]; // always have a tag
 
         // check uniqueness
-        if (automator.allScenarioNames[scenarioName]) throw "Can't createScenario '" + scenarioName + "', because that name already exists";
+        if (automator.allScenarioNames[scenarioName]) {
+            throw new automator.ScenarioSetupException("Can't create Scenario '" + scenarioName + "', because that name already exists");
+        }
         automator.allScenarioNames[scenarioName] = true;
 
         automator.lastScenario = {
@@ -213,7 +204,7 @@ function fail(message) {
                            "'; ",
                            automator.paramsToString(screenAction.params)
                           ].join("");
-                fail(failmsg);
+                throw new automator.ScenarioSetupException(failmsg);
             }
         }
     };
@@ -237,7 +228,7 @@ function fail(message) {
                            "'; ",
                            automator.paramsToString(screenAction.params)
                           ].join("");
-                fail(failmsg);
+                throw new automator.ScenarioSetupException(failmsg);
             }
         }
     };
@@ -262,7 +253,7 @@ function fail(message) {
                 var goodAction = automator.lastScenario.steps[slength - 1].action;
                 failmsg.push(" after step " + goodAction.screenName + "." + goodAction.name);
             }
-            fail(failmsg.join(""));
+            throw new automator.ScenarioSetupException(failmsg.join(""));
         }
 
         // debug if necessary
@@ -429,6 +420,7 @@ function fail(message) {
             automator.callback["prescenario"]();
         } catch (e) {
             automator.logScreenInfo();
+            automator.logStackInfo(e);
             UIALogger.logFail("Test setup failed: " + e);
             return;
         }
@@ -474,14 +466,14 @@ function fail(message) {
 
                 // assert isCorrectScreen function
                 if (undefined === step.action.isCorrectScreen[config.implementation]) {
-                    throw ["No isCorrectScreen function defined for '",
-                           step.action.screenName, ".", step.action.name,
-                           "' on ", config.implementation].join("");
+                    throw new IlluminatorSetupException(["No isCorrectScreen function defined for '",
+                                                         step.action.screenName, ".", step.action.name,
+                                                         "' on ", config.implementation].join(""));
                 }
 
                 // assert correct screen
                 if (!step.action.isCorrectScreen[config.implementation]()) {
-                    throw ["Failed assertion that '", step.action.screenName, "' is active"].join("");
+                    throw new IlluminatorRuntimeVerificationException(["Failed assertion that '", step.action.screenName, "' is active"].join(""));
                 }
 
                 var actFn = step.action.actionFn["default"];
@@ -518,6 +510,7 @@ function fail(message) {
             UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             UIALogger.logDebug(["FAILED:", failmsg].join(" "));
             automator.logScreenInfo();
+            automator.logStackInfo(exception);
             UIATarget.localTarget().captureScreenWithName(step.name);
             UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
@@ -700,6 +693,39 @@ function fail(message) {
         //UIATarget.localTarget().logElementTree(); // ugly
         UIALogger.logDebug(target().elementReferenceDump("target()"));
         UIALogger.logDebug(target().elementReferenceDump("target()", true));
+    };
+
+    /**
+     * Log information about the current stack
+     *
+     * @param mixed either an error object or a stack array
+     */
+    automator.logStackInfo = function (mixed) {
+        var stack;
+
+        if (mixed instanceof Array) {
+            stack = mixed;
+        } else {
+            var decoded = decodeStackTrace(mixed);
+
+            if (!decoded.isOK) {
+                UIALogger.logError("Decoding stack trace didn't work: " + decoded.message);
+            } else {
+                UIALogger.logError("Stack trace from " + decoded.errorName + ":");
+            }
+            stack = decoded.stack;
+        }
+
+        for (var i = 0; i < stack.length; ++i) {
+            var l = stack[i];
+            var position = "   #" + i + ": ";
+            var funcName = l.functionName === undefined ? "(anonymous)" : l.functionName;
+            if (l.nativeCode) {
+                UIALogger.logError(position + funcName + " from native code");
+            } else {
+                UIALogger.logError(position + funcName + " at " + l.file + " line " + l.line + " col " + l.column);
+            }
+        }
     };
 
 

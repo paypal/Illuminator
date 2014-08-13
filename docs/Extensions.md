@@ -119,8 +119,35 @@ The objects in the `stack` array have fields as follows:
 #### `getStackTrace()`
 Return the current stack trace (minus this function itself) at any point in code.  The return value is the same format as the `stack` field from `decodeStackTrace()`
 
+
+Exceptions Reference
+--------------------
+
+The following exceptions are predefined in Illuminator:
+
+#### `IlluminatorSetupException(message)`
+This exception indicates problems caused by improper setup of Illuminator: installation of ruby libraries, improper arguments passed to functions, etc.
+
+#### `IlluminatorRuntimeFailureException(message)`
+This exeception indicates an unexpected condition in the automation environment; the failure to accomplish something that expected to succeed.
+
+#### `IlluminatorRuntimeVerificationException(message)`
+This exception indicates a failed assertion in the state of the automation -- an improper value at a specific (known) checkpoint.
+
+
+Exception Class Creation Reference
+----------------------------------
+
+#### `makeErrorClass(className)`
+Create (return) an error constructor function to produce exception objects with the given class name.  The constructor function will accept `message` as its only argument.
+
+#### `makeErrorClassWithGlobalLocator(fileName, className)`
+Create (return) an error constructor function to produce exception objects with the given class name.  The constructor function will accept `message` as its only argument, and the message will be prepended with the filename, line number and column number of the place from which the error originated.  This function is meant to create error classes that will be caught by the global error handler (which is unable to produce stack traces) so that the probable location of the faulty lines can be reported.
+
+
+
 UIAElement Method Extensions Reference
---------------------------------
+--------------------------------------
 
 This is a function reference, not a class reference; the classes to which these functions belong will be indicated.
 
