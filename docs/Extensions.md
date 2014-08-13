@@ -93,15 +93,61 @@ Returns the number of seconds (with decimal milliseconds) since Jan 1st, 1970.
 #### `isNotNilElement(elem)`
 Returns `true` if the given element is a valid non-nil `UIAElement`.
 
-### `isHardSelector(selector)`
+#### `isHardSelector(selector)`
 Returns `true` if the given selector is a lookup function or string -- returning at most only one element.
 
-### `newUIAElementNil()`
+#### `newUIAElementNil()`
 Returns what you'd expect `new UIAElementNil()` to return, since it doesn't.
+
+#### `decodeStackTrace(err)`
+Returns an object describing the stack information contained in the caught error object `err`.  The fields in the return value are as follows:
+
+* `isOK`: boolean, whether any errors at all were encountered
+* `message`: string describing any error encountered
+* `errorName`: string name of the error
+* `stack`: an array of trace objects in the order that represents the stack
+
+The objects in the `stack` array have fields as follows:
+
+* `functionName`: string name of function, or undefined if the function was anonymous
+* `nativeCode`: boolean whether the function was defined in UIAutomation binary code
+* `file`: if not native code, the basename of the file containing the function
+* `line`: if not native code, the line where the function is defined
+* `column`: if not native code, the column where the function is defined
+
+
+#### `getStackTrace()`
+Return the current stack trace (minus this function itself) at any point in code.  The return value is the same format as the `stack` field from `decodeStackTrace()`
+
+
+Exceptions Reference
+--------------------
+
+The following exceptions are predefined in Illuminator:
+
+#### `IlluminatorSetupException(message)`
+This exception indicates problems caused by improper setup of Illuminator: installation of ruby libraries, improper arguments passed to functions, etc.
+
+#### `IlluminatorRuntimeFailureException(message)`
+This exeception indicates an unexpected condition in the automation environment; the failure to accomplish something that expected to succeed.
+
+#### `IlluminatorRuntimeVerificationException(message)`
+This exception indicates a failed assertion in the state of the automation -- an improper value at a specific (known) checkpoint.
+
+
+Exception Class Creation Reference
+----------------------------------
+
+#### `makeErrorClass(className)`
+Create (return) an error constructor function to produce exception objects with the given class name.  The constructor function will accept `message` as its only argument.
+
+#### `makeErrorClassWithGlobalLocator(fileName, className)`
+Create (return) an error constructor function to produce exception objects with the given class name.  The constructor function will accept `message` as its only argument, and the message will be prepended with the filename, line number and column number of the place from which the error originated.  This function is meant to create error classes that will be caught by the global error handler (which is unable to produce stack traces) so that the probable location of the faulty lines can be reported.
+
 
 
 UIAElement Method Extensions Reference
---------------------------------
+--------------------------------------
 
 This is a function reference, not a class reference; the classes to which these functions belong will be indicated.
 

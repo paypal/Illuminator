@@ -17,6 +17,10 @@ var debugBridge = false;
         bridge = root.bridge = {};
     }
 
+    // Exception classes
+    bridge.SetupException = makeErrorClass("BridgeSetupException");
+
+
     var bridgeCallNum = 0; // the call ID of a request in progress
     var bridgeWaitTime = 6; // seconds to wait for response from a bridge call
 
@@ -64,12 +68,12 @@ var debugBridge = false;
         if (output) {
             if ("" == output.stdout.trim()) {
                 UIALogger.logWarning("Ruby may not be working, try $ ruby " + taskArguments.join(" "));
-                throw "Bridge got back an empty/blank string instead of JSON";
+                throw new bridge.SetupException("Bridge got back an empty/blank string instead of JSON");
             }
             try {
                 jsonOutput = JSON.parse(output.stdout);
             } catch(e) {
-                throw ("Bridge got back bad JSON: " + output.stdout);
+                throw new IlluminatorRuntimeFailureException("Bridge got back bad JSON: " + output.stdout);
             }
         } else {
             jsonOutput = null;
@@ -81,15 +85,16 @@ var debugBridge = false;
 
         // this sanity check verifies that the ruby script was able to execute properly
         if (ruby_check === undefined) {
-            throw "Bridge failed ruby check for '" + UID + "'.  Check ruby errors by running bridge script manually.";
+            throw new bridge.SetupException("Bridge failed ruby check for '" + UID + "'.  "
+                                            + "Check ruby errors by running bridge script manually.");
         }
 
         // this status check tries to figure out whether the connection to the sim was successful
         if (response === undefined) {
-            if (status_check === undefined)    throw "Bridge status check missing for '" + UID + "'.";
-            if (status_check == "initialized") throw "Bridge appears not to have connected to app";
-            if (status_check == "errbacked")   throw "Bridge errbacked with '" + jsonOutput["error_message"] + "'.";
-            if (status_check == "streamed")    throw "Bridge received data but did not understand the response";
+            if (status_check === undefined)    throw new IlluminatorRuntimeFailureException("Bridge status check missing for '" + UID + "'.");
+            if (status_check == "initialized") throw new IlluminatorRuntimeFailureException("Bridge appears not to have connected to app");
+            if (status_check == "errbacked")   throw new IlluminatorRuntimeFailureException("Bridge errbacked with '" + jsonOutput["error_message"] + "'.");
+            if (status_check == "streamed")    throw new IlluminatorRuntimeFailureException("Bridge received data but did not understand the response");
         }
 
 

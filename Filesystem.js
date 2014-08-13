@@ -48,7 +48,7 @@ function getPlistData(path) {
     try {
         jsonOutput = JSON.parse(output.stdout);
     } catch(e) {
-        throw ("plist_to_json.sh gave bad JSON: ```" + output.stdout + "```");
+        throw new Error("plist_to_json.sh gave bad JSON: ```" + output.stdout + "```");
     }
 
     return jsonOutput;

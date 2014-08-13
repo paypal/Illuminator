@@ -35,7 +35,7 @@ function IlluminatorIlluminate() {
         break;
 
     default:
-        throw "Unknown Illuminator entry point specified: " + config.entryPoint;
+        throw new IlluminatorSetupException("Unknown Illuminator entry point specified: " + config.entryPoint);
     }
 }
 
@@ -60,8 +60,8 @@ function isSimVersion(major, minor, rev) {
 function assertDesiredSimVersion() {
     var ver = target().systemVersion();
     if (("iOS " + ver).indexOf(config.automatorDesiredSimVersion) == -1) {
-        throw "Simulator version " + ver + " is running, but generated-config.js " +
-            "specifies " + config.automatorDesiredSimVersion;
+        throw new IlluminatorSetupException("Simulator version " + ver + " is running, but generated-config.js " +
+            "specifies " + config.automatorDesiredSimVersion);
     }
 }
 
@@ -100,7 +100,9 @@ function actionCompareScreenshotToMaster(parm) {
     }
 
     // sanity check
-    if (!outputObj["pixels changed"]) throw "actionCompareScreenshotToMaster: diff_png.sh failed to produce 'pixels changed' output";
+    if (!outputObj["pixels changed"]) {
+        throw new IlluminatorRuntimeVerificationException("actionCompareScreenshotToMaster: diff_png.sh failed to produce 'pixels changed' output");
+    }
 
     // if differences are outside tolerances, throw errors
     var allPixels = parseInt(outputObj["pixels (total)"]);
@@ -117,7 +119,7 @@ function actionCompareScreenshotToMaster(parm) {
         if (parm.deferFailure === true) {
             automator.deferFailure(errmsg);
         } else {
-            throw errmsg;
+            throw new IlluminatorRuntimeVerificationException(errmsg);
         }
     }
 
@@ -131,7 +133,7 @@ function actionCompareScreenshotToMaster(parm) {
 
             if (parm.deferFailure === true) {
             } else {
-                throw errmsg;
+                throw new IlluminatorRuntimeVerificationException(errmsg);
             }
         }
     }
@@ -179,7 +181,7 @@ appmap.createOrAugmentApp("Illuminator").withScreen("do")
     .withImplementation(actionCaptureElementTree)
 
     .withAction("fail", "Unconditionally fail the current test for debugging purposes")
-    .withImplementation(function() { throw "purposely-thrown exception to halt the test scenario"; })
+    .withImplementation(function() { throw new IlluminatorRuntimeVerificationException("purposely-thrown exception to halt the test scenario"); })
 
     .withAction("verifyScreenshot", "Validate a screenshot against a png template of the expected view")
     .withParam("masterPath", "The path to the file that is considered the 'expected' view", true, true)
