@@ -279,7 +279,7 @@ Same as `.withName(name)` for UIAElementArray objects, but does a regular expres
 Preprocessing Selectors - an Example
 ------------------------------------
 
-This trivial preprocessor example intercepts a currency amount specified as a float and converts it to a string.
+This trivial preprocessor example intercepts a custom field -- a currency `amount` specified as a float -- and converts it to a condition on the `name` field.
 
 ```javascript
 function preProcessSelectorWithCurrency(originalSelector) {
@@ -294,14 +294,17 @@ function preProcessSelectorWithCurrency(originalSelector) {
     }
 
     var outputSelector = [];
+    // iterate over the selectors in the chain
     for (var i = 0; i < selector.length; ++i) {
+        // iterate over the fields in one criteria selector and build the modified criteria
         var criteria = {};
         for (var k in selector[i]) {
-            if (k == "amount") {
-                var floatVal = selector[i][k];
-                criteria["name"] = "$" + floatVal.toFixed(2);
+            // keep all fields the same, but if we encounter "amount" then convert it
+            var v = selector[i][k];
+            if (key == "amount") {
+                criteria["name"] = "$" + v.toFixed(2);
             } else {
-                criteria[k] = selector[i][k];
+                criteria[k] = v;
             }
         }
         outputSelector.push(criteria);
