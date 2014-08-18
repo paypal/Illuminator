@@ -1469,22 +1469,30 @@ extendPrototype(UIATableView, {
             delay(delayToPreventUIAutomationBug);
         };
 
-        // scroll down until we've made all known cells visible at least once
-        for (initializeScroll(this); lastVisibleCell < (this.cells().length - 1); downScroll(this)) {
-            // find this visible cell
-            for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
-                thisVisibleCell = i;
-                var ret = this.cells().firstWithPredicate(cellPredicate);
-                if (ret && ret.isNotNil()) {
-                    ret.scrollToVisible();
-                    delay(delayToPreventUIAutomationBug);
-                    return ret;
-                }
-            }
-            UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
-                               + " didn't match predicate: " + cellPredicate);
+        try {
+            UIATarget.localTarget().pushTimeout(0);
 
-            lastVisibleCell = thisVisibleCell;
+            // scroll down until we've made all known cells visible at least once
+            for (initializeScroll(this); lastVisibleCell < (this.cells().length - 1); downScroll(this)) {
+                // find this visible cell
+                for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
+                    thisVisibleCell = i;
+                    var ret = this.cells().firstWithPredicate(cellPredicate);
+                    if (ret && ret.isNotNil()) {
+                        ret.scrollToVisible();
+                        delay(delayToPreventUIAutomationBug);
+                        return ret;
+                    }
+                }
+                UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
+                                   + " didn't match predicate: " + cellPredicate);
+
+                lastVisibleCell = thisVisibleCell;
+            }
+        } catch (e) {
+            UIALogger.logDebug("getCellWithPredicateByScrolling caught/ignoring: " + e);
+        } finally {
+            UIATarget.localTarget().popTimeout();
         }
 
         return newUIAElementNil();
