@@ -709,9 +709,9 @@ var debugAutomator = false;
             var decoded = decodeStackTrace(mixed);
 
             if (!decoded.isOK) {
-                UIALogger.logError("Decoding stack trace didn't work: " + decoded.message);
+                UIALogger.logMessage("Decoding stack trace didn't work: " + decoded.message);
             } else {
-                UIALogger.logError("Stack trace from " + decoded.errorName + ":");
+                UIALogger.logMessage("Stack trace from " + decoded.errorName + ":");
             }
             stack = decoded.stack;
         }
@@ -721,9 +721,9 @@ var debugAutomator = false;
             var position = "   #" + i + ": ";
             var funcName = l.functionName === undefined ? "(anonymous)" : l.functionName;
             if (l.nativeCode) {
-                UIALogger.logError(position + funcName + " from native code");
+                UIALogger.logMessage(position + funcName + " from native code");
             } else {
-                UIALogger.logError(position + funcName + " at " + l.file + " line " + l.line + " col " + l.column);
+                UIALogger.logMessage(position + funcName + " at " + l.file + " line " + l.line + " col " + l.column);
             }
         }
     };
