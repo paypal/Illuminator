@@ -8,53 +8,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Shortcut to defining simple error classes
- *
- * @param className string name for the new error class
- * @return a function that is used to construct new error instances
- */
-function makeErrorClass(className) {
-    return function (message) {
-        this.name = className;
-        this.message = message;
-        this.toString = function() { return this.name + ": " + this.message; };
-    };
-}
-
-/**
- * Shortcut to defining error classes that indicate the function/file/line that triggered them
- *
- * These are for cases where the errors are expected to be caught by the global error handler
- *
- * @param fileName string basename of the file where the function is defined (gets stripped out)
- * @param className string name for the new error class
- * @return a function that is used to construct new error instances
- */
-function makeErrorClassWithGlobalLocator(fileName, className) {
-
-    var _getCallingFunction = function () {
-        var stack = getStackTrace();
-        for (var i = 0; i < stack.length; ++i) {
-            var l = stack[i];
-            if (!(l.nativeCode || fileName == l.file)) {
-                return "In " + l.functionName + " at " + l.file + " line " + l.line + " col " + l.column + ": ";
-            }
-        }
-        return "";
-    };
-
-   return function (message) {
-        this.name = className;
-        this.message = _getCallingFunction() + message;
-        this.toString = function() { return this.name + ": " + this.message; };
-    };
-}
-
-IlluminatorSetupException = makeErrorClass("IlluminatorSetupException");
-IlluminatorRuntimeFailureException = makeErrorClass("IlluminatorRuntimeFailureException");
-IlluminatorRuntimeVerificationException = makeErrorClass("IlluminatorRuntimeVerificationException");
-
-/**
  * Decode a stack trace into something readable
  *
  * UIAutomation has a decent `.backtrace` property for errors, but ONLY for the `Error` class.
@@ -150,6 +103,54 @@ function getStackTrace() {
         return decodeStackTrace(e).stack.slice(1);
     }
 }
+
+/**
+ * Shortcut to defining simple error classes
+ *
+ * @param className string name for the new error class
+ * @return a function that is used to construct new error instances
+ */
+function makeErrorClass(className) {
+    return function (message) {
+        this.name = className;
+        this.message = message;
+        this.toString = function() { return this.name + ": " + this.message; };
+    };
+}
+
+/**
+ * Shortcut to defining error classes that indicate the function/file/line that triggered them
+ *
+ * These are for cases where the errors are expected to be caught by the global error handler
+ *
+ * @param fileName string basename of the file where the function is defined (gets stripped out)
+ * @param className string name for the new error class
+ * @return a function that is used to construct new error instances
+ */
+function makeErrorClassWithGlobalLocator(fileName, className) {
+
+    var _getCallingFunction = function () {
+        var stack = getStackTrace();
+        // start from 2nd position on stack, after _getCallingFunction and makeErrorClassWithGlobalLocator
+        for (var i = 2; i < stack.length; ++i) {
+            var l = stack[i];
+            if (!(l.nativeCode || fileName == l.file)) {
+                return "In " + l.functionName + " at " + l.file + " line " + l.line + " col " + l.column + ": ";
+            }
+        }
+        return "";
+    };
+
+   return function (message) {
+        this.name = className;
+        this.message = _getCallingFunction() + message;
+        this.toString = function() { return this.name + ": " + this.message; };
+    };
+}
+
+IlluminatorSetupException = makeErrorClass("IlluminatorSetupException");
+IlluminatorRuntimeFailureException = makeErrorClass("IlluminatorRuntimeFailureException");
+IlluminatorRuntimeVerificationException = makeErrorClass("IlluminatorRuntimeVerificationException");
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1468,22 +1469,30 @@ extendPrototype(UIATableView, {
             delay(delayToPreventUIAutomationBug);
         };
 
-        // scroll down until we've made all known cells visible at least once
-        for (initializeScroll(this); lastVisibleCell < (this.cells().length - 1); downScroll(this)) {
-            // find this visible cell
-            for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
-                thisVisibleCell = i;
-                var ret = this.cells().firstWithPredicate(cellPredicate);
-                if (ret && ret.isNotNil()) {
-                    ret.scrollToVisible();
-                    delay(delayToPreventUIAutomationBug);
-                    return ret;
-                }
-            }
-            UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
-                               + " didn't match predicate: " + cellPredicate);
+        try {
+            UIATarget.localTarget().pushTimeout(0);
 
-            lastVisibleCell = thisVisibleCell;
+            // scroll down until we've made all known cells visible at least once
+            for (initializeScroll(this); lastVisibleCell < (this.cells().length - 1); downScroll(this)) {
+                // find this visible cell
+                for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
+                    thisVisibleCell = i;
+                    var ret = this.cells().firstWithPredicate(cellPredicate);
+                    if (ret && ret.isNotNil()) {
+                        ret.scrollToVisible();
+                        delay(delayToPreventUIAutomationBug);
+                        return ret;
+                    }
+                }
+                UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
+                                   + " didn't match predicate: " + cellPredicate);
+
+                lastVisibleCell = thisVisibleCell;
+            }
+        } catch (e) {
+            UIALogger.logDebug("getCellWithPredicateByScrolling caught/ignoring: " + e);
+        } finally {
+            UIATarget.localTarget().popTimeout();
         }
 
         return newUIAElementNil();

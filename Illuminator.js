@@ -144,7 +144,7 @@ function actionLogAccessors(parm) {
         delay(parm.delay);
     }
     var visibleOnly = parm !== undefined && parm.visibleOnly === true;
-    UIALogger.logDebug(mainWindow.elementAccessorDump("mainWindow", visibleOnly));
+    UIALogger.logDebug(mainWindow().elementReferenceDump("mainWindow", visibleOnly));
 }
 
 function actionCaptureElementTree(parm) {
