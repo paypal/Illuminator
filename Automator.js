@@ -34,7 +34,10 @@ var debugAutomator = false;
     // table of callbacks that are used by automator.  sensible defaults.
     automator.callback = {
         init: function () { UIALogger.logDebug("Running default automator 'init' callback"); },
-        preScenario: function () { UIALogger.logDebug("Running default automator 'preScenario' callback"); },
+        preScenario: function (parm) { UIALogger.logDebug("Running default automator 'preScenario' callback " + JSON.stringify(parm)); },
+        onScenarioPass: function (parm) { UIALogger.logDebug("Running default automator 'onScenarioPass' callback " + JSON.stringify(parm)); },
+        onScenarioFail: function (parm) { UIALogger.logDebug("Running default automator 'onScenarioFail' callback " + JSON.stringify(parm)); },
+        complete: function (parm) { UIALogger.logDebug("Running default automator 'complete' callback " + JSON.stringify(parm)); }
     };
 
     /**
@@ -55,15 +58,81 @@ var debugAutomator = false;
         automator.callback["preScenario"] = fn;
     };
 
-
-    automator.didInit = false;
     /**
-     * call the initial callback if it has not already done so
+     * set the callback function for successful completion of a scenario
+     *
+     * The callback function takes an associative array with the following keys:
+     *  - scenarioName
+     *  - timeStarted
+     *  - duration
+     *
+     * @param fn the callback function, taking an associative array and whose return value is ignored
      */
-    automator.checkInit = function () {
-        if (!automator.didInit) {
-            automator.didInit = true;
-            automator.callback["init"]();
+    automator.setCallbackOnScenarioPass = function (fn) {
+        automator.callback["onScenarioPass"] = fn;
+    };
+
+    /**
+     * set the callback function for failed completion of a scenario
+     *
+     * The callback function takes an associative array with the following keys:
+     *  - scenarioName
+     *  - timeStarted
+     *  - duration
+     *
+     * @param fn the callback function, taking an associative array and whose return value is ignored
+     */
+    automator.setCallbackOnScenarioFail = function (fn) {
+        automator.callback["onScenarioFail"] = fn;
+    };
+
+    /**
+     * set the callback function for the conclusion of all scenarios
+     *
+     * The callback function takes an associative array with the following keys:
+     *  - timeStarted
+     *  - duration
+     *
+     * @param fn the callback function, taking  and whose return value is ignored
+     */
+    automator.setCallbackComplete = function (fn) {
+        automator.callback["complete"] = fn;
+    };
+
+
+    /**
+     * Safely execute a callback
+     *
+     * @param callbackName the string key into the callback array
+     * @param parameters the parameter array that should be passed to the callback
+     * @param doLogFail whether to log a failure message (i.e. whether we are currently in a test)
+     * @param doLogScreen whether to log the screen on a failure
+     * @return bool whether the callback was successful
+     */
+    automator._executeCallback = function (callbackName, parameters, doLogFail, doLogScreen) {
+        try {
+            // call with parameters if supplied and return normally
+            if (parameters === undefined) {
+                automator.callback[callbackName]();
+            } else {
+                automator.callback[callbackName](parameters);
+            }
+            return true;
+        } catch (e) {
+            var failMessage = "Callback '" + callbackName + "' failed: " + e;
+
+            // log info as requested
+            if (doLogScreen) {
+                automator.logScreenInfo();
+            }
+            automator.logStackInfo(e);
+
+            if (doLogFail) {
+                UIALogger.logFail(failMessage);
+            } else {
+                UIALogger.logError(failMessage);
+            }
+            return false;
         }
     };
 
@@ -298,7 +367,6 @@ var debugAutomator = false;
      * @param randomSeed integer - if provided, will be used to randomize the run order
      */
     automator.runTaggedScenarios = function (tagsAny, tagsAll, tagsNone, randomSeed) {
-        automator.checkInit();
         UIALogger.logMessage("Automator running scenarios with tagsAny: [" + tagsAny.join(", ") + "]"
                              + ", tagsAll: [" + tagsAll.join(", ") + "]"
                              + ", tagsNone: [" + tagsNone.join(", ") + "]");
@@ -325,7 +393,6 @@ var debugAutomator = false;
      * @param randomSeed integer - if provided, will be used to randomize the run order
      */
     automator.runNamedScenarios = function (scenarioNames, randomSeed) {
-        automator.checkInit();
         UIALogger.logMessage("Automator running " + scenarioNames.length + " scenarios by name");
 
         // filter the list by name
@@ -356,17 +423,16 @@ var debugAutomator = false;
             onesToRun = automator.shuffle(scenarioList, randomSeed);
         }
 
+        // run initial callback and only continue on if it succeeds
+        if (!automator._executeCallback("init", undefined, false, false)) return;
+
         var dt;
         var t0 = getTime();
         // iterate through scenarios and run them
         UIALogger.logMessage(scenarioList.length + " scenarios to run");
         for (var i = 0; i < scenarioList.length; i++) {
             var message = "Running scenario " + (i + 1).toString() + " of " + scenarioList.length;
-            var scenario = scenarioList[i];
-            var t1 = getTime();
-            automator.runScenario(scenario, message);
-            dt = getTime() - t1;
-            UIALogger.logDebug("Scenario completed in " + secondsToHMS(dt));
+            automator.runScenario(scenarioList[i], message);
         }
         dt = getTime() - t0;
         UIALogger.logMessage("Automation completed in " + secondsToHMS(dt));
@@ -385,24 +451,121 @@ var debugAutomator = false;
         UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime)
                              + " - full report at " + selectorReportCsvPath);
 
-        bridge.runNativeMethod("automationEnded:");
+        // run completion callback
+        var info = {
+            scenarioCount: scenarioList.length,
+            timeStarted: t0,
+            duration: dt
+        };
+        automator._executeCallback("complete", info, false, false);
+
         return this;
     };
 
 
     /**
-     * Run a single scenario and record its pass/fail status
+     * Run a single scenario and handle all its reporting callbacks
      *
      * @param scenario an automator scenario
      * @param message string a message to print at the beginning of the test, immediately after the start
      */
     automator.runScenario = function (scenario, message) {
-        automator.checkInit();
+        var t1 = getTime();
+        var passed = automator._evaluateScenario(scenario, message);
+        var dt = getTime() - t1;
+        var info = {
+            scenarioName: scenario.title,
+            timeStarted: t1,
+            duration: dt
+        };
+
+        UIALogger.logDebug("Scenario completed in " + secondsToHMS(dt));
+        automator._executeCallback(passed ? "onScenarioPass" : "onScenarioFail", info, false, false);
+    };
+
+
+    /**
+     * Describe a scenario step (to the log)
+     *
+     * @param stepNumber the 1-indexed number of this step in the scenario
+     * @param totalSteps the total number of steps in this scenario
+     * @param step an automator scenario step
+     */
+    automator._logScenarioStep = function (stepNumber, totalSteps, step) {
+        // build the parameter list to go in the step description
+        var parameters = step.parameters;
+        var parameters_arr = [];
+        var parameters_str = "";
+        for (var k in parameters) {
+            var v = parameters[k];
+            if (step.action.params[k].useInSummary && undefined !== v) {
+                parameters_arr.push(k.toString() + ": " + v.toString());
+            }
+        }
+
+        // make the descriptive parameter string
+        parameters_str = parameters_arr.length ? (" {" + parameters_arr.join(", ") + "}") : "";
+
+        // build the step description
+        UIALogger.logMessage(["STEP ", stepNumber, " of ", totalSteps, ": ",
+                              "(", step.action.appName, ".", step.action.screenName, ".", step.action.name, ") ",
+                              step.action.description,
+                              parameters_str
+                             ].join(""));
+    };
+
+
+    /**
+     * Assert that an automator step is on the correct screen
+     *
+     * @param step an automator scenario step
+     */
+    automator._assertCorrectScreen = function (step) {
+        // assert isCorrectScreen function exists
+        if (undefined === step.action.isCorrectScreen[config.implementation]) {
+            throw new IlluminatorSetupException(["No isCorrectScreen function defined for '",
+                                                 step.action.screenName, ".", step.action.name,
+                                                 "' on ", config.implementation].join(""));
+        }
+
+        // assert correct screen
+        if (!step.action.isCorrectScreen[config.implementation]()) {
+            throw new IlluminatorRuntimeVerificationException(["Failed assertion that '", step.action.screenName, "' is active"].join(""));
+        }
+    };
+
+
+    /**
+     * Extract the implementation-specific action from a step and execute it
+     *
+     * @param step an automator scenario step
+     */
+    automator._executeStepAction = function (step) {
+        var actFn = step.action.actionFn["default"];
+        if (step.action.actionFn[config.implementation] !== undefined) actFn = step.action.actionFn[config.implementation];
+
+        // call step action with or without parameters, as appropriate
+        if (step.parameters !== undefined) {
+            actFn.call(this, step.parameters);
+        } else {
+            actFn.call(this);
+        }
+    };
+
+
+    /**
+     * Run a single scenario and return its pass/fail status
+     *
+     * @param scenario an automator scenario
+     * @param message string a message to print at the beginning of the test, immediately after the start
+     * @return boolean whether the scenario finished successfully
+     */
+    automator._evaluateScenario = function (scenario, message) {
 
         var testname = [scenario.title, " [", Object.keys(scenario.tags_obj).join(", "), "]"].join("");
         UIALogger.logDebug("###############################################################");
         UIALogger.logStart(testname);
-        if(undefined !== message) {
+        if (undefined !== message) {
             UIALogger.logMessage(message);
         }
 
@@ -412,18 +575,13 @@ var debugAutomator = false;
         } else {
             UIALogger.logDebug("(No previous test)");
         }
+        automator.lastRunScenario = scenario.title;
 
         // initialize the scenario
+        UIALogger.logDebug("----------------------------------------------------------------");
         UIALogger.logMessage("STEP 0: Reset automator for new scenario");
-        try {
-            automator._resetState();
-            automator.callback["preScenario"]();
-        } catch (e) {
-            automator.logScreenInfo();
-            automator.logStackInfo(e);
-            UIALogger.logFail("Test setup failed: " + e);
-            return;
-        }
+        automator._resetState();
+        if (!automator._executeCallback("preScenario", {scenarioName: scenario.title}, true, true)) return false;
 
         // wrap the iteration of the test steps in try/catch
         var step = null;
@@ -433,71 +591,34 @@ var debugAutomator = false;
             for (var i = 0; i < scenario.steps.length; i++) {
                 var step = scenario.steps[i];
                 if (debugAutomator) {
-                    UIALogger.logDebug("----------------------------------------------------------------");
-                    UIALogger.logDebug(["STEP", i + 1, JSON.stringify(step)].join(""));
+                    UIALogger.logDebug(["DEBUG step ", i + 1, JSON.stringify(step)].join(""));
                 }
 
                 // set the current step name
                 automator._state.internal["currentStepName"] = step.action.screenName + "." + step.action.name;
                 automator._state.internal["currentStepNumber"] = i + 1;
 
-                // build the parameter list to go in the step description
-                var parameters = step.parameters;
-                var parameters_arr = [];
-                var parameters_str = "";
-                for (var k in parameters) {
-                    var v = parameters[k];
-                    if (step.action.params[k].useInSummary && undefined !== v) {
-                        parameters_arr.push(k.toString() + ": " + v.toString());
-                    }
-                }
-
-                // make the descriptive parameter string
-                parameters_str = parameters_arr.length ? (" {" + parameters_arr.join(", ") + "}") : "";
-
-                // build the step description
+                // log this step to the console
                 UIALogger.logDebug("----------------------------------------------------------------");
-                UIALogger.logMessage(["STEP ", i + 1, " of ",
-                                      scenario.steps.length, ": ",
-                                      "(", step.action.appName, ".", step.action.screenName, ".", step.action.name, ") ",
-                                      step.action.description,
-                                      parameters_str
-                                      ].join(""));
+                automator._logScenarioStep(i + 1, scenario.steps.length, step);
 
-                // assert isCorrectScreen function
-                if (undefined === step.action.isCorrectScreen[config.implementation]) {
-                    throw new IlluminatorSetupException(["No isCorrectScreen function defined for '",
-                                                         step.action.screenName, ".", step.action.name,
-                                                         "' on ", config.implementation].join(""));
-                }
+                // make sure the screen containing the action is active
+                automator._assertCorrectScreen(step);
 
-                // assert correct screen
-                if (!step.action.isCorrectScreen[config.implementation]()) {
-                    throw new IlluminatorRuntimeVerificationException(["Failed assertion that '", step.action.screenName, "' is active"].join(""));
-                }
-
-                var actFn = step.action.actionFn["default"];
-                if (step.action.actionFn[config.implementation] !== undefined) actFn = step.action.actionFn[config.implementation];
-
-                // call step action with or without parameters, as appropriate
-                if (parameters !== undefined) {
-                    actFn.call(this, parameters);
-                } else {
-                    actFn.call(this);
-                }
+                // retrieve and execute the correct step action
+                automator._executeStepAction(step);
 
             }
 
             // check for any deferred errors
-            if (0 == automator._state.internal.deferredFailures.length) {
-                UIALogger.logPass(testname);
-            } else {
+            if (0 < automator._state.internal.deferredFailures.length) {
                 for (var i = 0; i < automator._state.internal.deferredFailures.length; ++i) {
                     UIALogger.logMessage("Deferred Failure " + (i + 1).toString() + ": " + automator._state.internal.deferredFailures[i]);
                 }
                 UIALogger.logFail(["The test completed all its steps, but",
                                    automator._state.internal.deferredFailures.length.toString(),
                                    "failures were deferred"].join(" "));
+                return false;
             }
 
         } catch (exception) {
@@ -525,9 +646,11 @@ var debugAutomator = false;
             }
             UIALogger.logDebug(longmsg);
             UIALogger.logFail(longmsg);
+            return false;
        }
 
-        automator.lastRunScenario = scenario.title;
+        UIALogger.logPass(testname);
+        return true;
     };
 
 

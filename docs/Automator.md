@@ -66,6 +66,29 @@ Store `callbackFn`, running it only once -- during the initialization of the aut
 #### `.setCallbackPreScenario(callbackFn)`
 Store `callbackFn`, running it before each test scenario.  `callbackFn` will be called with no arguments, and its return value will be ignored.
 
+#### `.setCallbackOnScenarioPass(callbackFn)`
+Store `callbackFn`, running it upon each successful completion of a test scenario.  `callbackFn` will be called with a single argument (an associative array described below), and its return value will be ignored.
+
+* `scenarioName` - the name of the scenario that has completed
+* `timeStarted` - epochal time that the scenario began
+* `duration` - the number of seconds requried to run the scenario to successful completion
+
+
+#### `.setCallbackOnScenarioFail(callbackFn)`
+Store `callbackFn`, running it upon each failure of a test scenario.  `callbackFn` will be called with a single argument (an associative array described below), and its return value will be ignored.
+
+* `scenarioName` - the name of the scenario that has completed
+* `timeStarted` - epochal time that the scenario began
+* `duration` - the number of seconds requried to run the scenario until its failure
+
+
+#### `.setCallbackComplete(callbackFn)`
+Store `callbackFn`, running it upon completion of all test scenarios.  `callbackFn` will be called with a single argument (an associative array described below), and its return value will be ignored.
+
+* `scenarioCount` - the number of scenarios that were run
+* `timeStarted` - epochal time that the scenario began
+* `duration` - the number of seconds requried to run the scenario until its failure
+
 
 
 Running Scenarios With Automator
