@@ -4,7 +4,7 @@
 
 var debugAutomator = false;
 
-(function() {
+(function () {
 
     var root = this,
         automator = null;
@@ -33,8 +33,8 @@ var debugAutomator = false;
 
     // table of callbacks that are used by automator.  sensible defaults.
     automator.callback = {
-        init: function() { UIALogger.logDebug("Running default automator 'init' callback"); },
-        prescenario: function() { UIALogger.logDebug("Running default automator 'prescenario' callback"); }
+        init: function () { UIALogger.logDebug("Running default automator 'init' callback"); },
+        preScenario: function () { UIALogger.logDebug("Running default automator 'preScenario' callback"); },
     };
 
     /**
@@ -42,7 +42,7 @@ var debugAutomator = false;
      *
      * @param fn the callback function, taking no arguments and whose return value is ignored
      */
-    automator.setCallbackInit = function(fn) {
+    automator.setCallbackInit = function (fn) {
         automator.callback["init"] = fn;
     };
 
@@ -51,8 +51,8 @@ var debugAutomator = false;
      *
      * @param fn the callback function, taking no arguments and whose return value is ignored
      */
-    automator.setCallbackPreScenario = function(fn) {
-        automator.callback["prescenario"] = fn;
+    automator.setCallbackPreScenario = function (fn) {
+        automator.callback["preScenario"] = fn;
     };
 
 
@@ -60,7 +60,7 @@ var debugAutomator = false;
     /**
      * call the initial callback if it has not already done so
      */
-    automator.checkInit = function() {
+    automator.checkInit = function () {
         if (!automator.didInit) {
             automator.didInit = true;
             automator.callback["init"]();
@@ -79,7 +79,7 @@ var debugAutomator = false;
     /**
      * Reset the automator state for a new test scenario to run
      */
-    automator._resetState = function() {
+    automator._resetState = function () {
         automator._state.external = {};
         automator._state.internal = {"deferredFailures": []};
     };
@@ -90,7 +90,7 @@ var debugAutomator = false;
      * @param key the name of the state
      * @param value the value of the state
      */
-    automator.setState = function(key, value) {
+    automator.setState = function (key, value) {
         automator._state.external[key] = value;
     };
 
@@ -100,7 +100,7 @@ var debugAutomator = false;
      * @param key the key to check
      * @return bool whether there is a state with that key
      */
-    automator.hasState = function(key) {
+    automator.hasState = function (key) {
         return undefined !== automator._state.external[key];
     };
 
@@ -110,7 +110,7 @@ var debugAutomator = false;
      * @param key the name of the state
      * @param defaultValue the value to return if key is undefined
      */
-    automator.getState = function(key, defaultValue) {
+    automator.getState = function (key, defaultValue) {
         if (automator.hasState(key)) return automator._state.external[key];
 
         UIALogger.logDebug("Automator state '" + key + "' not found, returning default");
@@ -122,7 +122,7 @@ var debugAutomator = false;
      *
      * @param err the error object
      */
-    automator.deferFailure = function(err) {
+    automator.deferFailure = function (err) {
         UIALogger.logDebug("Deferring an error: " + err);
         automator.logScreenInfo();
         automator.logStackInfo(getStackTrace());
@@ -154,7 +154,7 @@ var debugAutomator = false;
      * @param tags array of tags for the scenario
      * @return this
      */
-    automator.createScenario = function(scenarioName, tags) {
+    automator.createScenario = function (scenarioName, tags) {
         if (tags === undefined) tags = ["_untagged"]; // always have a tag
 
         // check uniqueness
@@ -241,7 +241,7 @@ var debugAutomator = false;
      * @param desiredParameters associative array of parameters
      * @return this
      */
-    automator.withStep = function(screenAction, desiredParameters) {
+    automator.withStep = function (screenAction, desiredParameters) {
         // generate a helpful error message if the screen action isn't defined
         if (undefined === screenAction || typeof screenAction === 'string') {
             var failmsg = ["withStep received an undefined screen action in scenario '",
@@ -297,7 +297,7 @@ var debugAutomator = false;
      * @param tagsNone array - any scenario with NONE of these tags will run
      * @param randomSeed integer - if provided, will be used to randomize the run order
      */
-    automator.runTaggedScenarios = function(tagsAny, tagsAll, tagsNone, randomSeed) {
+    automator.runTaggedScenarios = function (tagsAny, tagsAll, tagsNone, randomSeed) {
         automator.checkInit();
         UIALogger.logMessage("Automator running scenarios with tagsAny: [" + tagsAny.join(", ") + "]"
                              + ", tagsAll: [" + tagsAll.join(", ") + "]"
@@ -324,7 +324,7 @@ var debugAutomator = false;
      * @param scenarioNames array - the list of named scenarios to run
      * @param randomSeed integer - if provided, will be used to randomize the run order
      */
-    automator.runNamedScenarios = function(scenarioNames, randomSeed) {
+    automator.runNamedScenarios = function (scenarioNames, randomSeed) {
         automator.checkInit();
         UIALogger.logMessage("Automator running " + scenarioNames.length + " scenarios by name");
 
@@ -349,7 +349,7 @@ var debugAutomator = false;
      * @param senarioList array of scenarios to run, in order
      * @param ramdomSeed optional number, if provided the test run order will be randomized with this as a seed
      */
-    automator.runScenarioList = function(scenarioList, randomSeed) {
+    automator.runScenarioList = function (scenarioList, randomSeed) {
         // randomize if asked
         if (randomSeed !== undefined) {
             UIALogger.logMessage("Automator RANDOMIZING scenarios with seed = " + randomSeed);
@@ -396,7 +396,7 @@ var debugAutomator = false;
      * @param scenario an automator scenario
      * @param message string a message to print at the beginning of the test, immediately after the start
      */
-    automator.runScenario = function(scenario, message) {
+    automator.runScenario = function (scenario, message) {
         automator.checkInit();
 
         var testname = [scenario.title, " [", Object.keys(scenario.tags_obj).join(", "), "]"].join("");
@@ -417,7 +417,7 @@ var debugAutomator = false;
         UIALogger.logMessage("STEP 0: Reset automator for new scenario");
         try {
             automator._resetState();
-            automator.callback["prescenario"]();
+            automator.callback["preScenario"]();
         } catch (e) {
             automator.logScreenInfo();
             automator.logStackInfo(e);
@@ -537,7 +537,7 @@ var debugAutomator = false;
      * @param scenario an automator scenario
      * @return bool
      */
-    automator.deviceSupportsScenario = function(scenario) {
+    automator.deviceSupportsScenario = function (scenario) {
         // if any actions are neither defined for the current device nor "default"
         for (var i = 0; i < scenario.steps.length; ++i) {
             var s = scenario.steps[i];
@@ -571,7 +571,7 @@ var debugAutomator = false;
      * @param tagsNone array - any scenario with NONE of these tags will run
      * @return bool
      */
-    automator.scenarioMatchesCriteria = function(scenario, tagsAny, tagsAll, tagsNone) {
+    automator.scenarioMatchesCriteria = function (scenario, tagsAny, tagsAll, tagsNone) {
         // if any tagsAll are missing from scenario, fail
         for (var i = 0; i < tagsAll.length; ++i) {
             var t = tagsAll[i];
@@ -603,7 +603,7 @@ var debugAutomator = false;
      * @param array the array to be shuffled
      * @param seed number to seed the PRNG
      */
-    automator.shuffle = function(array, seed) {
+    automator.shuffle = function (array, seed) {
         var idx = array.length;
         var tmp;
         var rnd;
