@@ -64,7 +64,10 @@ They can be set as follows.
 Store `callbackFn`, running it only once -- during the initialization of the automator.  `callbackFn` will be called with no arguments, and its return value will be ignored.
 
 #### `.setCallbackPreScenario(callbackFn)`
-Store `callbackFn`, running it before each test scenario.  `callbackFn` will be called with no arguments, and its return value will be ignored.
+Store `callbackFn`, running it before each test scenario.  `callbackFn` will be called with a single argument (an associative array described below), and its return value will be ignored.
+
+* `scenarioName` - the name of the scenario about to run
+
 
 #### `.setCallbackOnScenarioPass(callbackFn)`
 Store `callbackFn`, running it upon each successful completion of a test scenario.  `callbackFn` will be called with a single argument (an associative array described below), and its return value will be ignored.
