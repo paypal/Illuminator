@@ -74,7 +74,7 @@ var debugAppmap = false;
     };
 
     /**
-     * Create a new app if does not already exist.
+     * Create a new app if it does not already exist.
      *
      * All following screen definitions will be associated with this app.
      *
@@ -132,7 +132,7 @@ var debugAppmap = false;
     }
 
     /**
-     * Create a new screen if does not already exist.
+     * Create a new screen if it does not already exist.
      *
      * All following target / action definitions will be associated with this screen.
      *
@@ -245,7 +245,7 @@ var debugAppmap = false;
     }
 
     /**
-     * Create a new action in the appmap with the given name if does not already exist.
+     * Create a new action in the appmap with the given name if it does not already exist.
      *
      * All following implementation / parameter definitions will be associated with this action.
      *
