@@ -89,7 +89,7 @@ var debugAppmap = false;
     /**
      * Create a new screen in the appmap with the given name.
      *
-     * All following device/action defintions will be associated with this screen.
+     * All following target/action defintions will be associated with this screen.
      *
      * @param screenName the desired screen name
      * @return this
