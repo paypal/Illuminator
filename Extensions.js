@@ -364,7 +364,7 @@ function newUIAElementNil() {
  * @param timeout the timeout in seconds
  * @param functionReturningValue the function to execute.  can return anything.
  */
-function waitForReturnValue(timeout, functionName, functionReturningValue) {
+function waitForReturnValue(timeout, callerName, functionReturningValue) {
     var myGetTime = function () {
         return (new Date).getTime() / 1000;
     }
@@ -391,7 +391,7 @@ function waitForReturnValue(timeout, functionName, functionReturningValue) {
         delay(0.1); // max 10 Hz
     }
 
-    throw new IlluminatorRuntimeFailureException(functionName + " failed by timeout after " + timeout + " seconds: " + caught);
+    throw new IlluminatorRuntimeFailureException(callerName + " failed by timeout after " + timeout + " seconds: " + caught);
 }
 
 
