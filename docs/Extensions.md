@@ -148,7 +148,12 @@ Create (return) an error constructor function to produce exception objects with 
 Input Methods Reference
 -----------------------
 
-Illuminator has the ability to attach input methods to the fields that use them.  For example, date pickers or custom keyboards can be manipulated through methods on the fields that receive the value of said input methods.  Input methods are built using:
+Illuminator has the ability to attach input methods to the fields that use them.  For example, date pickers or custom keyboards can be manipulated through methods on the fields that receive the value of said input methods.  
+
+
+### Defining Custom Input Methods
+
+Input methods are built using:
 
 ```javascript
 newInputMethod(methodName, description, isActiveFn, selector, features);
@@ -157,6 +162,9 @@ Note
 > Input method definition is best done through the functions provided in the AppMap.  This is the low-level reference.
 
 In the example of the year/month/day date picker input method (which is provided by Illuminator), the `isActiveFn` returns true when the picker wheels are visible, and the `selector` provides access to the window element that contains all 3 wheels.  `features` is an associative array of function names to their implementations (e.g. `pickDate`, which intelligently selects the date values).
+
+
+### Using Custom Input Methods
 
 Attaching a custom input method to a text field and using it can be done as follows:
 
@@ -168,6 +176,8 @@ var myInputMethod = newInputMethod("blah", "something", myFn1, mySelector,
 myTextField.setInputMethod(myInputMethod);
 myTextField.customInputMethod().someInputFunction();
 ```
+
+### Forcing an Element to Take Input
 
 Sometimes it's necessary to "edit" an element that does not take input.  This is a common workaround for text fields within table cells that do not properly bring up the keyboard when tapped.  In these cases, the table cell can be treated as the editable element as follows:
 
@@ -183,6 +193,21 @@ myCell.typeString("foo"); // now this function is available.
 myCell.setInputMethod(myInputMethod);
 myCell.customInputMethod().someInputFunction(); // now this function is available too
 ```
+
+### `.typeString` for Custom Keyboards
+
+Custom keyboards are not considered `UIAKeyboard` elements by UIAutomation, and as such do not support the `.typeString` method.  For these, the `typeStringCustomKeyboard` method is provided by Illuminator, which makes a reasonable effort to type out an input string using the available keys.  In the case of the `myInputMethod` example above, the proper usage would be:
+
+```javascript
+myTextField.typeString("abcd");
+// This will throw, because myTextField's input method doesn't understand typeString
+
+myInputMethod.features["typeString"] = typeStringCustomKeyboard;
+myTextField.typeString("abcd");  // Will now succeed
+```
+Note
+> Input method definition is best done through the functions provided in the AppMap.  This is the low-level reference.
+
 
 
 UIAElement Method Extensions Reference

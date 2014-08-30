@@ -600,6 +600,11 @@ var typeString = function (text, clear) {
 
     kb = target().getOneChildElement(this._inputMethod.selector);
 
+    // if keyboard doesn't have a typeString (indicating a custom keyboard) then attempt to load that feature
+    if (kb.typeString === undefined) {
+        kb.typeString = this._inputMethod.features.typeString;
+    }
+
     // attempt to get a successful keypress several times -- using the first character
     // this is a hack for iOS 6.x where the keyboard is sometimes "visible" before usable
     while ((clear || noSuccess) && 0 < maxAttempts--) {
@@ -644,8 +649,24 @@ var typeString = function (text, clear) {
         kb.typeString(text);
     }
 
-};
+}
 
+/**
+ * Type a string into a keyboard-like element
+ *
+ * Element "this" should have UIAKey elements, and this function will attempt to render the string with the available keys
+ *
+ * @todo get really fancy and solve key sequences for keys that have multiple characters on them
+ * @param text the text to type
+ */
+function typeStringCustomKeyboard(text) {
+    var keySet = this.keys();
+    for (var i = 0; i < text.length; ++i) {
+        var keyElem = keySet.firstWithName(text[i]);
+        if (!isNotNilElement(keyElem)) throw new IlluminatorRuntimeFailureException("typeStringCustomKeyboard failed to find key for " + text[i]);
+        keyElem.tap();
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
