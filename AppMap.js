@@ -34,6 +34,11 @@ var debugAppmap = false;
     var lastActionName;     // name of last action
     var lastScreenActiveFn; // action function map of last screen
 
+    appmap.inputMethods = {}; // all possible input methods, keyed by string
+    var lastInputMethod;      // state variable for building input method
+    var lastInputMethodName;  // name of last input method
+
+
     /**
      * Create a new app in the appmap with the given name.
      *
@@ -305,10 +310,64 @@ var debugAppmap = false;
         return this;
     };
 
+
+    /**
+     * Create a new input method in the appmap with the given name.
+     *
+     * All following feature defintions will be associated with this app.
+     *
+     * @param inputMethodName the desired input method name
+     * @param description string the description of the input method
+     * @param isActiveFn function that should return true when the screen is currently both visible and accessible
+     * @param selector selector relative to target() that returns this input method
+     * @return this
+     */
+    appmap.createInputMethod = function(inputMethodName, description, isActiveFn, selector) {
+        appmap.lastInputMethod = newInputMethod(inputMethodName, description, isActiveFn, selector, {});
+        appmap.lastInputMethodName = inputMethodName;
+        appmap.inputMethods[inputMethodName] = appmap.lastInputMethod;
+        return this;
+    };
+
+    /**
+     * whether an input method exists
+     *
+     * @param inputMethodName the input method name to test
+     * @return bool
+     */
+    appmap.hasInputMethod = function(inputMethodName) {
+        return inputMethodName in appmap.inputMethods;
+    };
+
+    /**
+     * All following feature defintions will be associated with this input method.
+     *
+     * @param inputMethodName the desired input method name
+     * @return this
+     */
+    appmap.augmentInputMethod = function(inputMethodName) {
+        appmap.lastInputMethodName = inputMethodName;
+        appmap.inputMethods[inputMethodName] = appmap.lastInputMethod;
+        return this;
+    };
+
+    /**
+     * Add a feature function to an input method
+     *
+     * @param featureName string name of the function as it will exist in the input method
+     * @param implementationFunction function that will be the implementation
+     * @return this
+     */
+    appmap.withFeature = function (featureName, implementationFunction) {
+        appmap.lastInputMethod.features[featureName] = implementationFunction;
+        return this;
+    }
+
+
     /**
      * return an array of all defined apps
      */
-    appmap.getApps = function() {
+    appmap.getApps = function () {
         var ret = [];
         for (d in appmap.apps) ret.push(d);
         return ret;
@@ -319,9 +378,18 @@ var debugAppmap = false;
      *
      * @param app the app name
      */
-    appmap.getScreens = function(app) {
+    appmap.getScreens = function (app) {
         var ret = [];
         for (s in appmap.apps[app]) ret.push(s);
+        return ret;
+    };
+
+    /**
+     * return an array of all defined input methods
+     */
+    appmap.getInputMethods = function () {
+        var ret = [];
+        for (s in appmap.inputMethods) ret.push(s);
         return ret;
     };
 
@@ -329,7 +397,16 @@ var debugAppmap = false;
      * Returns Markdown string describing all the apps, screens, targets, actions, implementations, and parameters
      */
     appmap.toMarkdown = function () {
-        var ret = ["The following apps are defined in the Illuminator AppMap:"];
+        // print input methods first, since they are common to all apps
+        var ret = ["The following input methods are defined in the Illuminator AppMap (in addition to the iOS default keyboard):"];
+        for (var k in appmap.inputMethods) {
+            var mth = appmap.inputMethods[k];
+            ret.push("* `" + k + "`: " + mth.description);
+            // print features
+            for (var f in mth.features) {
+                ret.push("    * `" + f + "`");
+            }
+        }
 
         // formatting the title, making good looking markdown
         var title = function (rank, text) {
@@ -359,6 +436,8 @@ var debugAppmap = false;
             for (d in action.isCorrectScreen) if (undefined === action.actionFn[d]) return false;
             return true;
         };
+
+        ret.push("The following apps are defined in the Illuminator AppMap:");
 
         // iterate over apps
         var apps = Object.keys(appmap.apps).sort();

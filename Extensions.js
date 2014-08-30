@@ -513,12 +513,68 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
     }
 }
 
+/**
+ * construct an input method
+ */
+function newInputMethod(methodName, description, isActiveFn, selector, features) {
+    var ret = {
+        name: methodName,
+        description: description,
+        isActiveFn: isActiveFn,
+        selector: selector,
+        features: {}
+    };
+
+    for (var k in features) {
+        ret.features[k] = features[k];
+    }
+
+    return ret;
+}
+
+var stockKeyboardInputMethod = newInputMethod("defaultKeyboard",
+                                              "Any default iOS keyboard, whether numeric or alphanumeric",
+                                              function () {
+                                                  return isNotNilElement(target().frontMostApp().keyboard());
+                                              },
+                                              function (targ) {
+                                                  return targ.frontMostApp().keyboard();
+                                              },
+                                              {});
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Object prototype functions
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * set the (custom) input method for an element
+ *
+ * @param method the input method
+ */
+function setInputMethod(method) {
+    this._inputMethod = method;
+}
+
+/**
+ * Access the custom input method for an element
+ */
+function customInputMethod() {
+    if (this._inputMethod === undefined) throw new IlluminatorSetupException("No custom input method defined for element " + this);
+    var inpMth = this._inputMethod;
+
+    // open custom input method
+    this.checkIsEditable(2);
+
+    // assign any feature functions to it
+    var theInput = target().getOneChildElement(inpMth.selector);
+    for (var f in inpMth.features) {
+        theInput[f] = inpMth.features[f];
+    }
+    return theInput;
+}
 
 /**
  * type a string in a given text field
@@ -542,7 +598,7 @@ var typeString = function (text, clear) {
     var noSuccess = true;
     var failMsg = null;
 
-    kb = target().frontMostApp().keyboard();
+    kb = target().getOneChildElement(this._inputMethod.selector);
 
     // attempt to get a successful keypress several times -- using the first character
     // this is a hack for iOS 6.x where the keyboard is sometimes "visible" before usable
@@ -589,29 +645,6 @@ var typeString = function (text, clear) {
     }
 
 };
-
-/**
- * Set the value of a date text field by manipulating the picker wheels
- *
- * All values are numeric and (should) work across languages.  All values are optional.
- *
- * @param year optional integer
- * @param month optional integer
- * @param day optional integer
- */
-var pickDate = function (year, month, day) {
-    // make sure we can type (side effect: brings up picker)
-    if (!this.checkIsPickable(2)) {
-        throw new IlluminatorRuntimeFailureException("pickDate couldn't get the picker to appear for element "
-                                                     + this.toString() + " with name '" + this.name() + "'");
-    }
-
-    var wheel = target().frontMostApp().windows()[1].pickers()[0].wheels();
-    if (year !== undefined) wheel[2].selectValue(year.toString());
-    if (month !== undefined) wheel[0].selectValue(wheel[0].values()[month - 1]); // read localized value, set that value
-    if (day !== undefined) wheel[1].selectValue(day.toString());
-};
-
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1277,17 +1310,18 @@ extendPrototype(UIAElement, {
     },
 
     /**
-     * Check whether tapping this element produces another element.  Used for supporting other checkX functions
+     * Check whether tapping this element produces its input method
      *
      * (this) - the element that we will tap
-     * @param callerName - the name of the function that calls this function, used for logging
-     * @param elementLookup - a function that returns the element we are trying to produce
-     * @param elementDescription - describe the element we are trying to produce, for logging
      * @param maxAttempts - Optional, how many times to check (soft-limited to minimum of 1)
      */
-    _checkProducesElement: function (callerName, elementLookup, elementDescription, maxAttempts) {
+    checkIsEditable: function (maxAttempts) {
         // minimum of 1 attempt
         maxAttempts = (maxAttempts === undefined || maxAttempts < 1) ? 1 : maxAttempts;
+
+        var inpMth = this._inputMethod;
+        UIALogger.logWarning("checkIsEditable on " + this);
+        UIALogger.logWarning("input method: " + JSON.stringify(inpMth));
 
         // warn user if this is an object that might be destructively or oddly affected by this check
         switch (this.toString()) {
@@ -1296,7 +1330,7 @@ extendPrototype(UIAElement, {
         case "[object UIAActionSheet]":
         case "[object UIAKey]":
         case "[object UIAKeyboard]":
-            UIALogger.logWarning(callerName + " is going to tap() an object of type " + this.toString());
+            UIALogger.logWarning("checkIsEditable is going to tap() an object of type " + this.toString());
         default:
             // no warning
         }
@@ -1306,8 +1340,8 @@ extendPrototype(UIAElement, {
             var didFirstTap = false;
             do {
                 if (didFirstTap) {
-                    UIALogger.logDebug(callerName + ": retrying element tap, because "
-                                       + elementDescription + " = " + elem
+                    UIALogger.logDebug("checkIsEditable: retrying element tap, because "
+                                       + inpMth.name + " = " + elem
                                        + " with " + maxAttempts.toString() + " remaining attempts");
                 }
                 maxAttempts--;
@@ -1317,7 +1351,7 @@ extendPrototype(UIAElement, {
                 delay(0.35); // element should take roughly this long to appear (or disappear if was visible for other field).
                 //bonus: delays the while loop
 
-                elem = elementLookup();
+                elem = target().getChildElement(inpMth.selector);
             } while (!elem.isNotNil() && 0 < maxAttempts);
 
             if (!elem.isNotNil()) return false;
@@ -1325,31 +1359,24 @@ extendPrototype(UIAElement, {
             elem.waitForVisibility(1, true);
             return true;
         } catch (e) {
-            UIALogger.logDebug("_checkProduceElement (for " + callerName + ") caught error: " + e);
+            UIALogger.logDebug("checkIsEditable caught error: " + e);
             return false;
         }
     },
 
-
     /**
-     * verify that a text field is editable by tapping in it and waiting for a keyboard to appear.
+     * Treat this element as if it is an editable field
+     *
+     * This function is a workaround for some cases where an editable element (such as a text field) inside another element
+     * (such as a table cell) fails to bring up the keyboard when tapped.  The workaround is to tap the table cell instead.
+     * This function adds editability support to elements that ordinarily would not have it.
      */
-    checkIsEditable: function (maxAttempts) {
-        var getKb = function () {
-            return target().frontMostApp().keyboard();
-        };
-        return this._checkProducesElement("checkIsEditable", getKb, "keyboard", maxAttempts);
-    },
-
-    /**
-     * verify that a text field is editable by tapping in it and waiting for a keyboard to appear.
-     */
-    checkIsPickable: function (maxAttempts) {
-        var getPicker = function () {
-            return target().frontMostApp().windows()[1].pickers()[0];
-        };
-        return this._checkProducesElement("checkIsPickable", getPicker, "picker", maxAttempts);
-    },
+    useAsEditableField: function () {
+        this._inputMethod = stockKeyboardInputMethod;
+        this.setInputMethod = setInputMethod;
+        this.customInputMethod = customInputMethod;
+        this.typeString = typeString;
+    }
 
 });
 
@@ -1427,7 +1454,9 @@ extendPrototype(UIATextField, {
     clear: function () {
         this.typeString("", true);
     },
-    pickDate: pickDate,
+    _inputMethod: stockKeyboardInputMethod,
+    setInputMethod: setInputMethod,
+    customInputMethod: customInputMethod
 });
 
 extendPrototype(UIATextView, {
@@ -1435,11 +1464,15 @@ extendPrototype(UIATextView, {
     clear: function () {
         this.typeString("", true);
     },
-    pickDate: pickDate
+    _inputMethod: stockKeyboardInputMethod,
+    setInputMethod: setInputMethod,
+    customInputMethod: customInputMethod
 });
 
 extendPrototype(UIAStaticText, {
-    pickDate: pickDate
+    _inputMethod: stockKeyboardInputMethod,
+    setInputMethod: setInputMethod,
+    customInputMethod: customInputMethod
 });
 
 

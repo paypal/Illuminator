@@ -51,6 +51,17 @@ Note 2:
 Note 3:
 > Actions can be parameterized (e.g. for entering variable strings, waiting a variable length of time, defining expected values, etc).  All functions that implement AppMap actions must take either *no* arguments, or *one* argument -- an associative array of named parameters.
 
+Building input methods in the AppMap
+------------------------------------
+
+For control over fields that bring up a non-standard keyboard (such as a date picker or custom keyboard), a set of definition functions is available.
+
+1. Define your **input method**
+2. Define zero or more **feature**s for your input method
+
+Defined input methods can be accessed via `appmap.inputMethods[methodName]`.
+
+
 AppMap Method Reference
 -----------------------
 
@@ -111,11 +122,27 @@ One further note on implementation of actions:
 #### `.withParam(paramName, desc, required, useInSummary)`
 Define a parameter on the current action, named `paramName` and having the description `desc`.  If `required`, the Automator will throw an exception if this parameter is not provided to the action.  `useInSummary` controls whether the Automator should log the value of this parameter to the console (e.g. the user might prefer to set this to `false` in cases where the value of the parameter will be a large amount of text or a function definition).  `useInSummary` is optional and defaults to `false`.  Returns a reference to the AppMap.
 
+#### `.createInputMethod(inputMethodName, isActiveFn, selector)`
+Define an input method called `inputMethodName` with a function `isActiveFn` that returns `true` when this input method is accessible and visible.  Also, a `selector` to be used in `target().getChildElement(selector)` to retrieve the root element of this input method.
+
+#### `.hasinputMethod(inputMethodName)`
+Return `true` if `inputMethodName` is defined in the AppMap.
+
+#### `.augmentInputMethod(inputMethodName)`
+Indicate that any following feature definitions should be associated with the input method called `inputMethodName`.
+
+#### `.withFeature(featureName, implementationFunction)`
+Use the given function `implementationFunction` as the implemenation for the feature called `featureName`.
+
+
 #### `.getApps()`
 Returns an array of the app names that are defined in the AppMap.
 
 #### `.getScreens(appName)`
 Returns an array of the screen names that are defined in the app `appName` in the AppMap.
+
+#### `.getInputMethods()`
+Returns an array of the input method names that are defined in the AppMap.
 
 #### `.toMarkdown()`
 Returns a string containing a markdown description of all the apps, screens, targets, actions, implementations, and parameters in the AppMap.

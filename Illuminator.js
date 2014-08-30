@@ -151,6 +151,25 @@ function actionCaptureElementTree(parm) {
     target().captureImageTree(parm.imageBaseName);
 }
 
+/**
+ * Set the value of a date text field by manipulating the picker wheels - THIS IS AN OBJECT METHOD
+ *
+ * All values are numeric and (should) work across languages.  All values are optional.
+ *
+ * (this) an element
+ * @param year optional integer
+ * @param month optional integer
+ * @param day optional integer
+ */
+var pickDateYMD = function (year, month, day) {
+    var wheel = target().frontMostApp().windows()[1].pickers()[0].wheels();
+    if (year !== undefined) wheel[2].selectValue(year.toString());
+    if (month !== undefined) wheel[0].selectValue(wheel[0].values()[month - 1]); // read localized value, set that value
+    if (day !== undefined) wheel[1].selectValue(day.toString());
+};
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Appmap additions - common capabilities
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,3 +211,18 @@ appmap.createOrAugmentApp("Illuminator").withScreen("do")
     .withParam("allowedPercent", "The maximum percentage of pixels that are allowed to differ (default 0)", false, true)
     .withParam("deferFailure", "Whether to defer a failure until the end of the test", false, true)
     .withImplementation(actionCompareScreenshotToMaster);
+
+
+// create a custom input method for the date picker
+appmap.createInputMethod("yearMonthDayPicker",
+                         "A set of 3 picker wheels to select a date",
+                         function () {
+                             return isNotNilElement(target().frontMostApp().windows()[1].pickers()[0]);
+                         },
+                         function (targ) {
+                             return target().frontMostApp().windows()[1];
+                         })
+    .withFeature("pickDate", pickDateYMD)
+    .withFeature("done", function () {
+        target().frontMostApp().windows()[1].toolbar().buttons()["Done"].tap();
+    });
