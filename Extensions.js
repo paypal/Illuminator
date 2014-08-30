@@ -1319,9 +1319,8 @@ extendPrototype(UIAElement, {
         // minimum of 1 attempt
         maxAttempts = (maxAttempts === undefined || maxAttempts < 1) ? 1 : maxAttempts;
 
+        if (this._inputMethod === undefined) return false;
         var inpMth = this._inputMethod;
-        UIALogger.logWarning("checkIsEditable on " + this);
-        UIALogger.logWarning("input method: " + JSON.stringify(inpMth));
 
         // warn user if this is an object that might be destructively or oddly affected by this check
         switch (this.toString()) {
