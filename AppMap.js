@@ -394,6 +394,16 @@ var debugAppmap = false;
     };
 
     /**
+     * Return an input method by name
+     *
+     * @param methodName string the name of the input method
+     */
+    appmap.getInputMethod = function (methodName) {
+        if (methodName in appmap.inputMethods) return appmap.inputMethods[methodName];
+        throw new IlluminatorSetupException("Input method " + methodName + " is not defined");
+    }
+
+    /**
      * Returns Markdown string describing all the apps, screens, targets, actions, implementations, and parameters
      */
     appmap.toMarkdown = function () {

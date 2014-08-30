@@ -59,7 +59,7 @@ For control over fields that bring up a non-standard keyboard (such as a date pi
 1. Define your **input method**
 2. Define zero or more **feature**s for your input method
 
-Defined input methods can be accessed via `appmap.inputMethods[methodName]`.
+Defined input methods can be accessed via `appmap.getInputMethod(methodName)`.
 
 
 AppMap Method Reference
@@ -134,6 +134,8 @@ Indicate that any following feature definitions should be associated with the in
 #### `.withFeature(featureName, implementationFunction)`
 Use the given function `implementationFunction` as the implemenation for the feature called `featureName`.
 
+#### `.getInputMethod(methodName)`
+Returns the input method called `methodName`.
 
 #### `.getApps()`
 Returns an array of the app names that are defined in the AppMap.
