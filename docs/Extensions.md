@@ -145,26 +145,65 @@ Create (return) an error constructor function to produce exception objects with 
 Create (return) an error constructor function to produce exception objects with the given class name.  The constructor function will accept `message` as its only argument, and the message will be prepended with the filename, line number and column number of the place from which the error originated.  This function is meant to create error classes that will be caught by the global error handler (which is unable to produce stack traces) so that the probable location of the faulty lines can be reported.
 
 
+Input Methods Reference
+-----------------------
+
+Illuminator has the ability to attach input methods to the fields that use them.  For example, date pickers or custom keyboards can be manipulated through methods on the fields that receive the value of said input methods.  Input methods are built using:
+
+```javascript
+newInputMethod(methodName, description, isActiveFn, selector, features);
+```
+Note
+> Input method definition is best done through the functions provided in the AppMap.  This is the low-level reference.
+
+In the example of the year/month/day date picker input method (which is provided by Illuminator), the `isActiveFn` returns true when the picker wheels are visible, and the `selector` provides access to the window element that contains all 3 wheels.  `features` is an associative array of function names to their implementations (e.g. `pickDate`, which intelligently selects the date values).
+
+Attaching a custom input method to a text field and using it can be done as follows:
+
+```javascript
+var myTextField = mainWindow().textFields()[0];
+var myInputMethod = newInputMethod("blah", "something", myFn1, mySelector,
+	                               {"someInputFunction": myFn2});
+
+myTextField.setInputMethod(myInputMethod);
+myTextField.customInputMethod().someInputFunction();
+```
+
+Sometimes it's necessary to "edit" an element that does not take input.  This is a common workaround for text fields within table cells that do not properly bring up the keyboard when tapped.  In these cases, the table cell can be treated as the editable element as follows:
+
+```javascript
+var myCell = mainWindow().tableViews()[0].cells()[0];
+// myCell.textFields()[0].typeString("foo"); // seems like it should work, but sometimes doesn't
+
+// workaround
+myCell.useAsEditableField();
+myCell.typeString("foo"); // now this function is available.
+
+// even more complex usage
+myCell.setInputMethod(myInputMethod);
+myCell.customInputMethod().someInputFunction(); // now this function is available too
+```
+
 
 UIAElement Method Extensions Reference
 --------------------------------------
 
 This is a function reference, not a class reference; the classes to which these functions belong will be indicated.
 
-#### `.captureImage(imageName)`
+#### `.captureImage(imageName)` - UIAElement
 Capture a screenshot of just this element, using `imageName` as the name for the resultant image file.
 
-#### `.captureImageTree(imageName)`
+#### `.captureImageTree(imageName)` - UIAElement
 Capture a screenshot of this element and all its child elements, using `imageName` as the base name for all the resultant image files.  Each image file will include the accessor string in the filename.
 
 #### `.checkIsEditable()` - UIAElement
 Tap the element and return true if a keyboard is displayed.
 
-#### `.checkIsPickable()` - UIAElement
-Tap the element and return true if a set of picker wheels is displayed.
-
 #### `.clear()` - UIATextField, UIATextView
 Clear the text in the text field.
+
+#### `.customInputMethod()` - UIATextField, UIATextView, UIAStaticText
+Tap the element to bring up the element's custom input method, and return a reference to the input method.
 
 #### `.elementReferenceDump(varName, visibleOnly)` - UIAElement
 Logs the output of `.getChildElementReferences` to the console.
@@ -216,9 +255,6 @@ Returns true if the element is not `UIAElementNil`.
 
 #### `.isVisible()` - UIAElementNil
 Similar to `.isVisible()` for ordinary UIAElement objects but always returns false.  Provided for compatibility.
-
-#### `.pickDate(year, month, day)` - UIATextField, UIATextView, UIAStaticText
-If the date picker wheels are not visible, taps the element.  Picks the year, month, and day.
 
 #### `.preProcessSelector(selector)` - UIAElement
 This is a prototype function that can be replaced with an app-specific preprocessing function.  It intercepts selectors before they are passed to any selector evaluation function, allowing new functionality or criteria to be understood.
