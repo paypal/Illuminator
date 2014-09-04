@@ -625,7 +625,7 @@ var debugAppmap = false;
             var msg = "";
             try {
                 var elem = appmap.actionBuilder._getElement(selector, retryDelay);
-                if (parm.expected === true) return;
+                if ((parm.expected === true) == isNotNilElement(elem)) return;
             } catch (e) {
                 msg = ": " + e.toString();
                 if (!(parm.expected === true)) return;
