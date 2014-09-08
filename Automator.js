@@ -376,7 +376,7 @@ var debugAutomator = false;
         for (var i = 0; i < automator.allScenarios.length; ++i) {
             var scenario = automator.allScenarios[i];
             if (automator.scenarioMatchesCriteria(scenario, tagsAny, tagsAll, tagsNone)
-                && automator.deviceSupportsScenario(scenario)) {
+                && automator.targetSupportsScenario(scenario)) {
                 onesToRun.push(scenario);
             }
         }
@@ -397,10 +397,12 @@ var debugAutomator = false;
 
         // filter the list by name
         var onesToRun = [];
+        // consider the full list of scenarios
         for (var i = 0; i < automator.allScenarios.length; ++i) {
             var scenario = automator.allScenarios[i];
+            // check whether any of the given scenario names match the scenario in the master list
             for (var j = 0; j < scenarioNames.length; ++j) {
-                if (scenario.title == scenarioNames[j] && automator.deviceSupportsScenario(scenario)) {
+                if (scenario.title == scenarioNames[j] && automator.targetSupportsScenario(scenario)) {
                     onesToRun.push(scenario);
                 }
             }
@@ -660,11 +662,11 @@ var debugAutomator = false;
      * @param scenario an automator scenario
      * @return bool
      */
-    automator.deviceSupportsScenario = function (scenario) {
-        // if any actions are neither defined for the current device nor "default"
+    automator.targetSupportsScenario = function (scenario) {
+        // if any actions are neither defined for the current target nor "default"
         for (var i = 0; i < scenario.steps.length; ++i) {
             var s = scenario.steps[i];
-            // device not defined
+            // target not defined
             if (undefined === s.action.isCorrectScreen[config.implementation]) {
                 UIALogger.logDebug(["Skipping scenario '", scenario.title,
                                     "' because screen '", s.action.screenName, "'",
@@ -672,7 +674,7 @@ var debugAutomator = false;
                 return false;
             }
 
-            // action not defined for device
+            // action not defined for target
             if (s.action.actionFn["default"] === undefined && s.action.actionFn[config.implementation] === undefined) {
                 UIALogger.logDebug(["Skipping scenario '", scenario.title, "' because action '",
                                     s.action.screenName, ".", s.action.name,
@@ -782,7 +784,7 @@ var debugAutomator = false;
      * log some information about the automation environment
      */
     automator.logInfo = function () {
-        UIALogger.logMessage("Device info: " +
+        UIALogger.logMessage("Target info: " +
                              "name='" + target().name() + "', " +
                              "model='" + target().model() + "', " +
                              "systemName='" + target().systemName() + "', " +
