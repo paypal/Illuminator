@@ -9,6 +9,8 @@ function IlluminatorIlluminate() {
     // initial sanity checks
     assertDesiredSimVersion();
 
+    if (!automator._executeCallback("onInit", {entryPoint: config.entryPoint}, false, false)) return;
+
     switch (config.entryPoint) {
 
     case "runTestsByTag":

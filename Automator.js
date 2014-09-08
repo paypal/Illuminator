@@ -33,7 +33,8 @@ var debugAutomator = false;
 
     // table of callbacks that are used by automator.  sensible defaults.
     automator.callback = {
-        init: function () { UIALogger.logDebug("Running default automator 'init' callback"); },
+        onInit: function () { UIALogger.logDebug("Running default automator 'onInit' callback"); },
+        prepare: function () { UIALogger.logDebug("Running default automator 'prepare' callback"); },
         preScenario: function (parm) { UIALogger.logDebug("Running default automator 'preScenario' callback " + JSON.stringify(parm)); },
         onScenarioPass: function (parm) { UIALogger.logDebug("Running default automator 'onScenarioPass' callback " + JSON.stringify(parm)); },
         onScenarioFail: function (parm) { UIALogger.logDebug("Running default automator 'onScenarioFail' callback " + JSON.stringify(parm)); },
@@ -41,12 +42,26 @@ var debugAutomator = false;
     };
 
     /**
-     * set the callback for Automator initialization, to be called only once -- before any scenarios execute
+     * set the callback for Automator initialization, to be called only once -- after scenarios have been added
+     *
+     * The callback function takes an associative array with the following keys:
+     *  - entryPoint
+     *
+     * @param fn the callback function, taking an associative array and whose return value is ignored
+     */
+    automator.setCallbackOnInit = function (fn) {
+        automator.callback["onInit"] = fn;
+    };
+
+    /**
+     * set the callback for Automator run preparation, to be called only once -- before any scenarios execute
+     *
+     * This callback function will only be called if the automator's entry point requires tests to be run
      *
      * @param fn the callback function, taking no arguments and whose return value is ignored
      */
-    automator.setCallbackInit = function (fn) {
-        automator.callback["init"] = fn;
+    automator.setCallbackPrepare = function (fn) {
+        automator.callback["prepare"] = fn;
     };
 
     /**
@@ -426,7 +441,7 @@ var debugAutomator = false;
         }
 
         // run initial callback and only continue on if it succeeds
-        if (!automator._executeCallback("init", undefined, false, false)) return;
+        if (!automator._executeCallback("prepare", undefined, false, false)) return;
 
         var dt;
         var t0 = getTime();

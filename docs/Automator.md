@@ -60,8 +60,14 @@ Automator provides two callbacks to enable the initialization of the test enviro
 They can be set as follows.
 
 
-#### `.setCallbackInit(callbackFn)`
-Store `callbackFn`, running it only once -- during the initialization of the automator.  `callbackFn` will be called with no arguments, and its return value will be ignored.
+#### `.setCallbackOnInit(callbackFn)`
+Store `callbackFn`, running it only once -- after the initialization of all automator scenarios, but before any of them will execute.  `callbackFn` will be called with a single argument (an associative array described below), and its return value will be ignored.
+
+* `entryPoint` - the Illuminator entry point
+
+
+#### `.setCallbackPrepare(callbackFn)`
+Store `callbackFn`, running it only once -- before any test scenarios run -- if test scenarios are going to be run.  `callbackFn` will be called with no arguments, and its return value will be ignored.
 
 #### `.setCallbackPreScenario(callbackFn)`
 Store `callbackFn`, running it before each test scenario.  `callbackFn` will be called with a single argument (an associative array described below), and its return value will be ignored.
@@ -122,6 +128,10 @@ Run the list of scenarios named by `scenarioNames`.  If the integer `randomSeed`
 
 Automator Method Reference - Other Methods
 -------------------------------------------
+
+#### `.targetSupportsScenario(scenario)`
+Returns true if all steps in the `scenario` are supported by the defined automation target.
+
 
 #### `.toMarkdown()`
 Returns a string containing a markdown description of all the scenarios, steps, and their parameters in the Automator.
