@@ -31,7 +31,8 @@ class AutomationRunner
     @crashReportsPath = "#{@buildArticfacts}/CrashReports"
     @xBuilder = XcodeBuilder.new
 
-    @appName = appName + ".app"
+    @appLocation = Dir["#{@outputDirectory}/*.app"][0]
+
     self.cleanup
   end
 
@@ -59,7 +60,7 @@ class AutomationRunner
   def installOnDevice
     currentDir = Dir.pwd
     Dir.chdir "#{File.dirname(__FILE__)}/../../contrib/ios-deploy"
-    command = "./ios-deploy -b '#{@outputDirectory}/#{@appName}' -i #{@hardwareID} -r -n"
+    command = "./ios-deploy -b '#{@appLocation}' -i #{@hardwareID} -r -n"
     self.runAnnotatedCommand(command)
     Dir.chdir currentDir
   end
@@ -71,7 +72,7 @@ class AutomationRunner
     end
     testCase = "#{@buildArticfacts}/testAutomatically.js"
     command = "DEVELOPER_DIR='#{@xcodePath}' "
-    command << "'#{File.dirname(__FILE__)}/../../contrib/tuneup_js/test_runner/run' '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
+    command << "'#{File.dirname(__FILE__)}/../../contrib/tuneup_js/test_runner/run' '#{@appLocation}' '#{testCase}' '#{@reportPath}'"
     unless @hardwareID.nil?
       command << " -d #{@hardwareID}"
     else
@@ -217,7 +218,7 @@ class AutomationRunner
       outputFilename = "crashReport.txt"
       command =   "DEVELOPER_DIR='#{@xcodePath}' "
       command <<  "'#{symbolicatorPath}' "
-      command <<  "-o '#{@crashReportsPath}/#{outputFilename}' '#{path}' '#{@outputDirectory}/#{@appName}.dSYM' 2>&1"
+      command <<  "-o '#{@crashReportsPath}/#{outputFilename}' '#{path}' '#{@appLocation}.dSYM' 2>&1"
       self.runAnnotatedCommand(command)
       file = File.open("#{@crashReportsPath}/#{outputFilename}", "rb")
       puts file.read.red
