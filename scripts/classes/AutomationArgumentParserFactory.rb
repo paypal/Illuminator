@@ -9,7 +9,6 @@ class AutomationParserFactory
 
     # build the list of how each parameter will be saved in the output
     @letterMap = {
-      "x" => "defaultXcode",
       "p" => "testPath",
       "a" => "appName",
       "t" => "tagsAny",
@@ -37,8 +36,7 @@ class AutomationParserFactory
       "j" => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to pList
     }
 
-    @defaultValues = {'x'=>'/Applications/Xcode.app',
-                      'i'=>"iPhone",
+    @defaultValues = {'i'=>"iPhone",
                       "b" => "iPhone Retina (4-inch)",
                       "z" => "iOS 7.1",
                       'l' => 'en',
@@ -51,7 +49,6 @@ class AutomationParserFactory
     @letterProcessing = @letterProcessing.merge(letterProcessingUpdates) unless letterProcessingUpdates.nil?
     @defaultValues = @defaultValues.merge defaultValues unless defaultValues.nil?
 
-    self.addSwitch("x", ["-x", "--xcode PATH", "Sets path to default Xcode installation "])
     self.addSwitch("p", ["-p", "--testPath PATH", "Path to js file with all tests imported"])
     self.addSwitch("a", ["-a", "--appName APPNAME", "App name to run"])
     self.addSwitch("t", ["-t", "--tags-any TAGSANY", "Run tests with any of the given tags"])

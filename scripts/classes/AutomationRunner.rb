@@ -8,13 +8,21 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb')
 
 ####################################################################################################
+# command builder
+####################################################################################################
+
+class InstrumentsBuilder
+  
+  
+end
+####################################################################################################
 # runner
 ####################################################################################################
 
 class AutomationRunner
 
-  def initialize path, scheme, appName
-    @xcodePath = path
+  def initialize scheme, appName
+    @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, "")
 
     @outputDirectory = "#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts";
     puts @outputDirectory
@@ -62,7 +70,7 @@ class AutomationRunner
       self.installOnDevice
     end
     testCase = "#{File.dirname(__FILE__)}/../../buildArtifacts/testAutomatically.js"
-    command = "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
+    command = "DEVELOPER_DIR='#{@xcodePath}' "
     command << "'#{File.dirname(__FILE__)}/../../contrib/tuneup_js/test_runner/run' '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
     unless @hardwareID.nil?
       command << " -d #{@hardwareID}"
@@ -169,8 +177,7 @@ class AutomationRunner
 
       end
 
-      runner = AutomationRunner.new(options["defaultXcode"],
-                                    options["scheme"],
+      runner = AutomationRunner.new(options["scheme"],
                                     options["appName"])
 
       if !options["hardwareID"].nil?
@@ -200,7 +207,7 @@ class AutomationRunner
     end
 
     # find symbolicatecrash file, which is different depending on the Xcode version.  We assume either/or
-    frameworksPath = "#{@xcodePath}/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks"
+    frameworksPath = "#{@xcodePath}/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks"
     symbolicatorPath = "#{frameworksPath}/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash"
     if not File.exist?(symbolicatorPath)
       symbolicatorPath = "#{frameworksPath}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
@@ -208,7 +215,7 @@ class AutomationRunner
 
     Dir.glob("#{@crashPath}/*.crash").each do |path|
       outputFilename = "crashReport.txt"
-      command =   "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
+      command =   "DEVELOPER_DIR='#{@xcodePath}' "
       command <<  "'#{symbolicatorPath}' "
       command <<  "-o '#{@crashReportsPath}/#{outputFilename}' '#{path}' '#{@outputDirectory}/#{@appName}.dSYM' 2>&1"
       self.runAnnotatedCommand(command)
