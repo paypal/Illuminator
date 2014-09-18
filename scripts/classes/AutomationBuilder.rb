@@ -13,11 +13,9 @@ class AutomationBuilder
   def initialize
 
     resultPath = "'#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts'"
-    puts "deleting #{resultPath}"
     
     Dir["#{resultPath}/*.app"].each do |app| 
       FileUtils.rm app
-      puts "deleting #{app}"
     end
   
     @builder = XcodeBuilder.new

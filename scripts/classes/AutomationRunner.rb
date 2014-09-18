@@ -12,7 +12,37 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb
 ####################################################################################################
 
 class InstrumentsBuilder
+  attr_accessor :buildArtifacts
+  attr_accessor :xcodePath
+  attr_accessor :appLocation
+  attr_accessor :reportPath
+  attr_accessor :hardwareID
+  attr_accessor :simDevice
+  attr_accessor :simLanguage
   
+  
+  def build
+    
+    testCase = "#{@buildArtifacts}/testAutomatically.js"
+    sdkRootDirectory = `/usr/bin/xcodebuild -version -sdk iphoneos | grep PlatformPath`.split(":")[1].chomp.sub(/^\s+/, "")
+    templatePath = `[ -f /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate ] && echo "#{sdkRootDirectory}/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate" || echo "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate"`.chomp.sub(/^\s+/, "")
+    
+    command = "env DEVELOPER_DIR=#{@xcodePath} /usr/bin/instruments"
+    if hardwareID
+      command = command + " -w '" + @hardwareID + "'"
+    elsif simDevice
+      command = command + " -w '" + @simDevice + "'"
+    end 
+    
+    command = command + " -t #{templatePath} "
+    command = command + @appLocation
+    command = command + " -e UIASCRIPT #{testCase}"
+    command = command + " -e UIARESULTSPATH #{reportPath}"
+
+    command = command + " #{@simLanguage}" if @simLanguage   
+    
+    return command
+  end
   
 end
 ####################################################################################################
@@ -21,14 +51,14 @@ end
 
 class AutomationRunner
 
-  def initialize scheme, appName
+  def initialize scheme
     @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, "")
-    @buildArticfacts = "#{File.dirname(__FILE__)}/../../buildArtifacts"
-    @outputDirectory = "#{@buildArticfacts}/xcodeArtifacts";
+    @buildArtifacts = "#{File.dirname(__FILE__)}/../../buildArtifacts"
+    @outputDirectory = "#{@buildArtifacts}/xcodeArtifacts";
     puts @outputDirectory
-    @reportPath = "#{@buildArticfacts}/UIAutomationReport"
+    @reportPath = "#{@buildArtifacts}/UIAutomationReport"
     @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
-    @crashReportsPath = "#{@buildArticfacts}/CrashReports"
+    @crashReportsPath = "#{@buildArtifacts}/CrashReports"
     @xBuilder = XcodeBuilder.new
 
     @appLocation = Dir["#{@outputDirectory}/*.app"][0]
@@ -70,28 +100,25 @@ class AutomationRunner
     unless @hardwareID.nil?
       self.installOnDevice
     end
-    testCase = "#{@buildArticfacts}/testAutomatically.js"
-    command = "DEVELOPER_DIR='#{@xcodePath}' "
-    command << "'#{File.dirname(__FILE__)}/../../contrib/tuneup_js/test_runner/run' '#{@appLocation}' '#{testCase}' '#{@reportPath}'"
-    unless @hardwareID.nil?
-      command << " -d #{@hardwareID}"
-    else
-      command << " -w '#{@simDevice}'"
-    end
-    unless @simLanguage.nil?
-      command << " -l '#{@simLanguage}'"
-    end
-    command << " --attempts=30"
-    command << " --startuptimeout=#{startupTimeout}"
-    if report
-      command << " --xunit"
-    end
-    if verbose
-      command << " -v"
-    else
-      command << " -v -b"
-    end
-    command << " 1>&2"
+   
+    instruments = InstrumentsBuilder.new
+    
+    instruments.buildArtifacts = @buildArtifacts
+    instruments.xcodePath = @xcodePath
+    instruments.appLocation = @appLocation
+    instruments.reportPath = @reportPath
+    instruments.hardwareID = @hardwareID
+    instruments.simDevice = @simDevice
+    instruments.simLanguage = @simLanguage
+    
+    
+    #instruments.startupTimeout = startupTimeout
+    #instruments.report = report
+    #instruments.verbose = verbose
+    
+    
+    command = instruments.build
+    
     self.runAnnotatedCommand(command)
     self.reportCrash
     if doKillAfter
@@ -178,8 +205,7 @@ class AutomationRunner
 
       end
 
-      runner = AutomationRunner.new(options["scheme"],
-                                    options["appName"])
+      runner = AutomationRunner.new(options["scheme"])
 
       if !options["hardwareID"].nil?
         runner.setHardwareID options["hardwareID"]
@@ -226,13 +252,13 @@ class AutomationRunner
   end
 
   def generateCoverage(options)
-    destinationFile = "#{@buildArticfacts}/coverage.xml"
+    destinationFile = "#{@buildArtifacts}/coverage.xml"
     excludeRegex = ".*(Debug|contrib).*"
     puts "Generating automation test coverage to #{destinationFile}".green
     sleep (3)
 
-    xcodeArtifactsFolder = Pathname.new("#{@buildArticfacts}/xcodeArtifacts").realpath.to_s
-    destinationPath = "#{@buildArticfacts}/objectFiles"
+    xcodeArtifactsFolder = Pathname.new("#{@buildArtifacts}/xcodeArtifacts").realpath.to_s
+    destinationPath = "#{@buildArtifacts}/objectFiles"
 
     #cleanup
     FileUtils.rm destinationFile, :force => true
@@ -240,7 +266,7 @@ class AutomationRunner
     unless File.directory?(destinationPath)
       FileUtils.mkdir_p destinationPath
     end
-    destinationPath = Pathname.new("#{@buildArticfacts}/objectFiles").realpath.to_s
+    destinationPath = Pathname.new("#{@buildArtifacts}/objectFiles").realpath.to_s
 
     filePaths = []
     Find.find(xcodeArtifactsFolder) do |pathP|
