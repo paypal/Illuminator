@@ -23,12 +23,12 @@ class AutomationRunner
 
   def initialize scheme, appName
     @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, "")
-
-    @outputDirectory = "#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts";
+    @buildArticfacts = "#{File.dirname(__FILE__)}/../../buildArtifacts"
+    @outputDirectory = "#{@buildArticfacts}/xcodeArtifacts";
     puts @outputDirectory
-    @reportPath = "#{File.dirname(__FILE__)}/../../buildArtifacts/UIAutomationReport"
+    @reportPath = "#{@buildArticfacts}/UIAutomationReport"
     @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
-    @crashReportsPath = "#{File.dirname(__FILE__)}/../../buildArtifacts/CrashReports"
+    @crashReportsPath = "#{@buildArticfacts}/CrashReports"
     @xBuilder = XcodeBuilder.new
 
     @appName = appName + ".app"
@@ -69,7 +69,7 @@ class AutomationRunner
     unless @hardwareID.nil?
       self.installOnDevice
     end
-    testCase = "#{File.dirname(__FILE__)}/../../buildArtifacts/testAutomatically.js"
+    testCase = "#{@buildArticfacts}/testAutomatically.js"
     command = "DEVELOPER_DIR='#{@xcodePath}' "
     command << "'#{File.dirname(__FILE__)}/../../contrib/tuneup_js/test_runner/run' '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
     unless @hardwareID.nil?
@@ -225,13 +225,13 @@ class AutomationRunner
   end
 
   def generateCoverage(options)
-    destinationFile = "#{File.dirname(__FILE__)}/../../buildArtifacts/coverage.xml"
+    destinationFile = "#{@buildArticfacts}/coverage.xml"
     excludeRegex = ".*(Debug|contrib).*"
     puts "Generating automation test coverage to #{destinationFile}".green
     sleep (3)
 
-    xcodeArtifactsFolder = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts").realpath.to_s
-    destinationPath = "#{File.dirname(__FILE__)}/../../buildArtifacts/objectFiles"
+    xcodeArtifactsFolder = Pathname.new("#{@buildArticfacts}/xcodeArtifacts").realpath.to_s
+    destinationPath = "#{@buildArticfacts}/objectFiles"
 
     #cleanup
     FileUtils.rm destinationFile, :force => true
@@ -239,7 +239,7 @@ class AutomationRunner
     unless File.directory?(destinationPath)
       FileUtils.mkdir_p destinationPath
     end
-    destinationPath = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts/objectFiles").realpath.to_s
+    destinationPath = Pathname.new("#{@buildArticfacts}/objectFiles").realpath.to_s
 
     filePaths = []
     Find.find(xcodeArtifactsFolder) do |pathP|
