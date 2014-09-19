@@ -1526,6 +1526,7 @@ extendPrototype(UIATableView, {
             UIATarget.localTarget().pushTimeout(0);
 
             // scroll down until we've made all known cells visible at least once
+            var unproductiveScrolls = 0;
             for (initializeScroll(this); lastVisibleCell < (this.cells().length - 1); downScroll(this)) {
                 // find this visible cell
                 for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
@@ -1539,6 +1540,18 @@ extendPrototype(UIATableView, {
                 }
                 UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
                                    + " didn't match predicate: " + cellPredicate);
+
+                // check whether scrolling as productive
+                if (lastVisibleCell < thisVisibleCell) {
+                    unproductiveScrolls = 0;
+                } else {
+                    unproductiveScrolls++;
+                }
+
+                if (5 < unproductiveScrolls) {
+                    UIALogger.logDebug("Scrolling does not appear to be revealing more cells, aborting.");
+                    return this.cells().firstWithPredicate(cellPredicate);
+                }
 
                 lastVisibleCell = thisVisibleCell;
             }
