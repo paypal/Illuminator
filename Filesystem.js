@@ -7,10 +7,11 @@
 function writeToFile(path, data) {
     var chunkSize = Math.floor(262144 * 0.74) - (path.length + 100); // `getconf ARG_MAX`, adjusted for b64
 
-    if (data.length < chunkSize) {
-        var b64data = Base64.encode(data);
-        UIALogger.logDebug("Writing " + data.length + " bytes to " + path + " as " + b64data.length + " bytes of b64");
-        var result = target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c", "echo $0 | base64 -D -o $1", b64data, path], 5);
+    var writeHelper = function (b64stuff, outputPath) {
+        var result = target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c",
+                                                                                     "echo \"$0\" | base64 -D -o $1",
+                                                                                     b64stuff,
+                                                                                     outputPath], 5);
 
         // be verbose if something didn't go well
         if (0 != result.exitCode) {
@@ -18,8 +19,17 @@ function writeToFile(path, data) {
             UIALogger.logDebug("SDOUT: " + result.stdout);
             UIALogger.logDebug("STDERR: " + result.stderr);
             UIALogger.logDebug("I tried this command: ");
-            UIALogger.logDebug("/bin/sh -c \"echo \\$0 | base64 -D -o \\$1\" " + b64data + " " + path);
+            UIALogger.logDebug("/bin/sh -c \"echo \\\"$0\" | base64 -D -o \\$1\" " + b64stuff + " " + outputPath);
+            return false;
         }
+        return true;
+    }
+
+    var result = true;
+    if (data.length < chunkSize) {
+        var b64data = Base64.encode(data);
+        UIALogger.logDebug("Writing " + data.length + " bytes to " + path + " as " + b64data.length + " bytes of b64");
+        result = result && writeHelper(b64data, path);
 
     } else {
         // split into chunks to avoid making the command line too long
@@ -36,17 +46,18 @@ function writeToFile(path, data) {
             var chunkFile = path + ".chunk" + i;
             var b64data = Base64.encode(chunk);
             UIALogger.logDebug("Writing " + chunk.length + " bytes to " + chunkFile + " as " + b64data.length + " bytes of b64");
-            target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c", "echo $0 | base64 -D -o $1", b64data, chunkFile], 5);
+            result = result && writeHelper(b64data, chunkFile);
             chunkFiles.push(chunkFile);
         }
 
         // concatenate all the chunks
-        var unchunkCmd = "cat \"" + chunkFiles.join("\" \"") + "\" > $0";
+        var unchunkCmd = "cat \"" + chunkFiles.join("\" \"") + "\" > \"$0\"";
         UIALogger.logDebug("Concatenating and deleting " + chunkFiles.length + " chunks, writing " + path);
         target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c", unchunkCmd, path], 5);
         target().host().performTaskWithPathArgumentsTimeout("/bin/rm", chunkFiles, 5);
     }
 
+    return result;
 }
 
 function getPlistData(path) {

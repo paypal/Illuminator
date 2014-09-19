@@ -464,9 +464,10 @@ var debugAutomator = false;
             totalSelectorTime += rec.time;
             csvLines.push(rec.time.toString() + "," + rec.hits + "," + (rec.time / rec.hits) + ",\"" + rec.criteria.replace(/"/g, '""') + '"');
         }
-        writeToFile(selectorReportCsvPath, csvLines.join("\n"));
-        UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime)
-                             + " - full report at " + selectorReportCsvPath);
+        if (writeToFile(selectorReportCsvPath, csvLines.join("\n"))) {
+            UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime)
+                                 + " - full report at " + selectorReportCsvPath);
+        }
 
         // run completion callback
         var info = {
