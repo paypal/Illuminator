@@ -10,7 +10,17 @@ function writeToFile(path, data) {
     if (data.length < chunkSize) {
         var b64data = Base64.encode(data);
         UIALogger.logDebug("Writing " + data.length + " bytes to " + path + " as " + b64data.length + " bytes of b64");
-        target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c", "echo $0 | base64 -D -o $1", b64data, path], 5);
+        var result = target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c", "echo $0 | base64 -D -o $1", b64data, path], 5);
+
+        // be verbose if something didn't go well
+        if (0 != result.exitCode) {
+            UIALogger.logDebug("Exit code was nonzero: " + result.exitCode);
+            UIALogger.logDebug("SDOUT: " + result.stdout);
+            UIALogger.logDebug("STDERR: " + result.stderr);
+            UIALogger.logDebug("I tried this command: ");
+            UIALogger.logDebug("/bin/sh -c \"echo \\$0 | base64 -D -o \\$1\" " + b64data + " " + path);
+        }
+
     } else {
         // split into chunks to avoid making the command line too long
         splitRegex = function(str, len) {
