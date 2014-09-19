@@ -170,6 +170,21 @@ var pickDateYMD = function (year, month, day) {
     if (day !== undefined) wheel[1].selectValue(day.toString());
 };
 
+/**
+ * Set the value of a date text field by manipulating the picker wheels - THIS IS AN OBJECT METHOD
+ *
+ * All values are numeric and (should) work across languages.  All values are optional.
+ *
+ * (this) an element
+ * @param year optional integer
+ * @param month optional integer
+ */
+var pickDateYM = function (year, month) {
+    var wheel = target().frontMostApp().windows()[1].pickers()[0].wheels();
+    if (year !== undefined) wheel[1].selectValue(year.toString());
+    if (month !== undefined) wheel[0].selectValue(wheel[0].values()[month - 1]); // read localized value, set that value
+};
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -225,6 +240,19 @@ appmap.createInputMethod("yearMonthDayPicker",
                              return target().frontMostApp().windows()[1];
                          })
     .withFeature("pickDate", pickDateYMD)
+    .withFeature("done", function () {
+        target().frontMostApp().windows()[1].toolbar().buttons()["Done"].tap();
+    });
+
+appmap.createInputMethod("yearMonthPicker",
+                         "A set of 2 picker wheels to select a date",
+                         function () {
+                             return isNotNilElement(target().frontMostApp().windows()[1].pickers()[0]);
+                         },
+                         function (targ) {
+                             return target().frontMostApp().windows()[1];
+                         })
+    .withFeature("pickDate", pickDateYM)
     .withFeature("done", function () {
         target().frontMostApp().windows()[1].toolbar().buttons()["Done"].tap();
     });
