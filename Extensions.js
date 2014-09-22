@@ -1498,10 +1498,13 @@ extendPrototype(UIAStaticText, {
 
 extendPrototype(UIATableView, {
     /**
-     * Fix a shortcoming in UIAutomation's ability to scroll to an item by predicate
-     * @param cellPredicate string predicate as defined in UIAutomation spec
+     * Fix a shortcoming in UIAutomation's ability to scroll to an item - general purpose edition
+     *
+     * @param thingDescription what we are looking for, used in messaging
+     * @param getSomethingFn a function that takes the table as its only argument and returns the element we want (or UIAElementNil)
+     * @return an element
      */
-    getCellWithPredicateByScrolling: function (cellPredicate) {
+    _getSomethingByScrolling: function (thingDescription, getSomethingFn) {
         var delayToPreventUIAutomationBug = 0.4;
         var lastApparentSize = this.cells().length;
         var lastVisibleCell = -1;
@@ -1531,7 +1534,7 @@ extendPrototype(UIATableView, {
                 // find this visible cell
                 for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
                     thisVisibleCell = i;
-                    var ret = this.cells().firstWithPredicate(cellPredicate);
+                    var ret = getSomethingFn(this);
                     if (ret && ret.isNotNil()) {
                         ret.scrollToVisible();
                         delay(delayToPreventUIAutomationBug);
@@ -1539,7 +1542,7 @@ extendPrototype(UIATableView, {
                     }
                 }
                 UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
-                                   + " didn't match predicate: " + cellPredicate);
+                                   + " didn't match " + thingDescription);
 
                 // check whether scrolling as productive
                 if (lastVisibleCell < thisVisibleCell) {
@@ -1550,7 +1553,7 @@ extendPrototype(UIATableView, {
 
                 if (5 < unproductiveScrolls) {
                     UIALogger.logDebug("Scrolling does not appear to be revealing more cells, aborting.");
-                    return this.cells().firstWithPredicate(cellPredicate);
+                    return getSomethingFn(this);
                 }
 
                 lastVisibleCell = thisVisibleCell;
@@ -1562,6 +1565,30 @@ extendPrototype(UIATableView, {
         }
 
         return newUIAElementNil();
+    },
+
+    /**
+     * Fix a shortcoming in UIAutomation's ability to scroll to an item by predicate
+     * @param cellPredicate string predicate as defined in UIAutomation spec
+     * @return an element
+     */
+    getCellWithPredicateByScrolling: function (cellPredicate) {
+        return this._getSomethingByScrolling("predicate: " + cellPredicate, function (thisTable) {
+            return thisTable.cells().firstWithPredicate(cellPredicate);
+        });
+    },
+
+    /**
+     * Fix a shortcoming in UIAutomation's ability to scroll to an item by reference
+     * @param elementDescription string description of what we are looking for
+     * @param selector a selector relative to the table that will return the desired element
+     * @return an element
+     */
+    getChildElementByScrolling: function (elementDescription, selector) {
+        return this._getSomethingByScrolling("selector for " + elementDescription, function (thisTable) {
+            return thisTable.getChildElement(selector);
+        });
     }
+
 
 });
