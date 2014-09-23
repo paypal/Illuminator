@@ -914,7 +914,7 @@ extendPrototype(UIAElement, {
             }
 
             // visit any un-visited items
-            var elemArray = elem.elements()
+            var elemArray = elem.elements();
             for (var i = 0; i < elemArray.length; ++i) {
                 visit(elemArray[i], prefix + ".elements()[" + getNamedIndex(elemArray, i) + "]", true);
 
