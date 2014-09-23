@@ -502,12 +502,10 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 
     var startTime = getTime();
     try {
-        UIATarget.localTarget().pushTimeout(0);
         return segmentedFind(criteria, parentElem, elemAccessor);
     } catch (e) {
         throw e;
     } finally {
-        UIATarget.localTarget().popTimeout();
         var cost = getTime() - startTime;
         extensionProfiler.recordCriteriaCost(criteria, cost);
     }
@@ -1525,43 +1523,35 @@ extendPrototype(UIATableView, {
             delay(delayToPreventUIAutomationBug);
         };
 
-        try {
-            UIATarget.localTarget().pushTimeout(0);
-
-            // scroll down until we've made all known cells visible at least once
-            var unproductiveScrolls = 0;
-            for (initializeScroll(this); lastVisibleCell < (this.cells().length - 1); downScroll(this)) {
-                // find this visible cell
-                for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
-                    thisVisibleCell = i;
-                    var ret = getSomethingFn(this);
-                    if (ret && ret.isNotNil()) {
-                        ret.scrollToVisible();
-                        delay(delayToPreventUIAutomationBug);
-                        return ret;
-                    }
+        // scroll down until we've made all known cells visible at least once
+        var unproductiveScrolls = 0;
+        for (initializeScroll(this); lastVisibleCell < (this.cells().length - 1); downScroll(this)) {
+            // find this visible cell
+            for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
+                thisVisibleCell = i;
+                var ret = getSomethingFn(this);
+                if (ret && ret.isNotNil()) {
+                    ret.scrollToVisible();
+                    delay(delayToPreventUIAutomationBug);
+                    return ret;
                 }
-                UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
-                                   + " didn't match " + thingDescription);
-
-                // check whether scrolling as productive
-                if (lastVisibleCell < thisVisibleCell) {
-                    unproductiveScrolls = 0;
-                } else {
-                    unproductiveScrolls++;
-                }
-
-                if (5 < unproductiveScrolls) {
-                    UIALogger.logDebug("Scrolling does not appear to be revealing more cells, aborting.");
-                    return getSomethingFn(this);
-                }
-
-                lastVisibleCell = thisVisibleCell;
             }
-        } catch (e) {
-            UIALogger.logDebug("getCellWithPredicateByScrolling caught/ignoring: " + e);
-        } finally {
-            UIATarget.localTarget().popTimeout();
+            UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
+                               + " didn't match " + thingDescription);
+
+            // check whether scrolling as productive
+            if (lastVisibleCell < thisVisibleCell) {
+                unproductiveScrolls = 0;
+            } else {
+                unproductiveScrolls++;
+            }
+
+            if (5 < unproductiveScrolls) {
+                UIALogger.logDebug("Scrolling does not appear to be revealing more cells, aborting.");
+                return getSomethingFn(this);
+            }
+
+            lastVisibleCell = thisVisibleCell;
         }
 
         return newUIAElementNil();
@@ -1573,9 +1563,18 @@ extendPrototype(UIATableView, {
      * @return an element
      */
     getCellWithPredicateByScrolling: function (cellPredicate) {
-        return this._getSomethingByScrolling("predicate: " + cellPredicate, function (thisTable) {
-            return thisTable.cells().firstWithPredicate(cellPredicate);
-        });
+        try {
+            UIATarget.localTarget().pushTimeout(0);
+            return this._getSomethingByScrolling("predicate: " + cellPredicate, function (thisTable) {
+                return thisTable.cells().firstWithPredicate(cellPredicate);
+            });
+        } catch (e) {
+            UIALogger.logDebug("getCellWithPredicateByScrolling caught/ignoring: " + e);
+        } finally {
+            UIATarget.localTarget().popTimeout();
+        }
+
+        return newUIAElementNil();
     },
 
     /**
@@ -1585,9 +1584,15 @@ extendPrototype(UIATableView, {
      * @return an element
      */
     getChildElementByScrolling: function (elementDescription, selector) {
-        return this._getSomethingByScrolling("selector for " + elementDescription, function (thisTable) {
-            return thisTable.getChildElement(selector);
-        });
+        try {
+            return this._getSomethingByScrolling("selector for " + elementDescription, function (thisTable) {
+                return thisTable.getChildElement(selector);
+            });
+        } catch (e) {
+            UIALogger.logDebug("getChildElementByScrolling caught/ignoring: " + e);
+        }
+
+        return newUIAElementNil();
     }
 
 
