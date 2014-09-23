@@ -842,6 +842,20 @@ extendPrototype(UIAElement, {
      * @param visibleOnly prunes the search tree to visible elements only
      */
     _reduce: function (callback, initialValue, visibleOnly) {
+        var t0 = getTime();
+        var currentTimeout = preferences.extensions.reduceTimeout;
+        var stopTime = t0 + currentTimeout;
+
+        var checkTimeout = function (currentOperation) {
+            if (stopTime < getTime()) {
+                UIALogger.logDebug("_reduce: " + currentOperation + " hit preferences.extensions.reduceTimeout limit"
+                                   + " of " + currentTimeout + " seconds; terminating with possibly incomplete result");
+                return true;
+            }
+            return false;
+        };
+
+
         var reduce_helper = function (elem, acc, prefix) {
             var scalars = ["frontMostApp", "navigationBar", "mainWindow", "keyboard", "popover", "tabBar", "toolbar"];
             var vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images","keys",
@@ -894,6 +908,8 @@ extendPrototype(UIAElement, {
                     var newElem = elemArray[j];
                     var preventDuplicates = vectors[i] == "windows"; // otherwise we get both .mainWindow() and .windows()[0]
                     visit(newElem, prefix + "." + vectors[i] + "()[" + getNamedIndex(elemArray, j) + "]", preventDuplicates);
+
+                    if (checkTimeout("vector loop")) return acc; // respect timeout preference
                 }
             }
 
@@ -901,11 +917,12 @@ extendPrototype(UIAElement, {
             var elemArray = elem.elements()
             for (var i = 0; i < elemArray.length; ++i) {
                 visit(elemArray[i], prefix + ".elements()[" + getNamedIndex(elemArray, i) + "]", true);
+
+                if (checkTimeout("element loop")) return acc; // respect timeout preference
             }
             return acc;
         };
 
-        var t0 = getTime();
         UIATarget.localTarget().pushTimeout(0);
         try {
             return reduce_helper(this, initialValue, "");
