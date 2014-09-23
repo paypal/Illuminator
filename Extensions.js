@@ -502,12 +502,10 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 
     var startTime = getTime();
     try {
-        UIATarget.localTarget().pushTimeout(0);
         return segmentedFind(criteria, parentElem, elemAccessor);
     } catch (e) {
         throw e;
     } finally {
-        UIATarget.localTarget().popTimeout();
         var cost = getTime() - startTime;
         extensionProfiler.recordCriteriaCost(criteria, cost);
     }
@@ -844,6 +842,20 @@ extendPrototype(UIAElement, {
      * @param visibleOnly prunes the search tree to visible elements only
      */
     _reduce: function (callback, initialValue, visibleOnly) {
+        var t0 = getTime();
+        var currentTimeout = preferences.extensions.reduceTimeout;
+        var stopTime = t0 + currentTimeout;
+
+        var checkTimeout = function (currentOperation) {
+            if (stopTime < getTime()) {
+                UIALogger.logDebug("_reduce: " + currentOperation + " hit preferences.extensions.reduceTimeout limit"
+                                   + " of " + currentTimeout + " seconds; terminating with possibly incomplete result");
+                return true;
+            }
+            return false;
+        };
+
+
         var reduce_helper = function (elem, acc, prefix) {
             var scalars = ["frontMostApp", "navigationBar", "mainWindow", "keyboard", "popover", "tabBar", "toolbar"];
             var vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images","keys",
@@ -896,18 +908,21 @@ extendPrototype(UIAElement, {
                     var newElem = elemArray[j];
                     var preventDuplicates = vectors[i] == "windows"; // otherwise we get both .mainWindow() and .windows()[0]
                     visit(newElem, prefix + "." + vectors[i] + "()[" + getNamedIndex(elemArray, j) + "]", preventDuplicates);
+
+                    if (checkTimeout("vector loop")) return acc; // respect timeout preference
                 }
             }
 
             // visit any un-visited items
-            var elemArray = elem.elements()
+            var elemArray = elem.elements();
             for (var i = 0; i < elemArray.length; ++i) {
                 visit(elemArray[i], prefix + ".elements()[" + getNamedIndex(elemArray, i) + "]", true);
+
+                if (checkTimeout("element loop")) return acc; // respect timeout preference
             }
             return acc;
         };
 
-        var t0 = getTime();
         UIATarget.localTarget().pushTimeout(0);
         try {
             return reduce_helper(this, initialValue, "");
@@ -1498,10 +1513,13 @@ extendPrototype(UIAStaticText, {
 
 extendPrototype(UIATableView, {
     /**
-     * Fix a shortcoming in UIAutomation's ability to scroll to an item by predicate
-     * @param cellPredicate string predicate as defined in UIAutomation spec
+     * Fix a shortcoming in UIAutomation's ability to scroll to an item - general purpose edition
+     *
+     * @param thingDescription what we are looking for, used in messaging
+     * @param getSomethingFn a function that takes the table as its only argument and returns the element we want (or UIAElementNil)
+     * @return an element
      */
-    getCellWithPredicateByScrolling: function (cellPredicate) {
+    _getSomethingByScrolling: function (thingDescription, getSomethingFn) {
         var delayToPreventUIAutomationBug = 0.4;
         var lastApparentSize = this.cells().length;
         var lastVisibleCell = -1;
@@ -1522,39 +1540,51 @@ extendPrototype(UIATableView, {
             delay(delayToPreventUIAutomationBug);
         };
 
+        // scroll down until we've made all known cells visible at least once
+        var unproductiveScrolls = 0;
+        for (initializeScroll(this); lastVisibleCell < (this.cells().length - 1); downScroll(this)) {
+            // find this visible cell
+            for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
+                thisVisibleCell = i;
+                var ret = getSomethingFn(this);
+                if (ret && ret.isNotNil()) {
+                    ret.scrollToVisible();
+                    delay(delayToPreventUIAutomationBug);
+                    return ret;
+                }
+            }
+            UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
+                               + " didn't match " + thingDescription);
+
+            // check whether scrolling as productive
+            if (lastVisibleCell < thisVisibleCell) {
+                unproductiveScrolls = 0;
+            } else {
+                unproductiveScrolls++;
+            }
+
+            if (5 < unproductiveScrolls) {
+                UIALogger.logDebug("Scrolling does not appear to be revealing more cells, aborting.");
+                return getSomethingFn(this);
+            }
+
+            lastVisibleCell = thisVisibleCell;
+        }
+
+        return newUIAElementNil();
+    },
+
+    /**
+     * Fix a shortcoming in UIAutomation's ability to scroll to an item by predicate
+     * @param cellPredicate string predicate as defined in UIAutomation spec
+     * @return an element
+     */
+    getCellWithPredicateByScrolling: function (cellPredicate) {
         try {
             UIATarget.localTarget().pushTimeout(0);
-
-            // scroll down until we've made all known cells visible at least once
-            var unproductiveScrolls = 0;
-            for (initializeScroll(this); lastVisibleCell < (this.cells().length - 1); downScroll(this)) {
-                // find this visible cell
-                for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
-                    thisVisibleCell = i;
-                    var ret = this.cells().firstWithPredicate(cellPredicate);
-                    if (ret && ret.isNotNil()) {
-                        ret.scrollToVisible();
-                        delay(delayToPreventUIAutomationBug);
-                        return ret;
-                    }
-                }
-                UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
-                                   + " didn't match predicate: " + cellPredicate);
-
-                // check whether scrolling as productive
-                if (lastVisibleCell < thisVisibleCell) {
-                    unproductiveScrolls = 0;
-                } else {
-                    unproductiveScrolls++;
-                }
-
-                if (5 < unproductiveScrolls) {
-                    UIALogger.logDebug("Scrolling does not appear to be revealing more cells, aborting.");
-                    return this.cells().firstWithPredicate(cellPredicate);
-                }
-
-                lastVisibleCell = thisVisibleCell;
-            }
+            return this._getSomethingByScrolling("predicate: " + cellPredicate, function (thisTable) {
+                return thisTable.cells().firstWithPredicate(cellPredicate);
+            });
         } catch (e) {
             UIALogger.logDebug("getCellWithPredicateByScrolling caught/ignoring: " + e);
         } finally {
@@ -1562,6 +1592,25 @@ extendPrototype(UIATableView, {
         }
 
         return newUIAElementNil();
+    },
+
+    /**
+     * Fix a shortcoming in UIAutomation's ability to scroll to an item by reference
+     * @param elementDescription string description of what we are looking for
+     * @param selector a selector relative to the table that will return the desired element
+     * @return an element
+     */
+    getChildElementByScrolling: function (elementDescription, selector) {
+        try {
+            return this._getSomethingByScrolling("selector for " + elementDescription, function (thisTable) {
+                return thisTable.getChildElement(selector);
+            });
+        } catch (e) {
+            UIALogger.logDebug("getChildElementByScrolling caught/ignoring: " + e);
+        }
+
+        return newUIAElementNil();
     }
+
 
 });

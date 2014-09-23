@@ -266,6 +266,9 @@ Given a valid predicate (for `.firstWithPredicate`), scroll through the UIATable
 #### `.getChildElement(selector)` - UIAElement
 Returns the element retrieved by the given selector, relative to this element.
 
+#### `.getChildElementByScrolling(elementDescription, selector)` - UIATableView
+Given a valid selector (relative to `this`), scroll through the UIATableView until the selector returns a non-nil element.  This is necessary in cases where UIAutomation does not think that an item in a table (like a button) has a scrollable ancestor.
+
 #### `.getChildElementReferences(varName, visibleOnly)` - UIAElement
 Returns an array of strings (relative to `varName` indicating the string selector of child elements.  Optionally, `visibleOnly` controls whether to traverse hidden elements.
 
