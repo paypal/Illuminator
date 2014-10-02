@@ -83,6 +83,7 @@ class JunitOutput
 
   def automationFinished(failed)
     File.open(@filename, 'w') { |f| f.write(serialize(@suite)) }
+    puts "CI report written to #{@filename}".green
   end
 
   def xml_escape(input)

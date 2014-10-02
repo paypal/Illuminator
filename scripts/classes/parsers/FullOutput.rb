@@ -11,7 +11,7 @@ class FullOutput
   end
 
   def addStatus (status)
-    puts status.message
+    puts status.fullLine
 
     @stats[:total] = @stats[:total].to_i + 1 if status.status == :start
     @stats[status.status] = @stats[status.status].to_i + 1
@@ -21,10 +21,10 @@ class FullOutput
 
     if failed || failed?(@stats)
       STDERR.puts self.formatStatistics(@stats)
-      STDERR.puts 'Tests failed, see log output for details'
+      STDERR.puts 'Tests failed, see log output for details'.red
     else
       STDOUT.puts self.formatStatistics(@stats)
-      STDOUT.puts 'TEST PASSED'
+      STDOUT.puts 'TEST PASSED'.green
     end
   end
 
@@ -33,10 +33,10 @@ class FullOutput
   end
 
   def formatStatistics(statistics)
-    output = "#{statistics[:total].to_i} tests, #{statistics[:fail].to_i} failures"
-    output << ", #{statistics[:error].to_i} errors" if statistics[:error].to_i > 0
-    output << ", #{statistics[:warning].to_i} warnings" if statistics[:warning].to_i > 0
-    output << ", #{statistics[:issue].to_i} issues" if statistics[:issue].to_i > 0
+    output = "#{statistics[:total].to_i} tests, #{statistics[:fail].to_i} failures".green
+    output << ", #{statistics[:error].to_i} errors".red if statistics[:error].to_i > 0
+    output << ", #{statistics[:warning].to_i} warnings".green if statistics[:warning].to_i > 0
+    output << ", #{statistics[:issue].to_i} issues".green if statistics[:issue].to_i > 0
     output
   end
 end

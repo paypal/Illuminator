@@ -14,6 +14,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/JunitOutput
 class Status
 
   attr_accessor :message
+  attr_accessor :fullLine
   attr_accessor :status
   attr_accessor :date
   attr_accessor :time
@@ -26,6 +27,7 @@ class Status
     statusValue = self.parseStatus(statusString)
 
     status = Status.new
+    status.fullLine = line
     status.message = msgString
     status.status = statusValue
     status.date = dateString
@@ -44,6 +46,7 @@ class Status
       when /warning/i then :warning
       when /issue/i then :issue
       when /default/i then :default
+      when /debug/i then :debug
       else :unknown
     end
   end
