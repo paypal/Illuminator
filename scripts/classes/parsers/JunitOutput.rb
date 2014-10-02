@@ -81,7 +81,7 @@ class JunitOutput
     end
   end
 
-  def automationFinished
+  def automationFinished(failed)
     File.open(@filename, 'w') { |f| f.write(serialize(@suite)) }
   end
 

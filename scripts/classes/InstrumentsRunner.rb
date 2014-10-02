@@ -148,10 +148,10 @@ class InstrumentsRunner
         STDERR.puts 'Instruments exited unexpectedly'
         exit 1 if started
       ensure
-
         @parsers.each { |output|
-          output.automationFinished
+          output.automationFinished failed
         }
+        exit 1 if failed
       end
     end
 
