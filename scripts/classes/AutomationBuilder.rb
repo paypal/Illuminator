@@ -13,6 +13,11 @@ class AutomationBuilder
   def initialize
 
     resultPath = "'#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts'"
+    
+    Dir["#{resultPath}/*.app"].each do |app| 
+      FileUtils.rm app
+    end
+  
     @builder = XcodeBuilder.new
     @builder.addParameter('configuration','Debug')
     @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR',resultPath)
@@ -21,7 +26,7 @@ class AutomationBuilder
     @builder.killSim
   end
 
-  def buildScheme scheme, hardwareID = nil, workspace = nil, coverage = FALSE, skipClean = FALSE
+  def buildScheme(scheme, hardwareID = nil, workspace = nil, coverage = FALSE, skipClean = FALSE)
 
     unless skipClean
       @builder.clean
@@ -31,22 +36,22 @@ class AutomationBuilder
     unless workspace.nil?
       Dir.chdir(workspace)
     end
-  
-    preprocessorDefinitions = "$(value) UIAUTOMATION_BUILD=1"
+
+    preprocessorDefinitions = '$(value) UIAUTOMATION_BUILD=1'
     if hardwareID.nil?
-      @builder.addParameter('sdk','iphonesimulator')
-      @builder.addParameter('arch','i386')
+      @builder.addParameter('sdk', 'iphonesimulator')
+      @builder.addParameter('arch', 'i386')
     else
-      @builder.addParameter('arch','armv7')
-      @builder.addParameter('destination',"id=#{hardwareID}")
+      @builder.addParameter('arch', 'armv7')
+      @builder.addParameter('destination', "id=#{hardwareID}")
       preprocessorDefinitions = preprocessorDefinitions + " AUTOMATION_UDID=#{hardwareID}"
     end
-    
-    @builder.addEnvironmentVariable('GCC_PREPROCESSOR_DEFINITIONS',"'#{preprocessorDefinitions}'")
-    
-    @builder.addParameter('xcconfig',"'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'")
-    
-    @builder.addParameter('scheme',scheme)
+
+    @builder.addEnvironmentVariable('GCC_PREPROCESSOR_DEFINITIONS', "'#{preprocessorDefinitions}'")
+
+    @builder.addParameter('xcconfig', "'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'")
+
+    @builder.addParameter('scheme', scheme)
     @builder.run
 
     Dir.chdir(directory)

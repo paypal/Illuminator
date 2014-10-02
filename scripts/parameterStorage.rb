@@ -20,7 +20,7 @@ ARGV.each do|parameter|
 end
 
 
-Dir.chdir(File.dirname(__FILE__) + "/../")
+Dir.chdir(File.dirname(__FILE__) + '/../')
 storage = PLISTStorage.new
 storage.clearAtPath(plistPath)
 ARGV.each do|parameter|

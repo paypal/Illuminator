@@ -6,6 +6,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.r
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationConfig.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
 
 ####################################################################################################
 # runner
@@ -13,21 +14,22 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb
 
 class AutomationRunner
 
-  def initialize path, scheme, appName
-    @xcodePath = path
-
-    @outputDirectory = "#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts";
+  def initialize(scheme)
+    @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
+    @buildArtifacts = "#{File.dirname(__FILE__)}/../../buildArtifacts"
+    @outputDirectory = "#{@buildArtifacts}/xcodeArtifacts";
     puts @outputDirectory
-    @reportPath = "#{File.dirname(__FILE__)}/../../buildArtifacts/UIAutomationReport"
+    @reportPath = "#{@buildArtifacts}/UIAutomationReport"
     @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
-    @crashReportsPath = "#{File.dirname(__FILE__)}/../../buildArtifacts/CrashReports"
+    @crashReportsPath = "#{@buildArtifacts}/CrashReports"
     @xBuilder = XcodeBuilder.new
 
-    @appName = appName + ".app"
+    @appLocation = Dir["#{@outputDirectory}/*.app"][0]
+
     self.cleanup
   end
 
-  def setupForSimulator simDevice, simLanguage, skipSetSim
+  def setupForSimulator(simDevice, simLanguage, skipSetSim)
     @simLanguage = simLanguage
     @simDevice = simDevice
     unless skipSetSim
@@ -36,7 +38,7 @@ class AutomationRunner
     end
   end
 
-  def setHardwareID hardwareID
+  def setHardwareID(hardwareID)
     @hardwareID = hardwareID
   end
 
@@ -51,7 +53,7 @@ class AutomationRunner
   def installOnDevice
     currentDir = Dir.pwd
     Dir.chdir "#{File.dirname(__FILE__)}/../../contrib/ios-deploy"
-    command = "./ios-deploy -b '#{@outputDirectory}/#{@appName}' -i #{@hardwareID} -r -n"
+    command = "./ios-deploy -b '#{@appLocation}' -i #{@hardwareID} -r -n"
     self.runAnnotatedCommand(command)
     Dir.chdir currentDir
   end
@@ -61,29 +63,25 @@ class AutomationRunner
     unless @hardwareID.nil?
       self.installOnDevice
     end
-    testCase = "#{File.dirname(__FILE__)}/../../buildArtifacts/testAutomatically.js"
-    command = "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
-    command << "'#{File.dirname(__FILE__)}/../../contrib/tuneup_js/test_runner/run' '#{@outputDirectory}/#{@appName}' '#{testCase}' '#{@reportPath}'"
-    unless @hardwareID.nil?
-      command << " -d #{@hardwareID}"
-    else
-      command << " -w '#{@simDevice}'"
-    end
-    unless @simLanguage.nil?
-      command << " -l '#{@simLanguage}'"
-    end
-    command << " --attempts=30"
-    command << " --startuptimeout=#{startupTimeout}"
-    if report
-      command << " --xunit"
-    end
-    if verbose
-      command << " -v"
-    else
-      command << " -v -b"
-    end
-    command << " 1>&2"
-    self.runAnnotatedCommand(command)
+   
+    instruments = InstrumentsRunner.new
+    
+    instruments.buildArtifacts = @buildArtifacts
+    instruments.xcodePath = @xcodePath
+    instruments.appLocation = @appLocation
+    instruments.reportPath = @reportPath
+    instruments.hardwareID = @hardwareID
+    instruments.simDevice = @simDevice
+    instruments.simLanguage = @simLanguage
+    
+    
+    #instruments.startupTimeout = startupTimeout
+    #instruments.report = report
+    #instruments.verbose = verbose
+    
+    
+    instruments.start
+
     self.reportCrash
     if doKillAfter
       @xBuilder.killSim
@@ -103,94 +101,90 @@ class AutomationRunner
 
 
 
-   def self.runWithOptions options, workspace
-      options["workspace"] = Dir.pwd
-      Dir.chdir(File.dirname(__FILE__) + "/../")
+   def self.runWithOptions(options, workspace)
+     options['workspace'] = Dir.pwd
+     Dir.chdir(File.dirname(__FILE__) + '/../')
 
-      ####################################################################################################
-      # Sanity checks
-      ####################################################################################################
+     ####################################################################################################
+     # Sanity checks
+     ####################################################################################################
 
-      raise ArgumentError, 'Path to all tests was not supplied' if options["testPath"].nil?
+     raise ArgumentError, 'Path to all tests was not supplied' if options['testPath'].nil?
 
-      ####################################################################################################
-      # Storing parameters
-      ####################################################################################################
-
-
-      tagsAny_arr = Array.new(0)
-
-      tagsAny_arr = options["tagsAny"].split(',') unless options["tagsAny"].nil?
-
-      tagsAll_arr = Array.new(0)
-      tagsAll_arr = options["tagsAll"].split(',') unless options["tagsAll"].nil?
-
-      tagsNone_arr = Array.new(0)
-      tagsNone_arr = options["tagsNone"].split(',') unless options["tagsNone"].nil?
-
-      pathToAllTests = options["testPath"]
-      unless pathToAllTests.start_with? workspace
-        pathToAllTests = workspace + '/' + pathToAllTests
-      end
-
-      config = AutomationConfig.new(options["implementation"], pathToAllTests)
-
-      unless options["hardwareID"].nil?
-        config.setHardwareID options["hardwareID"]
-      end
-
-      unless options["simDevice"].nil?
-        config.setSimDevice options["simDevice"]
-      end
-
-      unless options["simVersion"].nil?
-        config.setSimVersion options["simVersion"]
-      end
-
-      unless options["plistSettingsPath"].nil?
-        config.setCustomConfig options["plistSettingsPath"]
-      end
-
-      unless options["randomSeed"].nil?
-        config.setRandomSeed options["randomSeed"]
-      end
-      config.defineTags tagsAny_arr, tagsAll_arr, tagsNone_arr
+     ####################################################################################################
+     # Storing parameters
+     ####################################################################################################
 
 
+     tagsAny_arr = Array.new(0)
 
-      ####################################################################################################
-      # Script action
-      ####################################################################################################
+     tagsAny_arr = options['tagsAny'].split(',') unless options['tagsAny'].nil?
+
+     tagsAll_arr = Array.new(0)
+     tagsAll_arr = options['tagsAll'].split(',') unless options['tagsAll'].nil?
+
+     tagsNone_arr = Array.new(0)
+     tagsNone_arr = options['tagsNone'].split(',') unless options['tagsNone'].nil?
+
+     pathToAllTests = options['testPath']
+     unless pathToAllTests.start_with? workspace
+       pathToAllTests = workspace + '/' + pathToAllTests
+     end
+
+     config = AutomationConfig.new(options['implementation'], pathToAllTests)
+
+     unless options['hardwareID'].nil?
+       config.setHardwareID options['hardwareID']
+     end
+
+     unless options['simDevice'].nil?
+       config.setSimDevice options['simDevice']
+     end
+
+     unless options['simVersion'].nil?
+       config.setSimVersion options['simVersion']
+     end
+
+     unless options['plistSettingsPath'].nil?
+       config.setCustomConfig options['plistSettingsPath']
+     end
+
+     unless options['randomSeed'].nil?
+       config.setRandomSeed options['randomSeed']
+     end
+     config.defineTags tagsAny_arr, tagsAll_arr, tagsNone_arr
 
 
-      unless options["skipBuild"]
-        builder = AutomationBuilder.new()
-        builder.buildScheme(options["scheme"], options["hardwareID"], workspace, options["coverage"], options["skipClean"])
+     ####################################################################################################
+     # Script action
+     ####################################################################################################
 
-      end
 
-      runner = AutomationRunner.new(options["defaultXcode"],
-                                    options["scheme"],
-                                    options["appName"])
+     unless options['skipBuild']
+       builder = AutomationBuilder.new()
+       builder.buildScheme(options['scheme'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
 
-      if !options["hardwareID"].nil?
-        runner.setHardwareID options["hardwareID"]
-      elsif
-        runner.setupForSimulator "#{options["simDevice"]} - Simulator - #{options["simVersion"]}", options["simLanguage"], options["skipSetSim"]
-      end
+     end
 
-      skipKillAfter = options["skipKillAfter"]
-      if options["coverage"]
-        skipKillAfter = TRUE
-      end
+     runner = AutomationRunner.new(options['scheme'])
 
-      config.save() # must save AFTER automationRunner initializes
-      runner.runAllTests(options["report"], !skipKillAfter, options["verbose"], options["timeout"])
+     if !options['hardwareID'].nil?
+       runner.setHardwareID options['hardwareID']
+     elsif runner.setupForSimulator "#{options['simDevice']} - Simulator - #{options['simVersion']}", options['simLanguage'], options['skipSetSim']
+     end
 
-      if options["coverage"]
-        runner.generateCoverage options
-      end
-  end
+     skipKillAfter = options['skipKillAfter']
+     if options['coverage']
+       skipKillAfter = TRUE
+     end
+
+     config.save() # must save AFTER automationRunner initializes
+     runner.runAllTests(options['report'], !skipKillAfter, options['verbose'], options['timeout'])
+
+     if options['coverage']
+       runner.generateCoverage options
+     end
+   end
 
 
 
@@ -200,31 +194,31 @@ class AutomationRunner
     end
 
     # find symbolicatecrash file, which is different depending on the Xcode version.  We assume either/or
-    frameworksPath = "#{@xcodePath}/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks"
+    frameworksPath = "#{@xcodePath}/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks"
     symbolicatorPath = "#{frameworksPath}/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash"
     if not File.exist?(symbolicatorPath)
       symbolicatorPath = "#{frameworksPath}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
     end
 
     Dir.glob("#{@crashPath}/*.crash").each do |path|
-      outputFilename = "crashReport.txt"
-      command =   "DEVELOPER_DIR='#{@xcodePath}/Contents/Developer' "
+      outputFilename = 'crashReport.txt'
+      command =   "DEVELOPER_DIR='#{@xcodePath}' "
       command <<  "'#{symbolicatorPath}' "
-      command <<  "-o '#{@crashReportsPath}/#{outputFilename}' '#{path}' '#{@outputDirectory}/#{@appName}.dSYM' 2>&1"
+      command <<  "-o '#{@crashReportsPath}/#{outputFilename}' '#{path}' '#{@appLocation}.dSYM' 2>&1"
       self.runAnnotatedCommand(command)
-      file = File.open("#{@crashReportsPath}/#{outputFilename}", "rb")
+      file = File.open("#{@crashReportsPath}/#{outputFilename}", 'rb')
       puts file.read.red
     end
   end
 
   def generateCoverage(options)
-    destinationFile = "#{File.dirname(__FILE__)}/../../buildArtifacts/coverage.xml"
-    excludeRegex = ".*(Debug|contrib).*"
+    destinationFile = "#{@buildArtifacts}/coverage.xml"
+    excludeRegex = '.*(Debug|contrib).*'
     puts "Generating automation test coverage to #{destinationFile}".green
     sleep (3)
 
-    xcodeArtifactsFolder = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts").realpath.to_s
-    destinationPath = "#{File.dirname(__FILE__)}/../../buildArtifacts/objectFiles"
+    xcodeArtifactsFolder = Pathname.new("#{@buildArtifacts}/xcodeArtifacts").realpath.to_s
+    destinationPath = "#{@buildArtifacts}/objectFiles"
 
     #cleanup
     FileUtils.rm destinationFile, :force => true
@@ -232,7 +226,7 @@ class AutomationRunner
     unless File.directory?(destinationPath)
       FileUtils.mkdir_p destinationPath
     end
-    destinationPath = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts/objectFiles").realpath.to_s
+    destinationPath = Pathname.new("#{@buildArtifacts}/objectFiles").realpath.to_s
 
     filePaths = []
     Find.find(xcodeArtifactsFolder) do |pathP|
@@ -241,10 +235,10 @@ class AutomationRunner
         filePaths << path
         pathWithoutExt = path.chomp(File.extname(path))
 
-        filePaths << pathWithoutExt + ".d"
-        filePaths << pathWithoutExt + ".dia"
-        filePaths << pathWithoutExt + ".o"
-        filePaths << pathWithoutExt + ".gcno"
+        filePaths << pathWithoutExt + '.d'
+        filePaths << pathWithoutExt + '.dia'
+        filePaths << pathWithoutExt + '.o'
+        filePaths << pathWithoutExt + '.gcno'
       end
     end
 
@@ -252,7 +246,7 @@ class AutomationRunner
       FileUtils.cp path, destinationPath
     end
 
-    command = "gcovr -r '" + options["workspace"] + "' --exclude='#{excludeRegex}' --xml '#{destinationPath}' > '#{destinationFile}'"
+    command = "gcovr -r '" + options['workspace'] + "' --exclude='#{excludeRegex}' --xml '#{destinationPath}' > '#{destinationFile}'"
     self.runAnnotatedCommand(command)
 
   end

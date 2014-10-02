@@ -81,7 +81,7 @@ class XcodeBuilder
     
     puts 'created command:'
     puts command.green
-    return command
+    command
 
   end
   
@@ -97,7 +97,7 @@ class XcodeBuilder
       end
       io.close
       unless $?.to_i == 0 
-        puts "Build failed, check logs for results".red
+        puts 'Build failed, check logs for results'.red
         exit $?.to_i
       end
     end
