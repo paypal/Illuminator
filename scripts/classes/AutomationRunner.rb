@@ -6,46 +6,8 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.r
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationConfig.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
 
-####################################################################################################
-# command builder
-####################################################################################################
-
-class InstrumentsBuilder
-  attr_accessor :buildArtifacts
-  attr_accessor :xcodePath
-  attr_accessor :appLocation
-  attr_accessor :reportPath
-  attr_accessor :hardwareID
-  attr_accessor :simDevice
-  attr_accessor :simLanguage
-  
-  
-  def build
-    
-    testCase = "#{@buildArtifacts}/testAutomatically.js"
-    sdkRootDirectory = `/usr/bin/xcodebuild -version -sdk iphoneos | grep PlatformPath`.split(':')[1].chomp.sub(/^\s+/, '')
-    templatePath = `[ -f /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate ] && echo "#{sdkRootDirectory}/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate" || echo "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate"`.chomp.sub(/^\s+/, '')
-    
-    command = "env DEVELOPER_DIR=#{@xcodePath} /usr/bin/instruments"
-    if hardwareID
-      command = command + " -w '" + @hardwareID + "'"
-    elsif simDevice
-      command = command + " -w '" + @simDevice + "'"
-    end 
-    
-    command = command + " -t #{templatePath} "
-    command = command + @appLocation
-    command = command + " -e UIASCRIPT #{testCase}"
-    command = command + " -e UIARESULTSPATH #{reportPath}"
-
-    command = command + " #{@simLanguage}" if @simLanguage
-
-    command
-
-  end
-  
-end
 ####################################################################################################
 # runner
 ####################################################################################################
@@ -102,7 +64,7 @@ class AutomationRunner
       self.installOnDevice
     end
    
-    instruments = InstrumentsBuilder.new
+    instruments = InstrumentsRunner.new
     
     instruments.buildArtifacts = @buildArtifacts
     instruments.xcodePath = @xcodePath
@@ -118,9 +80,8 @@ class AutomationRunner
     #instruments.verbose = verbose
     
     
-    command = instruments.build
-    
-    self.runAnnotatedCommand(command)
+    instruments.start
+
     self.reportCrash
     if doKillAfter
       @xBuilder.killSim
