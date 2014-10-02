@@ -88,17 +88,17 @@ class InstrumentsRunner
     sdkRootDirectory = `/usr/bin/xcodebuild -version -sdk iphoneos | grep PlatformPath`.split(':')[1].chomp.sub(/^\s+/, '')
     templatePath = `[ -f /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate ] && echo "#{sdkRootDirectory}/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate" || echo "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate"`.chomp.sub(/^\s+/, '')
 
-    command = "env DEVELOPER_DIR=#{@xcodePath} /usr/bin/instruments"
+    command = "env DEVELOPER_DIR='#{@xcodePath}' /usr/bin/instruments"
     if hardwareID
       command = command + " -w '" + @hardwareID + "'"
     elsif simDevice
       command = command + " -w '" + @simDevice + "'"
     end
 
-    command = command + " -t #{templatePath} "
-    command = command + @appLocation
-    command = command + " -e UIASCRIPT #{testCase}"
-    command = command + " -e UIARESULTSPATH #{reportPath}"
+    command = command + " -t '#{templatePath}' "
+    command = command + "'#{@appLocation}'"
+    command = command + " -e UIASCRIPT '#{testCase}'"
+    command = command + " -e UIARESULTSPATH '#{reportPath}'"
 
     command = command + " #{@simLanguage}" if @simLanguage
 
@@ -107,7 +107,7 @@ class InstrumentsRunner
   end
 
   def runCommand (command)
-
+    puts command.green
     started = false
     remaining_attempts = @attempts
 
