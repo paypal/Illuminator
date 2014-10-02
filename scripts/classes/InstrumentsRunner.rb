@@ -77,7 +77,7 @@ class InstrumentsRunner
 
 
   def start
-    junitReportPath = @reportPath + '/../testAutomatically.xml'
+    junitReportPath = @reportPath + '/testAutomatically.xml'
     FileUtils.rm_f junitReportPath
     @parsers.push FullOutput.new
     @parsers.push JunitOutput.new junitReportPath
