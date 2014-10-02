@@ -3,6 +3,8 @@ require 'fileutils'
 require 'colorize'
 require 'pty'
 
+require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/FullOutput.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/JunitOutput.rb')
 
 
 ####################################################################################################
@@ -49,17 +51,6 @@ class Status
 end
 
 ####################################################################################################
-# defaultParser
-####################################################################################################
-
-class FullOutput
-  def addStatus (status)
-    puts status.message
-  end
-end
-
-
-####################################################################################################
 # command builder
 ####################################################################################################
 
@@ -83,7 +74,11 @@ class InstrumentsRunner
 
 
   def start
+    junitReportPath = @reportPath + '/junit.xml'
+    FileUtils.rm_f junitReportPath
     @parsers.push FullOutput.new
+    @parsers.push JunitOutput.new junitReportPath
+
     @startupTimeout = 30
     @attempts = 30
     testCase = "#{@buildArtifacts}/testAutomatically.js"
@@ -153,7 +148,10 @@ class InstrumentsRunner
         STDERR.puts 'Instruments exited unexpectedly'
         exit 1 if started
       ensure
-        #notify of exit
+
+        @parsers.each { |output|
+          output.automationFinished
+        }
       end
     end
 
