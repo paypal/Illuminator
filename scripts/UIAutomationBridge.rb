@@ -7,7 +7,7 @@ require 'dnssd'
 require 'socket'
 require 'timeout'
 
-Dir.chdir(File.dirname(__FILE__) + "/../../")
+Dir.chdir(File.dirname(__FILE__) + '/../../')
 
 argument = nil
 hardwareID = nil
@@ -38,7 +38,7 @@ def connect(host, port, timeout=5)
   if timeout
     secs = Integer(timeout)
     usecs = Integer((timeout - secs) * 1_000_000)
-    optval = [secs, usecs].pack("l_2")
+    optval = [secs, usecs].pack('l_2')
     sock.setsockopt Socket::SOL_SOCKET, Socket::SO_RCVTIMEO, optval
     sock.setsockopt Socket::SOL_SOCKET, Socket::SO_SNDTIMEO, optval
   end
@@ -49,16 +49,16 @@ end
 
 
 resultHash = Hash.new
-resultHash["selector"] = selector
-resultHash["callUID"] = callUID
+resultHash['selector'] = selector
+resultHash['callUID'] = callUID
 unless argument.nil?
-  resultHash["argument"] = JSON.parse argument
+  resultHash['argument'] = JSON.parse argument
 end
 
 result = resultHash.to_json
 
-host = "127.0.0.1"
-port = "4200"
+host = '127.0.0.1'
+port = '4200'
 
 unless hardwareID.nil?
   service = DNSSD::Service.new
@@ -78,17 +78,17 @@ unless hardwareID.nil?
 end 
 
 outputJson = Hash.new
-outputJson["ruby_check"] = true
-outputJson["status_check"] = "initialized"
+outputJson['ruby_check'] = true
+outputJson['status_check'] = 'initialized'
 
 socketStream = connect host, port
 socketStream.write(result)
-response = ""
+response = ''
 while line = socketStream.gets   
   response = response + line
 end
 socketStream.close
 
-outputJson["response"] = JSON.parse response
+outputJson['response'] = JSON.parse response
 
 print outputJson.to_json

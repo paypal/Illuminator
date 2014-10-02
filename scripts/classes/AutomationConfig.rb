@@ -7,11 +7,11 @@ class AutomationConfig
 
   def initialize(implementation, testPath)
     @testPath = testPath
-    @automatorRoot = Pathname.new(File.dirname(__FILE__) + "/../..").realpath.to_s
+    @automatorRoot = Pathname.new(File.dirname(__FILE__) + '/../..').realpath.to_s
 
-    FileUtils.mkdir_p(File.dirname(__FILE__) + "/../../buildArtifacts")
-    self.renderTemplate "/../resources/testAutomatically.erb", "/../../buildArtifacts/testAutomatically.js"
-    self.renderTemplate "/../resources/environment.erb", "/../../buildArtifacts/environment.js"
+    FileUtils.mkdir_p(File.dirname(__FILE__) + '/../../buildArtifacts')
+    self.renderTemplate '/../resources/testAutomatically.erb', '/../../buildArtifacts/testAutomatically.js'
+    self.renderTemplate '/../resources/environment.erb', '/../../buildArtifacts/environment.js'
 
     @plistStorage = PLISTStorage.new
     @plistStorage.clearAtPath(self.configPath())
@@ -62,7 +62,7 @@ class AutomationConfig
 
   def defineTests testList
     self.setEntryPoint 'runTestsByName'
-    @plistStorage.addParameterToStorage("automatorScenarioNames", testList)
+    @plistStorage.addParameterToStorage('automatorScenarioNames', testList)
   end
 
   def defineDescribe
@@ -76,13 +76,13 @@ class AutomationConfig
   def renderTemplate sourceFile, destinationFile
 
     file = File.open(File.dirname(__FILE__) + sourceFile)
-    contents = ""
+    contents = ''
     file.each {|line|
       contents << line
     }
 
     renderer = ERB.new(contents)
-    newFile = File.open(File.dirname(__FILE__) + destinationFile, "w")
+    newFile = File.open(File.dirname(__FILE__) + destinationFile, 'w')
     newFile.write(renderer.result(binding))
     newFile.close
 
