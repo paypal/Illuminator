@@ -516,7 +516,7 @@ var debugAppmap = false;
             return target().getOneChildElement(selector);
         } catch (e) {
             // it's possible that the selector returned multiple things, so re-raise that
-            if ("function" != typeof (selector)) {
+            if (!isHardSelector(selector)) {
                 var elems = target().getChildElements(selector);
                 if (Object.keys(getUniqueElements(elems)).length > 1) throw e;
             }

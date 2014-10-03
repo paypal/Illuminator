@@ -148,7 +148,7 @@ Create (return) an error constructor function to produce exception objects with 
 Input Methods Reference
 -----------------------
 
-Illuminator has the ability to attach input methods to the fields that use them.  For example, date pickers or custom keyboards can be manipulated through methods on the fields that receive the value of said input methods.  
+Illuminator has the ability to attach input methods to the fields that use them.  For example, date pickers or custom keyboards can be manipulated through methods on the fields that receive the value of said input methods.
 
 
 ### Defining Custom Input Methods

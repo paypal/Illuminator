@@ -512,6 +512,31 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
 }
 
 /**
+ * Resolve a string expression to a UIAElement using Eval
+ *
+ * @param selector string
+ * @param element the element to use as a starting point
+ */
+function getChildElementFromEval(selector, element) {
+    // wrapper function for lookups, only return element if element is visible
+    var visible = function (elem) {
+        return elem.isVisible() ? elem : newUIAElementNil();
+    }
+
+    try {
+        return eval(selector);
+    } catch (e) {
+        if (e instanceof SyntaxError) {
+            throw new IlluminatorSetupException("Couldn't evaluate string selector '" + selector + "': " + e);
+        } else if (e instanceof TypeError) {
+            throw new IlluminatorSetupException("Evaluating string selector triggered " + e);
+        } else {
+            throw e;
+        }
+    }
+}
+
+/**
  * construct an input method
  */
 function newInputMethod(methodName, description, isActiveFn, selector, features) {
@@ -763,12 +788,7 @@ extendPrototype(UIAElement, {
         case "object":
             return getOneCriteriaSearchResult(callerName, this.getChildElements(selector), selector, allowZero);
         case "string":
-            // wrapper function for lookups, only return element if element is visible
-            var visible = function (elem) {
-                return elem.isVisible() ? elem : newUIAElementNil();
-            }
-            var element = this;
-            return eval(selector);
+            return getChildElementFromEval(selector, this)
         default:
             throw new IlluminatorSetupException(caller + " received undefined input type of " + (typeof selector).toString());
         }
