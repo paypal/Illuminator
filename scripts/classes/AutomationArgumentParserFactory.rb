@@ -116,6 +116,10 @@ class AutomationParserFactory
       letters = switches.keys.join('')
     end
 
+    # helpful error message for bad chars
+    bad_chars = letters.chars.to_a.select{|c| c != "#" and @switches[c].nil?}
+    raise ArgumentError, "buildParser got letters (" + letters + ") containing unknown option characters: " + bad_chars.to_s unless bad_chars.empty?
+
     retval = OptionParser.new
 
     # build a parser as specified by the user
