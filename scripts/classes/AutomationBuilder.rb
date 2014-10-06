@@ -12,19 +12,23 @@ class AutomationBuilder
 
   def initialize
 
-    resultPath = "'#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts'"
-    
-    Dir["#{resultPath}/*.app"].each do |app| 
-      FileUtils.rm app
-    end
-  
+    @resultPath = "'#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts'"
+
     @builder = XcodeBuilder.new
-    @builder.addParameter('configuration','Debug')
-    @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR',resultPath)
-    @builder.addEnvironmentVariable('CONFIGURATION_TEMP_DIR',resultPath)
-    @builder.addEnvironmentVariable('UIAUTOMATION_BUILD',true)
+    @builder.addParameter('configuration', 'Debug')
+    @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR', @resultPath)
+    @builder.addEnvironmentVariable('CONFIGURATION_TEMP_DIR', @resultPath)
+    @builder.addEnvironmentVariable('UIAUTOMATION_BUILD', true)
     @builder.killSim
   end
+
+
+  def removeExistingApps
+    Dir["#{@resultPath}/*.app"].each do |app|
+      FileUtils.rm app
+    end
+  end
+
 
   def buildScheme(scheme, hardwareID = nil, workspace = nil, coverage = FALSE, skipClean = FALSE)
 

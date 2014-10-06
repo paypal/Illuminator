@@ -10,6 +10,7 @@ class AutomationParserFactory
     # build the list of how each parameter will be saved in the output
     @letterMap = {
       'p' => 'testPath',
+      'a' => 'appName',
       't' => 'tagsAny',
       'o' => 'tagsAll',
       'n' => 'tagsNone',
@@ -49,6 +50,7 @@ class AutomationParserFactory
     @defaultValues = @defaultValues.merge defaultValues unless defaultValues.nil?
 
     self.addSwitch('p', ['-p', '--testPath PATH', 'Path to js file with all tests imported'])
+    self.addSwitch('a', ['-a', '--appName APPNAME', "Name of the app to run"])
     self.addSwitch('t', ['-t', '--tags-any TAGSANY', 'Run tests with any of the given tags'])
     self.addSwitch('o', ['-o', '--tags-all TAGSALL', 'Run tests with all of the given tags'])
     self.addSwitch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])
