@@ -15,4 +15,3 @@ parser.parse! ARGV
 
 options['workspace'] = workspace
 AutomationRunner.runWithOptions options, workspace
-

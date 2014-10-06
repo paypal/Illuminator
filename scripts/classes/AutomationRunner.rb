@@ -63,9 +63,9 @@ class AutomationRunner
     unless @hardwareID.nil?
       self.installOnDevice
     end
-   
+
     instruments = InstrumentsRunner.new
-    
+
     instruments.buildArtifacts = @buildArtifacts
     instruments.xcodePath = @xcodePath
     instruments.appLocation = @appLocation
@@ -73,13 +73,13 @@ class AutomationRunner
     instruments.hardwareID = @hardwareID
     instruments.simDevice = @simDevice
     instruments.simLanguage = @simLanguage
-    
-    
+
+
     #instruments.startupTimeout = startupTimeout
     #instruments.report = report
     #instruments.verbose = verbose
-    
-    
+
+
     instruments.start
 
     self.reportCrash
