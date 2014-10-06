@@ -166,12 +166,14 @@ class AutomationRunner
 
      builder = AutomationBuilder.new()
 
-     if options['forceCleanApps']
-       builder.removeExistingApps()
-     end
 
-     # todo: if options['forceBuild']
      unless options['skipBuild']
+
+       # if app name is not specified, make sure that we will only have one to run
+       unless options['appName']
+         builder.removeExistingApps()
+       end
+
        builder.buildScheme(options['scheme'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
      end
 

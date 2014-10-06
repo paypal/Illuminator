@@ -30,6 +30,7 @@ class AutomationBuilder
   end
 
 
+                                                                       # TODO: forceClean = FALSE
   def buildScheme(scheme, hardwareID = nil, workspace = nil, coverage = FALSE, skipClean = FALSE)
 
     unless skipClean
