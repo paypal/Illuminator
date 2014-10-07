@@ -11,6 +11,7 @@ allTestPath = '../../SampleApp/SampleTests/tests/AllTests.js'
 options = {}
 
 options['implementation'] = 'iPhone'
+options['appName'] = 'AutomatorSampleApp'
 options['scheme'] = 'AutomatorSampleApp'
 options['simVersion'] = 'iOS 7.1'
 options['simDevice'] = 'iPhone Retina (4-inch)'

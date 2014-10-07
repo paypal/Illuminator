@@ -14,7 +14,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.r
 
 class AutomationRunner
 
-  def initialize(scheme)
+  def initialize(scheme, appName)
     @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
     @buildArtifacts = "#{File.dirname(__FILE__)}/../../buildArtifacts"
     @outputDirectory = "#{@buildArtifacts}/xcodeArtifacts";
@@ -24,7 +24,12 @@ class AutomationRunner
     @crashReportsPath = "#{@buildArtifacts}/CrashReports"
     @xBuilder = XcodeBuilder.new
 
-    @appLocation = Dir["#{@outputDirectory}/*.app"][0]
+    # if app name is not defined, assume that only one app exists and use that
+    if appName.nil?
+      @appLocation = Dir["#{@outputDirectory}/*.app"][0]
+    else
+      @appLocation = "#{@outputDirectory}/#{appName}.app"
+    end
 
     self.cleanup
   end
@@ -63,9 +68,9 @@ class AutomationRunner
     unless @hardwareID.nil?
       self.installOnDevice
     end
-   
+
     instruments = InstrumentsRunner.new
-    
+
     instruments.buildArtifacts = @buildArtifacts
     instruments.xcodePath = @xcodePath
     instruments.appLocation = @appLocation
@@ -73,13 +78,13 @@ class AutomationRunner
     instruments.hardwareID = @hardwareID
     instruments.simDevice = @simDevice
     instruments.simLanguage = @simLanguage
-    
-    
+
+
     #instruments.startupTimeout = startupTimeout
     #instruments.report = report
     #instruments.verbose = verbose
-    
-    
+
+
     instruments.start
 
     self.reportCrash
@@ -159,14 +164,20 @@ class AutomationRunner
      # Script action
      ####################################################################################################
 
+     builder = AutomationBuilder.new()
+
 
      unless options['skipBuild']
-       builder = AutomationBuilder.new()
-       builder.buildScheme(options['scheme'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
 
+       # if app name is not specified, make sure that we will only have one to run
+       unless options['appName']
+         builder.removeExistingApps()
+       end
+
+       builder.buildScheme(options['scheme'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
      end
 
-     runner = AutomationRunner.new(options['scheme'])
+     runner = AutomationRunner.new(options['scheme'], options['appName'])
 
      if !options['hardwareID'].nil?
        runner.setHardwareID options['hardwareID']
