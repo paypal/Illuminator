@@ -1567,7 +1567,7 @@ extendPrototype(UIATableView, {
             for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
                 thisVisibleCell = i;
                 var ret = getSomethingFn(this);
-                if (ret && ret.isNotNil()) {
+                if (isNotNilElement(ret)) {
                     ret.scrollToVisible();
                     delay(delayToPreventUIAutomationBug);
                     return ret;
