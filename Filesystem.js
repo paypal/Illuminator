@@ -2,9 +2,15 @@
  * Write data to a file
  *
  * @param path the path that should be (over)written
- * @data the data of the file to write
+ * @data the data of the file to write in string format
  */
 function writeToFile(path, data) {
+    // type check
+    switch (typeof data) {
+    case "string": break;
+    default: throw new TypeError("writeToFile expected data in string form, got type " + (typeof data));
+    }
+
     var chunkSize = Math.floor(262144 * 0.74) - (path.length + 100); // `getconf ARG_MAX`, adjusted for b64
 
     var writeHelper = function (b64stuff, outputPath) {
