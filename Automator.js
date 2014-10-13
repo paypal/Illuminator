@@ -923,6 +923,8 @@ var debugAutomator = false;
                         v = val; // no change
                         break;
                     case "function":
+                        v = "\n\n```javascript\n" + val + "\n```";
+                        break;
                     case "string":
                         v = "`" + val + "`"; // backtick-quote
                         break;
