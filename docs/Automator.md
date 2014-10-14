@@ -135,3 +135,6 @@ Returns true if all steps in the `scenario` are supported by the defined automat
 
 #### `.toMarkdown()`
 Returns a string containing a markdown description of all the scenarios, steps, and their parameters in the Automator.
+
+#### `.toScenarioObject()`
+Returns an object containing an array of scenario objects, each containing a string `title`, a `tags` array, and a `steps` array.

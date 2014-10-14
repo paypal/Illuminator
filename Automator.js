@@ -923,6 +923,8 @@ var debugAutomator = false;
                         v = val; // no change
                         break;
                     case "function":
+                        v = "\n\n```javascript\n" + val + "\n```";
+                        break;
                     case "string":
                         v = "`" + val + "`"; // backtick-quote
                         break;
@@ -939,6 +941,31 @@ var debugAutomator = false;
             }
         }
         return ret.join("\n");
+    };
+
+
+    /**
+     * Render the automator scenarios (tags and steps) to JSON
+     *
+     * @return object
+     */
+    automator.toScenarioObject = function () {
+        var ret = {scenarios: []};
+
+        // iterate over scenarios
+        for (var i = 0; i < automator.allScenarios.length; ++i) {
+            var scenario = automator.allScenarios[i];
+            var outScenario = {title: scenario.title, tags: Object.keys(scenario.tags_obj), steps: []};
+
+            // iterate over steps (actions)
+            for (var j = 0; j < scenario.steps.length; ++j) {
+                var step = scenario.steps[j];
+                outScenario.steps.push(step.action.screenName + "." + step.action.name);
+            }
+            ret.scenarios.push(outScenario);
+        }
+
+        return ret;
     };
 
 
