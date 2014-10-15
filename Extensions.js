@@ -1431,6 +1431,7 @@ extendPrototype(UIAElement, {
         this.setInputMethod = setInputMethod;
         this.customInputMethod = customInputMethod;
         this.typeString = typeString;
+        return this;
     }
 
 });
