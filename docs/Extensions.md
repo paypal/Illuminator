@@ -258,25 +258,25 @@ For example, a valid criteria object might look like the following:
 ```
 
 #### `.firstWithNameRegex(pattern)` - UIAElementArray
-Same as `.firstWithName(name)` for UIAElementArray objects, but does a regular expression match.
+Same as `.firstWithName(name)` for UIAElementArray objects, but does a regular expression match on the provided `pattern`.
 
 #### `.getCellWithPredicateByScrolling(cellPredicate)` - UIATableView
-Given a valid predicate (for `.firstWithPredicate`), scroll through the UIATableView until a matching cell is found.  This is necessary in cases where content is dynamically loaded, because the `.name()` property is not always available for cells in table views.
+Given a valid `cellPredicate` (identical to UIAutomation's `.firstWithPredicate`), scroll through the UIATableView until a matching cell is found.  This is necessary in cases where content is dynamically loaded, because the `.name()` property is not always available for cells in table views.
 
 #### `.getChildElement(selector)` - UIAElement
-Returns the element retrieved by the given selector, relative to this element.
+Returns the element retrieved by the given `selector`, relative to this element.
 
 #### `.getChildElementByScrolling(elementDescription, selector)` - UIATableView
-Given a valid selector (relative to `this`), scroll through the UIATableView until the selector returns a non-nil element.  This is necessary in cases where UIAutomation does not think that an item in a table (like a button) has a scrollable ancestor.
+Given a valid selector (relative to `this`), scroll through the UIATableView until the `selector` returns a non-nil element.  This is necessary in cases where UIAutomation does not think that an item in a table (like a button) has a scrollable ancestor.  `elementDescription` is used for logging purposes if the selector is unable to return a valid element.
 
 #### `.getChildElementReferences(varName, visibleOnly)` - UIAElement
 Returns an array of strings (relative to `varName` indicating the string selector of child elements.  Optionally, `visibleOnly` controls whether to traverse hidden elements.
 
 #### `.getChildElements(criteria)` - UIAElement
-Returns an associative array of UIAElements matching the criteria selector, keyed on the string version of that element's selector.
+Returns an associative array of UIAElements matching the `criteria` selector, keyed on the string version of that element's selector.
 
 #### `.getOneChildElement(selector)` - UIAElement
-Returns one non-nil UIAElement specified by the selector; throws an exception if 0 or multiple elements are returned.
+Returns one non-nil UIAElement specified by the `selector`; throws an exception if 0 or multiple elements are returned.
 
 #### `.isNotNil()` - UIAElement, UIAElementNil
 Returns true if the element is not `UIAElementNil`.
@@ -285,10 +285,10 @@ Returns true if the element is not `UIAElementNil`.
 Similar to `.isVisible()` for ordinary UIAElement objects but always returns false.  Provided for compatibility.
 
 #### `.preProcessSelector(selector)` - UIAElement
-This is a prototype function that can be replaced with an app-specific preprocessing function.  It intercepts selectors before they are passed to any selector evaluation function, allowing new functionality or criteria to be understood.
+This is a prototype function that can be overridden by an app-specific preprocessing function.  Any `selector` that can be passed to any selector evaluation function must pass through this function first, so by overriding this function in your application you can allow new functionality or criteria to be understood.  See below for an example of this.
 
 #### `.reduce(callback, initialValue)` - UIAElement
-Applies a callback function to every element in the tree.  The callback must accept the following arguments:
+Applies a `callback` function to every element in the tree.  The callback must accept the following arguments:
 
 1. `initialValue` first, then whatever was returned by the last invocation of the callback function
 2. The UIAElement currently being visited
@@ -336,7 +336,7 @@ Wait `timeout` seconds for `.isValid()` on this element to be equal to `validity
 Wait `timeout` seconds for `.isVisible()` on this element to be equal to `visibility`.
 
 #### `.withNameRegex(pattern)` - UIAElementArray
-Same as `.withName(name)` for UIAElementArray objects, but does a regular expression match.
+Same as `.withName(name)` for UIAElementArray objects, but does a regular expression match on the given `pattern`.
 
 
 
