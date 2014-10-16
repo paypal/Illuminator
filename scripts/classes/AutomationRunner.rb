@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'fileutils'
 require 'find'
+require 'pathname'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationConfig.rb')
@@ -16,10 +17,10 @@ class AutomationRunner
 
   def initialize(scheme, appName)
     @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
-    @buildArtifacts = "#{File.dirname(__FILE__)}/../../buildArtifacts"
+    @buildArtifacts = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts").realpath.to_s
     @outputDirectory = "#{@buildArtifacts}/xcodeArtifacts";
-    puts @outputDirectory
     @reportPath = "#{@buildArtifacts}/UIAutomationReport"
+    puts "Reports will be written to #{@reportPath}".green
     @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
     @crashReportsPath = "#{@buildArtifacts}/CrashReports"
     @xBuilder = XcodeBuilder.new
@@ -30,7 +31,7 @@ class AutomationRunner
     else
       @appLocation = "#{@outputDirectory}/#{appName}.app"
     end
-
+    @appName = appName
     self.cleanup
   end
 
@@ -211,7 +212,7 @@ class AutomationRunner
       symbolicatorPath = "#{frameworksPath}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
     end
 
-    Dir.glob("#{@crashPath}/*.crash").each do |path|
+    Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |path|
       outputFilename = 'crashReport.txt'
       command =   "DEVELOPER_DIR='#{@xcodePath}' "
       command <<  "'#{symbolicatorPath}' "

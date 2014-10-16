@@ -78,7 +78,6 @@ class InstrumentsRunner
 
   def start
     junitReportPath = @reportPath + '/testAutomatically.xml'
-    FileUtils.rm_f junitReportPath
     @parsers.push FullOutput.new
     @parsers.push JunitOutput.new junitReportPath
 
@@ -98,10 +97,11 @@ class InstrumentsRunner
     command = command + " -t '#{templatePath}' "
     command = command + "'#{@appLocation}'"
     command = command + " -e UIASCRIPT '#{testCase}'"
-    command = command + " -e UIARESULTSPATH '#{reportPath}'"
+    command = command + " -e UIARESULTSPATH '#{@reportPath}'"
+
 
     command = command + " #{@simLanguage}" if @simLanguage
-
+    Dir.chdir(@reportPath)
     self.runCommand command
 
   end
