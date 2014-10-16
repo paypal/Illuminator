@@ -19,9 +19,8 @@ class AutomationRunner
     @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
     @buildArtifacts = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts").realpath.to_s
     @outputDirectory = "#{@buildArtifacts}/xcodeArtifacts";
-    puts @outputDirectory
     @reportPath = "#{@buildArtifacts}/UIAutomationReport"
-    puts @reportPath
+    puts "Reports will be written to #{@reportPath}".green
     @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
     @crashReportsPath = "#{@buildArtifacts}/CrashReports"
     @xBuilder = XcodeBuilder.new
