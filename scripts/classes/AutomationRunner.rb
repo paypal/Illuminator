@@ -32,7 +32,7 @@ class AutomationRunner
     else
       @appLocation = "#{@outputDirectory}/#{appName}.app"
     end
-
+    @appName = appName
     self.cleanup
   end
 
@@ -213,7 +213,7 @@ class AutomationRunner
       symbolicatorPath = "#{frameworksPath}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
     end
 
-    Dir.glob("#{@crashPath}/*.crash").each do |path|
+    Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |path|
       outputFilename = 'crashReport.txt'
       command =   "DEVELOPER_DIR='#{@xcodePath}' "
       command <<  "'#{symbolicatorPath}' "
