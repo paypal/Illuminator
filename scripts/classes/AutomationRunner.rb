@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'fileutils'
 require 'find'
+require 'pathname'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationConfig.rb')
@@ -16,10 +17,11 @@ class AutomationRunner
 
   def initialize(scheme, appName)
     @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
-    @buildArtifacts = "#{File.dirname(__FILE__)}/../../buildArtifacts"
+    @buildArtifacts = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts").realpath.to_s
     @outputDirectory = "#{@buildArtifacts}/xcodeArtifacts";
     puts @outputDirectory
     @reportPath = "#{@buildArtifacts}/UIAutomationReport"
+    puts @reportPath
     @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
     @crashReportsPath = "#{@buildArtifacts}/CrashReports"
     @xBuilder = XcodeBuilder.new
