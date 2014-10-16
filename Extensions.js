@@ -740,6 +740,27 @@ extendPrototype(UIAElementArray, {
 });
 
 
+
+extendPrototype(UIASwitch, {
+    
+    safeSetValue: function (value) {
+        for (i = 0; i <= 3; ++i) {
+            try {
+                this.setValue(value);
+                break;
+        } catch (e) {
+                if (i < 3) {
+                    delay(1);
+                    UIALogger.logDebug("caught setValue error: " + e);
+                } else {
+                    throw e;
+                }
+            }
+        }
+    },
+});
+
+
 extendPrototype(UIAElement, {
 
     /**
