@@ -747,24 +747,24 @@ extendPrototype(UIASwitch, {
      *
      * @param value boolean value to set on switch
      * @param retries integer number of retries to do, defaults to 3
-     * @param delay integer delay between retries in seconds, defaults to 1
+     * @param delaySeconds integer delay between retries in seconds, defaults to 1
      */
-    safeSetValue: function (value, retries, delay) {
+    safeSetValue: function (value, retries, delaySeconds) {
         retries = retries || 3;
-        delay = delay || 1;
-
-        for (i = 0; i <= 3; ++i) {
+        delaySeconds = delaySeconds || 1;
+        var exception = null;
+        for (i = 0; i <= retries; ++i) {
             try {
                 this.setValue(value);
-                break;
-        } catch (e) {
-                if (i < retries) {
-                    delay(delay);
-                    UIALogger.logDebug("caught setValue error: " + e);
-                } else {
-                    throw e;
-                }
+                return;
+            } catch (e) {
+                exception = e
+                delay(delaySeconds);
+                UIALogger.logWarning("Set switch value failed " + i + " times with error " + e);
             }
+        }
+        if (exception !== null) {
+            throw exception;   
         }
     },
 });
