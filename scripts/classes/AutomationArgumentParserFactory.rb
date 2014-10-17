@@ -37,8 +37,8 @@ class AutomationParserFactory
     }
 
     @defaultValues = {'i'=> 'iPhone',
-                      'b' => 'iPhone Retina (4-inch)',
-                      'z' => 'iOS 7.1',
+                      'b' => 'iPhone 6',
+                      'z' => '8.1',
                       'l' => 'en',
                       'm' => 30 }
   end

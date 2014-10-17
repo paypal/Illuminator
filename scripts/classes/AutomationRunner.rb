@@ -36,17 +36,17 @@ class AutomationRunner
   end
 
   def setupForSimulator(simDevice, simVersion, simLanguage, skipSetSim)
-
-    simString = "#{simDevice} - Simulator - #{simVersion}"
+    puts "sim device: " + simDevice
     devices = `instruments -s devices`
-    needle = Regexp.escape(simString) + ' \[(.*)\]'
+    needle = simDevice + ' \(' + simVersion + ' Simulator\) \[(.*)\]'
+    puts needle
     match = devices.match(needle)
     if match
       puts "Found device match: #{match}".green
       @simDevice = match.captures[0]
     else
       puts "Did not found UDID of device running by given name: #{@simDevice}".green
-      @simDevice = simString
+      @simDevice = "#{simDevice} - Simulator - #{simVersion}"
     end
 
     @simLanguage = simLanguage
