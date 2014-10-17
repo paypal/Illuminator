@@ -91,6 +91,7 @@ class InstrumentsRunner
     if File.directory? "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/"
       instrumentsFolder = "AutomationInstrument.xrplugin";
     else
+    #fallback to old instruments bundle (pre Xcode6)
       instrumentsFolder = "AutomationInstrument.bundle";
     end
     templatePath = `[ -f /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate ] && echo "#{sdkRootDirectory}/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate" || echo "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"`.chomp.sub(/^\s+/, '')

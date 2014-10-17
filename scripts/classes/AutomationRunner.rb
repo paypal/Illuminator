@@ -43,6 +43,8 @@ class AutomationRunner
       puts "Found device match: #{match}".green
       @simDevice = match.captures[0]
     else
+    
+    #fallback to old device name behavior (pre Xcode6)
       puts "Did not found UDID of device running by given name: #{@simDevice}".green
       @simDevice = "#{simDevice} - Simulator - #{simVersion}"
     end
