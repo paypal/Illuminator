@@ -43,10 +43,20 @@ class AutomationBuilder
     end
 
     preprocessorDefinitions = '$(value) UIAUTOMATION_BUILD=1'
+    
     if hardwareID.nil?
-      @builder.addParameter('sdk', sdk)
+      if sdk
+        @builder.addParameter('sdk', sdk)
+      else
+        @builder.addParameter('sdk', 'iphonesimulator')
+      end
       @builder.addParameter('arch', 'i386')
     else
+      if sdk
+        @builder.addParameter('sdk', sdk)
+      else
+        @builder.addParameter('sdk', 'iphoneos')
+      end
       @builder.addParameter('arch', 'armv7')
       @builder.addParameter('destination', "id=#{hardwareID}")
       preprocessorDefinitions = preprocessorDefinitions + " AUTOMATION_UDID=#{hardwareID}"
@@ -58,7 +68,6 @@ class AutomationBuilder
     
     @builder.addParameter('scheme', scheme)
     
-    @builder.addParameter('sdk', sdk)
     @builder.run
 
     Dir.chdir(directory)
