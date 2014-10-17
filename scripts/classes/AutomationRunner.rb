@@ -36,10 +36,8 @@ class AutomationRunner
   end
 
   def setupForSimulator(simDevice, simVersion, simLanguage, skipSetSim)
-    puts "sim device: " + simDevice
     devices = `instruments -s devices`
     needle = simDevice + ' \(' + simVersion + ' Simulator\) \[(.*)\]'
-    puts needle
     match = devices.match(needle)
     if match
       puts "Found device match: #{match}".green
