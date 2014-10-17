@@ -98,18 +98,18 @@ class InstrumentsRunner
 
     command = "env DEVELOPER_DIR='#{@xcodePath}' /usr/bin/instruments"
     if hardwareID
-      command = command + " -w '" + @hardwareID + "'"
+      command << " -w '" + @hardwareID + "'"
     elsif simDevice
-      command = command + " -w '" + @simDevice + "'"
+      command << " -w '" + @simDevice + "'"
     end
 
-    command = command + " -t '#{templatePath}' "
-    command = command + "'#{@appLocation}'"
-    command = command + " -e UIASCRIPT '#{testCase}'"
-    command = command + " -e UIARESULTSPATH '#{@reportPath}'"
+    command << " -t '#{templatePath}' "
+    command << "'#{@appLocation}'"
+    command << " -e UIASCRIPT '#{testCase}'"
+    command << " -e UIARESULTSPATH '#{@reportPath}'"
 
 
-    command = command + " #{@simLanguage}" if @simLanguage
+    command << " #{@simLanguage}" if @simLanguage
     Dir.chdir(@reportPath)
     self.runCommand command
 
