@@ -185,8 +185,7 @@ class AutomationRunner
        unless options['appName']
          builder.removeExistingApps()
        end
-
-       builder.buildScheme(options['scheme'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
+       builder.buildScheme(options['scheme'], options['sdk'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
      end
 
      runner = AutomationRunner.new(options['scheme'], options['appName'])
