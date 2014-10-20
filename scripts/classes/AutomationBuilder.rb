@@ -31,7 +31,7 @@ class AutomationBuilder
 
 
                                                                        # TODO: forceClean = FALSE
-  def buildScheme(scheme, hardwareID = nil, workspace = nil, coverage = FALSE, skipClean = FALSE)
+  def buildScheme(scheme, sdk, hardwareID = nil, workspace = nil, coverage = FALSE, skipClean = FALSE)
 
     unless skipClean
       @builder.clean
@@ -43,10 +43,20 @@ class AutomationBuilder
     end
 
     preprocessorDefinitions = '$(value) UIAUTOMATION_BUILD=1'
+    
     if hardwareID.nil?
-      @builder.addParameter('sdk', 'iphonesimulator')
+      if sdk
+        @builder.addParameter('sdk', sdk)
+      else
+        @builder.addParameter('sdk', 'iphonesimulator')
+      end
       @builder.addParameter('arch', 'i386')
     else
+      if sdk
+        @builder.addParameter('sdk', sdk)
+      else
+        @builder.addParameter('sdk', 'iphoneos')
+      end
       @builder.addParameter('arch', 'armv7')
       @builder.addParameter('destination', "id=#{hardwareID}")
       preprocessorDefinitions = preprocessorDefinitions + " AUTOMATION_UDID=#{hardwareID}"
@@ -55,8 +65,9 @@ class AutomationBuilder
     @builder.addEnvironmentVariable('GCC_PREPROCESSOR_DEFINITIONS', "'#{preprocessorDefinitions}'")
 
     @builder.addParameter('xcconfig', "'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'")
-
+    
     @builder.addParameter('scheme', scheme)
+    
     @builder.run
 
     Dir.chdir(directory)

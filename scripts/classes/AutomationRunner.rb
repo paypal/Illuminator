@@ -35,9 +35,22 @@ class AutomationRunner
     self.cleanup
   end
 
-  def setupForSimulator(simDevice, simLanguage, skipSetSim)
+  def setupForSimulator(simDevice, simVersion, simLanguage, skipSetSim)
+    devices = `instruments -s devices`
+    needle = simDevice + ' \(' + simVersion + ' Simulator\) \[(.*)\]'
+    match = devices.match(needle)
+    if match
+      puts "Found device match: #{match}".green
+      @simDevice = match.captures[0]
+    else
+    
+    #fallback to old device name behavior (pre Xcode6)
+      puts "Did not found UDID of device running by given name: #{@simDevice}".green
+      @simDevice = "#{simDevice} - Simulator - #{simVersion}"
+    end
+
     @simLanguage = simLanguage
-    @simDevice = simDevice
+
     unless skipSetSim
       command = "osascript '#{File.dirname(__FILE__)}/../reset_simulator.applescript'"
       self.runAnnotatedCommand(command)
@@ -174,15 +187,15 @@ class AutomationRunner
        unless options['appName']
          builder.removeExistingApps()
        end
-
-       builder.buildScheme(options['scheme'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
+       builder.buildScheme(options['scheme'], options['sdk'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
      end
 
      runner = AutomationRunner.new(options['scheme'], options['appName'])
 
      if !options['hardwareID'].nil?
        runner.setHardwareID options['hardwareID']
-     elsif runner.setupForSimulator "#{options['simDevice']} - Simulator - #{options['simVersion']}", options['simLanguage'], options['skipSetSim']
+     elsif
+      runner.setupForSimulator options['simDevice'], options['simVersion'], options['simLanguage'], options['skipSetSim']
      end
 
      skipKillAfter = options['skipKillAfter']

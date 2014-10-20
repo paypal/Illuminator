@@ -9,7 +9,7 @@ workspace = Dir.pwd
 options = {}
 parserFactory = AutomationParserFactory.new()
 parserFactory.prepare()
-parser = parserFactory.buildParser(options, 'patonsjdi#bzl#fek#crvmw')
+parser = parserFactory.buildParser(options, 'patonsjdiq#bzl#fek#crvmw')
 
 parser.parse! ARGV
 

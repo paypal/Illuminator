@@ -85,22 +85,32 @@ class InstrumentsRunner
     @attempts = 30
     testCase = "#{@buildArtifacts}/testAutomatically.js"
     sdkRootDirectory = `/usr/bin/xcodebuild -version -sdk iphoneos | grep PlatformPath`.split(':')[1].chomp.sub(/^\s+/, '')
-    templatePath = `[ -f /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate ] && echo "#{sdkRootDirectory}/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate" || echo "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate"`.chomp.sub(/^\s+/, '')
+
+    instrumentsFolder = ''
+
+    if File.directory? "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/"
+      instrumentsFolder = "AutomationInstrument.xrplugin";
+    else
+    #fallback to old instruments bundle (pre Xcode6)
+      instrumentsFolder = "AutomationInstrument.bundle";
+    end
+    templatePath = `[ -f /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate ] && echo "#{sdkRootDirectory}/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate" || echo "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"`.chomp.sub(/^\s+/, '')
+
 
     command = "env DEVELOPER_DIR='#{@xcodePath}' /usr/bin/instruments"
     if hardwareID
-      command = command + " -w '" + @hardwareID + "'"
+      command << " -w '" + @hardwareID + "'"
     elsif simDevice
-      command = command + " -w '" + @simDevice + "'"
+      command << " -w '" + @simDevice + "'"
     end
 
-    command = command + " -t '#{templatePath}' "
-    command = command + "'#{@appLocation}'"
-    command = command + " -e UIASCRIPT '#{testCase}'"
-    command = command + " -e UIARESULTSPATH '#{@reportPath}'"
+    command << " -t '#{templatePath}' "
+    command << "'#{@appLocation}'"
+    command << " -e UIASCRIPT '#{testCase}'"
+    command << " -e UIARESULTSPATH '#{@reportPath}'"
 
 
-    command = command + " #{@simLanguage}" if @simLanguage
+    command << " #{@simLanguage}" if @simLanguage
     Dir.chdir(@reportPath)
     self.runCommand command
 
