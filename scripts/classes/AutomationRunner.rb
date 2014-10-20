@@ -46,9 +46,8 @@ class AutomationRunner
     
     #fallback to old device name behavior (pre Xcode6)
       puts "Did not found UDID of device running by given name: #{@simDevice}".green
-      @simDevice = "#{simDevice} - Simulator - #{simVersion}"
+      @simDevice = "#{simDevice} - Simulator - iOS #{simVersion}"
     end
-
     @simLanguage = simLanguage
 
     unless skipSetSim
