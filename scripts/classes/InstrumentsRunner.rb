@@ -5,6 +5,7 @@ require 'pty'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/FullOutput.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/JunitOutput.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 
 
 ####################################################################################################
@@ -72,7 +73,6 @@ class InstrumentsRunner
 
   def initialize
     @parsers = Array.new
-
   end
 
 
@@ -84,18 +84,8 @@ class InstrumentsRunner
     @startupTimeout = 30
     @attempts = 30
     testCase = "#{@buildArtifacts}/testAutomatically.js"
-    sdkRootDirectory = `/usr/bin/xcodebuild -version -sdk iphoneos | grep PlatformPath`.split(':')[1].chomp.sub(/^\s+/, '')
 
-    instrumentsFolder = ''
-
-    if File.directory? "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/"
-      instrumentsFolder = "AutomationInstrument.xrplugin";
-    else
-    #fallback to old instruments bundle (pre Xcode6)
-      instrumentsFolder = "AutomationInstrument.bundle";
-    end
-    templatePath = `[ -f /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate ] && echo "#{sdkRootDirectory}/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate" || echo "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"`.chomp.sub(/^\s+/, '')
-
+    templatePath = XcodeUtils.getInstrumentsTemplatePath(@xcodePath)
 
     command = "env DEVELOPER_DIR='#{@xcodePath}' /usr/bin/instruments"
     if hardwareID
@@ -109,12 +99,11 @@ class InstrumentsRunner
     command << " -e UIASCRIPT '#{testCase}'"
     command << " -e UIARESULTSPATH '#{@reportPath}'"
 
-
     command << " #{@simLanguage}" if @simLanguage
     Dir.chdir(@reportPath)
     self.runCommand command
-
   end
+
 
   def runCommand (command)
     puts command.green

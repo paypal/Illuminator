@@ -8,6 +8,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationConfig.rb
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 
 ####################################################################################################
 # runner
@@ -16,7 +17,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.r
 class AutomationRunner
 
   def initialize(scheme, appName)
-    @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
+    @xcodePath = XcodeUtils.getXcodePath
     @buildArtifacts = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts").realpath.to_s
     @outputDirectory = "#{@buildArtifacts}/xcodeArtifacts";
     @reportPath = "#{@buildArtifacts}/UIAutomationReport"
@@ -36,18 +37,7 @@ class AutomationRunner
   end
 
   def setupForSimulator(simDevice, simVersion, simLanguage, skipSetSim)
-    devices = `instruments -s devices`
-    needle = simDevice + ' \(' + simVersion + ' Simulator\) \[(.*)\]'
-    match = devices.match(needle)
-    if match
-      puts "Found device match: #{match}".green
-      @simDevice = match.captures[0]
-    else
-    
-    #fallback to old device name behavior (pre Xcode6)
-      puts "Did not found UDID of device running by given name: #{@simDevice}".green
-      @simDevice = "#{simDevice} - Simulator - iOS #{simVersion}"
-    end
+    @simDevice = XcodeUtils.getSimulatorID(simDevice, simVersion)
     @simLanguage = simLanguage
 
     unless skipSetSim
@@ -65,6 +55,7 @@ class AutomationRunner
     FileUtils.rmtree @crashPath
     FileUtils.rmtree @reportPath
     FileUtils.rmtree @crashReportsPath
+
     FileUtils.mkdir_p @reportPath
   end
 
@@ -84,13 +75,13 @@ class AutomationRunner
 
     instruments = InstrumentsRunner.new
 
-    instruments.buildArtifacts = @buildArtifacts
-    instruments.xcodePath = @xcodePath
-    instruments.appLocation = @appLocation
-    instruments.reportPath = @reportPath
-    instruments.hardwareID = @hardwareID
-    instruments.simDevice = @simDevice
-    instruments.simLanguage = @simLanguage
+    instruments.buildArtifacts  = @buildArtifacts
+    instruments.xcodePath       = @xcodePath
+    instruments.appLocation     = @appLocation
+    instruments.reportPath      = @reportPath
+    instruments.hardwareID      = @hardwareID
+    instruments.simDevice       = @simDevice
+    instruments.simLanguage     = @simLanguage
 
 
     #instruments.startupTimeout = startupTimeout
