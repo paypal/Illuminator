@@ -1,44 +1,58 @@
+require 'singleton'
 
 # Convenience functions for command-line actions done in Xcode
 class XcodeUtils
+  include Singleton
 
-  # Get the path to Xcode as configured previously by xcode-select
-  def self.getXcodePath
-    `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
+  def initialize
+    @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
+    @sdkPath = nil
+    @instrumentsPath = nil
+    @instrumentsTemplatePath = nil
+  end
+
+  def getXcodePath
+    @xcodePath
   end
 
   # Get the path to the SDK
-  def self.getSdkPath
-    `/usr/bin/xcodebuild -version -sdk iphoneos | grep PlatformPath`.split(':')[1].chomp.sub(/^\s+/, '')
+  def getSdkPath
+    @sdkPath ||= `/usr/bin/xcodebuild -version -sdk iphoneos | grep PlatformPath`.split(':')[1].chomp.sub(/^\s+/, '')
   end
 
   # Get the path to the instruments bundle
-  def self.getInstrumentsPath (xcodePath)
-    if File.directory? "#{xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/"
-      return "AutomationInstrument.xrplugin";
-    else
-    #fallback to old instruments bundle (pre Xcode6)
-      return "AutomationInstrument.bundle";
+  def getInstrumentsPath
+    if @instrumentsPath.nil?
+      if File.directory? "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/"
+        @instrumentsPath = "AutomationInstrument.xrplugin";
+      else
+        #fallback to old instruments bundle (pre Xcode6)
+        @instrumentsPath = "AutomationInstrument.bundle";
+      end
     end
+    @instrumentsPath
   end
 
   # Get the path to the instruments template
-  def self.getInstrumentsTemplatePath (xcodePath)
-    sdkPath = self.getSdkPath
-    instrumentsFolder = self.getInstrumentsPath(xcodePath)
+  def getInstrumentsTemplatePath
+    if @instrumentsTemplatePath.nil?
+      sdkPath = self.getSdkPath
+      instrumentsFolder = self.getInstrumentsPath
 
-    xcode5TemplatePath = "#{xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
-    xcode6TemplatePath = "#{sdkPath}/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
+      xcode5TemplatePath = "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
+      xcode6TemplatePath = "#{sdkPath}/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
 
-    if File.exist? xcode6TemplatePath
-      return xcode6TemplatePath
-    else
-      return xcode5TemplatePath
+      if File.exist? xcode6TemplatePath
+        @instrumentsTemplatePath = xcode6TemplatePath
+      else
+        @instrumentsTemplatePath = xcode5TemplatePath
+      end
     end
+    @instrumentsTemplatePath
   end
 
   # Based on the desired device and version, get the ID of the simulator that will be passed to instruments
-  def self.getSimulatorID (simDevice, simVersion)
+  def getSimulatorID (simDevice, simVersion)
     devices = `instruments -s devices`
     needle = simDevice + ' \(' + simVersion + ' Simulator\) \[(.*)\]'
     match = devices.match(needle)

@@ -16,8 +16,8 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 
 class AutomationRunner
 
-  def initialize(scheme, appName)
-    @xcodePath        = XcodeUtils.getXcodePath
+  def initialize(appName)
+    @xcodePath        = XcodeUtils.instance.getXcodePath
     @buildArtifacts   = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts").realpath.to_s
     @outputDirectory  = "#{@buildArtifacts}/xcodeArtifacts";
     @reportPath       = "#{@buildArtifacts}/UIAutomationReport"
@@ -38,7 +38,7 @@ class AutomationRunner
   end
 
   def setupForSimulator(simDevice, simVersion, simLanguage, skipSetSim)
-    @simDevice = XcodeUtils.getSimulatorID(simDevice, simVersion)
+    @simDevice = XcodeUtils.instance.getSimulatorID(simDevice, simVersion)
     @simLanguage = simLanguage
 
     unless skipSetSim
@@ -60,6 +60,7 @@ class AutomationRunner
     FileUtils.mkdir_p @reportPath
   end
 
+
   def installOnDevice
     currentDir = Dir.pwd
     Dir.chdir "#{File.dirname(__FILE__)}/../../contrib/ios-deploy"
@@ -67,6 +68,7 @@ class AutomationRunner
     self.runAnnotatedCommand(command)
     Dir.chdir currentDir
   end
+
 
   def runAllTests (report, doKillAfter, verbose = FALSE, startupTimeout = 30)
 
@@ -179,7 +181,7 @@ class AutomationRunner
       builder.buildScheme(options['scheme'], options['sdk'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
     end
 
-    runner = AutomationRunner.new(options['scheme'], options['appName'])
+    runner = AutomationRunner.new(options['appName']) # can be nil
 
     if !options['hardwareID'].nil?
       runner.setHardwareID options['hardwareID']

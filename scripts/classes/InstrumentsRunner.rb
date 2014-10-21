@@ -84,7 +84,7 @@ class InstrumentsRunner
     @attempts = 30
     testCase = "#{@buildArtifacts}/testAutomatically.js"
 
-    templatePath = XcodeUtils.getInstrumentsTemplatePath(@xcodePath)
+    templatePath = XcodeUtils.instance.getInstrumentsTemplatePath
 
     command = "env DEVELOPER_DIR='#{@xcodePath}' /usr/bin/instruments"
     if hardwareID
