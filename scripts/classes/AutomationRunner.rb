@@ -17,14 +17,15 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 class AutomationRunner
 
   def initialize(scheme, appName)
-    @xcodePath = XcodeUtils.getXcodePath
-    @buildArtifacts = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts").realpath.to_s
-    @outputDirectory = "#{@buildArtifacts}/xcodeArtifacts";
-    @reportPath = "#{@buildArtifacts}/UIAutomationReport"
-    puts "Reports will be written to #{@reportPath}".green
-    @crashPath = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
+    @xcodePath        = XcodeUtils.getXcodePath
+    @buildArtifacts   = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts").realpath.to_s
+    @outputDirectory  = "#{@buildArtifacts}/xcodeArtifacts";
+    @reportPath       = "#{@buildArtifacts}/UIAutomationReport"
+    @crashPath        = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
     @crashReportsPath = "#{@buildArtifacts}/CrashReports"
-    @xBuilder = XcodeBuilder.new
+    @xBuilder         = XcodeBuilder.new
+
+    puts "Reports will be written to #{@reportPath}".green
 
     # if app name is not defined, assume that only one app exists and use that
     if appName.nil?
@@ -103,103 +104,101 @@ class AutomationRunner
     puts "\n"
     puts command.green
     IO.popen command do |io|
-        io.each {||}
+      io.each {||}
     end
   end
 
 
+  def self.runWithOptions(options, workspace)
+    options['workspace'] = Dir.pwd
+    Dir.chdir(File.dirname(__FILE__) + '/../')
+
+    ####################################################################################################
+    # Sanity checks
+    ####################################################################################################
+
+    raise ArgumentError, 'Path to all tests was not supplied' if options['testPath'].nil?
+
+    ####################################################################################################
+    # Storing parameters
+    ####################################################################################################
 
 
-   def self.runWithOptions(options, workspace)
-     options['workspace'] = Dir.pwd
-     Dir.chdir(File.dirname(__FILE__) + '/../')
+    tagsAny_arr = Array.new(0)
 
-     ####################################################################################################
-     # Sanity checks
-     ####################################################################################################
+    tagsAny_arr = options['tagsAny'].split(',') unless options['tagsAny'].nil?
 
-     raise ArgumentError, 'Path to all tests was not supplied' if options['testPath'].nil?
+    tagsAll_arr = Array.new(0)
+    tagsAll_arr = options['tagsAll'].split(',') unless options['tagsAll'].nil?
 
-     ####################################################################################################
-     # Storing parameters
-     ####################################################################################################
+    tagsNone_arr = Array.new(0)
+    tagsNone_arr = options['tagsNone'].split(',') unless options['tagsNone'].nil?
 
+    pathToAllTests = options['testPath']
+    unless pathToAllTests.start_with? workspace
+      pathToAllTests = workspace + '/' + pathToAllTests
+    end
 
-     tagsAny_arr = Array.new(0)
+    config = AutomationConfig.new(options['implementation'], pathToAllTests)
 
-     tagsAny_arr = options['tagsAny'].split(',') unless options['tagsAny'].nil?
+    unless options['hardwareID'].nil?
+      config.setHardwareID options['hardwareID']
+    end
 
-     tagsAll_arr = Array.new(0)
-     tagsAll_arr = options['tagsAll'].split(',') unless options['tagsAll'].nil?
+    unless options['simDevice'].nil?
+      config.setSimDevice options['simDevice']
+    end
 
-     tagsNone_arr = Array.new(0)
-     tagsNone_arr = options['tagsNone'].split(',') unless options['tagsNone'].nil?
+    unless options['simVersion'].nil?
+      config.setSimVersion options['simVersion']
+    end
 
-     pathToAllTests = options['testPath']
-     unless pathToAllTests.start_with? workspace
-       pathToAllTests = workspace + '/' + pathToAllTests
-     end
+    unless options['plistSettingsPath'].nil?
+      config.setCustomConfig options['plistSettingsPath']
+    end
 
-     config = AutomationConfig.new(options['implementation'], pathToAllTests)
-
-     unless options['hardwareID'].nil?
-       config.setHardwareID options['hardwareID']
-     end
-
-     unless options['simDevice'].nil?
-       config.setSimDevice options['simDevice']
-     end
-
-     unless options['simVersion'].nil?
-       config.setSimVersion options['simVersion']
-     end
-
-     unless options['plistSettingsPath'].nil?
-       config.setCustomConfig options['plistSettingsPath']
-     end
-
-     unless options['randomSeed'].nil?
-       config.setRandomSeed options['randomSeed']
-     end
-     config.defineTags tagsAny_arr, tagsAll_arr, tagsNone_arr
+    unless options['randomSeed'].nil?
+      config.setRandomSeed options['randomSeed']
+    end
+    config.defineTags tagsAny_arr, tagsAll_arr, tagsNone_arr
 
 
-     ####################################################################################################
-     # Script action
-     ####################################################################################################
+    ####################################################################################################
+    # Script action
+    ####################################################################################################
 
-     builder = AutomationBuilder.new()
+    builder = AutomationBuilder.new()
 
 
-     unless options['skipBuild']
+    unless options['skipBuild']
 
-       # if app name is not specified, make sure that we will only have one to run
-       unless options['appName']
-         builder.removeExistingApps()
-       end
-       builder.buildScheme(options['scheme'], options['sdk'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
-     end
+      # if app name is not specified, make sure that we will only have one to run
+      unless options['appName']
+        builder.removeExistingApps()
+      end
+      builder.buildScheme(options['scheme'], options['sdk'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
+    end
 
-     runner = AutomationRunner.new(options['scheme'], options['appName'])
+    runner = AutomationRunner.new(options['scheme'], options['appName'])
 
-     if !options['hardwareID'].nil?
-       runner.setHardwareID options['hardwareID']
-     elsif
+    if !options['hardwareID'].nil?
+      runner.setHardwareID options['hardwareID']
+    elsif
       runner.setupForSimulator options['simDevice'], options['simVersion'], options['simLanguage'], options['skipSetSim']
-     end
+    end
 
-     skipKillAfter = options['skipKillAfter']
-     if options['coverage']
-       skipKillAfter = TRUE
-     end
+    skipKillAfter = options['skipKillAfter']
+    if options['coverage']
+      skipKillAfter = TRUE
+    end
 
-     config.save() # must save AFTER automationRunner initializes
-     runner.runAllTests(options['report'], !skipKillAfter, options['verbose'], options['timeout'])
+    config.save() # must save AFTER automationRunner initializes
+    runner.runAllTests(options['report'], !skipKillAfter, options['verbose'], options['timeout'])
 
-     if options['coverage']
-       runner.generateCoverage options
-     end
-   end
+    if options['coverage']
+      runner.generateCoverage options
+    end
+  end
 
 
 

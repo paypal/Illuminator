@@ -21,33 +21,32 @@ class Status
   attr_accessor :time
   attr_accessor :tz
 
+  # parse lines in the form:    2014-10-20 20:43:41 +0000 Default: BLAH BLAH BLAH ACTUAL MESSAGE
   def self.statusWithLine (line)
-
-    _, dateString, timeString, tzString, statusString, msgString = line.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) ([+-]\d{4}) ([^:]+): (.*)$/).to_a
-
-    statusValue = self.parseStatus(statusString)
+    parsed = line.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) ([+-]\d{4}) ([^:]+): (.*)$/).to_a
+    _, dateString, timeString, tzString, statusString, msgString = parsed
 
     status = Status.new
     status.fullLine = line
-    status.message = msgString
-    status.status = statusValue
-    status.date = dateString
-    status.time = timeString
-    status.tz = tzString
+    status.message =  msgString
+    status.status =   self.parseStatus(statusString)
+    status.date =     dateString
+    status.time =     timeString
+    status.tz =       tzString
 
     status
   end
 
   def self.parseStatus(status)
     case status
-      when /start/i then :start
-      when /pass/i then :pass
-      when /fail/i then :fail
-      when /error/i then :error
-      when /warning/i then :warning
-      when /issue/i then :issue
-      when /default/i then :default
-      when /debug/i then :debug
+      when /start/i    then :start
+      when /pass/i     then :pass
+      when /fail/i     then :fail
+      when /error/i    then :error
+      when /warning/i  then :warning
+      when /issue/i    then :issue
+      when /default/i  then :default
+      when /debug/i    then :debug
       else :unknown
     end
   end
