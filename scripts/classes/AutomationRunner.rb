@@ -205,27 +205,17 @@ class AutomationRunner
 
 
   def reportCrash()
-    unless File.directory?(@crashReportsPath)
-      FileUtils.mkdir_p @crashReportsPath
-    end
+    FileUtils.mkdir_p @crashReportsPath unless File.directory?(@crashReportsPath)
 
-    # find symbolicatecrash file, which is different depending on the Xcode version.  We assume either/or
-    frameworksPath = "#{@xcodePath}/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks"
-    symbolicatorPath = "#{frameworksPath}/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash"
-    if not File.exist?(symbolicatorPath)
-      symbolicatorPath = "#{frameworksPath}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
-    end
-
-    Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |path|
-      outputFilename = 'crashReport.txt'
-      command =   "DEVELOPER_DIR='#{@xcodePath}' "
-      command <<  "'#{symbolicatorPath}' "
-      command <<  "-o '#{@crashReportsPath}/#{outputFilename}' '#{path}' '#{@appLocation}.dSYM' 2>&1"
-      self.runAnnotatedCommand(command)
-      file = File.open("#{@crashReportsPath}/#{outputFilename}", 'rb')
+    outputFilename = 'crashReport.txt'
+    Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |crashPath|
+      crashReportPath = "#{@crashReportsPath}/#{outputFilename}"
+      XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
+      file = File.open(crashReportPath, 'rb')
       puts file.read.red
     end
   end
+
 
   def generateCoverage(options)
     destinationFile = "#{@buildArtifacts}/coverage.xml"

@@ -65,6 +65,23 @@ class XcodeUtils
       puts "Did not find UDID of device '#{simDevice}' for version '#{simVersion}'".green
       return "#{simDevice} - Simulator - iOS #{simVersion}"
     end
+  end
+
+  # Create a crash report
+  def createCrashReport (appPath, crashPath, crashReportPath)
+    # find symbolicatecrash file, which is different depending on the Xcode version (we assume either 5 or 6)
+    frameworksPath = "#{@xcodePath}/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks"
+    symbolicatorPath = "#{frameworksPath}/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash"
+    if not File.exist?(symbolicatorPath)
+      symbolicatorPath = "#{frameworksPath}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
+    end
+
+    command =   "DEVELOPER_DIR='#{@xcodePath}' "
+    command <<  "'#{symbolicatorPath}' "
+    command <<  "-o '#{crashReportPath}' '#{crashPath}' '#{appPath}.dSYM' 2>&1"
+
+    `#{command}`
 
   end
+
 end
