@@ -48,7 +48,7 @@ class XcodeUtils
     else
 
     #fallback to old device name behavior (pre Xcode6)
-      puts "Did not found UDID of device running by given name: #{@simDevice}".green
+      puts "Did not find UDID of device '#{simDevice}' for version '#{simVersion}'".green
       return "#{simDevice} - Simulator - iOS #{simVersion}"
     end
 
