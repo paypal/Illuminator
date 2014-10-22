@@ -62,7 +62,7 @@ class BuildArtifacts
 
   def illuminatorConfigFile(skipSetup = false)
     self._setupAndUse @_root, skipSetup
-    "#{@_root}/IlluminatorGeneratedConfig.plist"
+    "#{@_root}/IlluminatorGeneratedConfig.json"
   end
 
   def junitReportFile(skipSetup = false)

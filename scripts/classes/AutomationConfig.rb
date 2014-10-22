@@ -1,6 +1,6 @@
 require 'erb'
 require 'pathname'
-require File.join(File.expand_path(File.dirname(__FILE__)), '/ParameterStorage.rb')
+require 'json'
 require File.join(File.expand_path(File.dirname(__FILE__)), '/BuildArtifacts.rb')
 
 
@@ -17,36 +17,35 @@ class AutomationConfig
     self.renderTemplate '/../resources/IlluminatorGeneratedRunnerForInstruments.erb', BuildArtifacts.instance.illuminatorJsRunner
     self.renderTemplate '/../resources/IlluminatorGeneratedEnvironment.erb', BuildArtifacts.instance.illuminatorJsEnvironment
 
-    @plistStorage = PLISTStorage.new
-    @plistStorage.clearAtPath(BuildArtifacts.instance.illuminatorConfigFile)
+    @fullConfig = Hash.new
 
     #implementation
-    @plistStorage.addParameterToStorage('implementation', implementation)
+    @fullConfig['implementation'] = implementation
 
   end
 
   def setSimDevice simDevice
-    @plistStorage.addParameterToStorage('automatorDesiredSimDevice', simDevice)
+    @fullConfig['automatorDesiredSimDevice'] = simDevice
   end
 
   def setSimVersion simVersion
-    @plistStorage.addParameterToStorage('automatorDesiredSimVersion', simVersion)
+    @fullConfig['automatorDesiredSimVersion'] = simVersion
   end
 
   def setHardwareID hardwareID
-    @plistStorage.addParameterToStorage('hardwareID', hardwareID)
+    @fullConfig['hardwareID'] = hardwareID
   end
 
   def setRandomSeed randomSeed
-    @plistStorage.addParameterToStorage('automatorSequenceRandomSeed', randomSeed)
+    @fullConfig['automatorSequenceRandomSeed'] = randomSeed
   end
 
   def setCustomConfig customConfig
-    @plistStorage.addParameterToStorage 'customConfig', customConfig
+    @fullConfig['customConfig'] = customConfig
   end
 
   def setEntryPoint entryPoint
-    @plistStorage.addParameterToStorage 'entryPoint', entryPoint
+    @fullConfig['entryPoint'] = entryPoint
   end
 
   def defineTags  tagsAny, tagsAll, tagsNone
@@ -56,16 +55,16 @@ class AutomationConfig
     tagDefs = {'automatorTagsAny' => tagsAny, 'automatorTagsAll' => tagsAll, 'automatorTagsNone' => tagsNone}
     tagDefs.each do |name, value|
       unless value.nil?
-        @plistStorage.addParameterToStorage(name, value)
+        @fullConfig[name] = value
       else
-        @plistStorage.addParameterToStorage(name, Array.new(0))
+        @fullConfig[name] = Array.new(0)
       end
     end
   end
 
   def defineTests testList
     self.setEntryPoint 'runTestsByName'
-    @plistStorage.addParameterToStorage('automatorScenarioNames', testList)
+    @fullConfig['automatorScenarioNames'] = testList
   end
 
   def defineDescribe
@@ -88,7 +87,7 @@ class AutomationConfig
   end
 
   def save
-    @plistStorage.saveToPath(BuildArtifacts.instance.illuminatorConfigFile)
+    File.open(BuildArtifacts.instance.illuminatorConfigFile, 'w') { |f| f << JSON.pretty_generate(@fullConfig) }
   end
 
 end

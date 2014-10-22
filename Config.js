@@ -49,7 +49,7 @@
         "customConfig": false,
     };
 
-    var jsonConfig = getPlistData(IlluminatorBuildArtifactsDirectory + "/IlluminatorGeneratedConfig.plist");
+    var jsonConfig = getJSONData(IlluminatorBuildArtifactsDirectory + "/IlluminatorGeneratedConfig.json");
     // check for keys we don't expect
     for (var k in jsonConfig) {
         if (expectedKeys[k] === undefined) {
@@ -79,4 +79,3 @@
     config.tmpDir = tmpDir;
 
 }).call(this);
-

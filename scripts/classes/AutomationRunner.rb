@@ -6,7 +6,6 @@ require 'pathname'
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationConfig.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')

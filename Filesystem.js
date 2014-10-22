@@ -66,17 +66,26 @@ function writeToFile(path, data) {
     return result;
 }
 
+// attempt to parse JSON, raise helpful error if it fails
+function _getJSONFromShell(owner, output) {
+    var jsonOutput;
+    try {
+        jsonOutput = JSON.parse(output.stdout);
+    } catch(e) {
+        throw new Error(owner + " gave bad JSON: ```" + output.stdout + "```");
+    }
+
+    return jsonOutput;
+}
+
+function getJSONData(path) {
+    return _getJSONFromShell("cat " + path, target().host().performTaskWithPathArgumentsTimeout("/bin/cat", [path], 30));
+}
+
 function getPlistData(path) {
     var jsonOutput;
     var scriptPath = IlluminatorRootDirectory + "/scripts/plist_to_json.sh";
     UIALogger.logDebug("Running " + scriptPath + " '" + path + "'");
 
-    var output = target().host().performTaskWithPathArgumentsTimeout(scriptPath, [path], 30);
-    try {
-        jsonOutput = JSON.parse(output.stdout);
-    } catch(e) {
-        throw new Error("plist_to_json.sh gave bad JSON: ```" + output.stdout + "```");
-    }
-
-    return jsonOutput;
+    return _getJSONFromShell("plist_to_json.sh", target().host().performTaskWithPathArgumentsTimeout(scriptPath, [path], 30));
 }

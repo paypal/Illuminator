@@ -2,7 +2,6 @@ require 'rubygems'
 require 'fileutils'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 
 ####################################################################################################
