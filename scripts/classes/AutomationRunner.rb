@@ -9,6 +9,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 
 ####################################################################################################
 # runner
@@ -18,20 +19,16 @@ class AutomationRunner
 
   def initialize(appName)
     @xcodePath        = XcodeUtils.instance.getXcodePath
-    @buildArtifacts   = Pathname.new("#{File.dirname(__FILE__)}/../../buildArtifacts").realpath.to_s
-    @outputDirectory  = "#{@buildArtifacts}/xcodeArtifacts";
-    @reportPath       = "#{@buildArtifacts}/UIAutomationReport"
     @crashPath        = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
-    @crashReportsPath = "#{@buildArtifacts}/CrashReports"
     @xBuilder         = XcodeBuilder.new
 
-    puts "Reports will be written to #{@reportPath}".green
+    appOutputDirectory = BuildArtifacts.instance.xcode
 
     # if app name is not defined, assume that only one app exists and use that
     if appName.nil?
-      @appLocation = Dir["#{@outputDirectory}/*.app"][0]
+      @appLocation = Dir["#{appOutputDirectory}/*.app"][0]
     else
-      @appLocation = "#{@outputDirectory}/#{appName}.app"
+      @appLocation = "#{appOutputDirectory}/#{appName}.app"
     end
     @appName = appName
     self.cleanup
@@ -53,11 +50,24 @@ class AutomationRunner
 
 
   def cleanup
-    FileUtils.rmtree @crashPath
-    FileUtils.rmtree @reportPath
-    FileUtils.rmtree @crashReportsPath
+    # start a list of what to remove
+    dirsToRemove = [@crashPath]
 
-    FileUtils.mkdir_p @reportPath
+    # FIXME: this should probably get moved to instrument runner
+    # keys to the methods of the BuildArtifacts singleton that we want to remove
+    buildArtifactKeys = [:crashReports, :instruments, :objectFiles, :coverageReportFile]
+    # get the directories without creating them (the 'true' arg), add them to our list
+    buildArtifactKeys.each do |key|
+      dir = BuildArtifacts.instance.method(key).call(true)
+      dirsToRemove << dir
+    end
+
+    # remove directories in the list
+    dirsToRemove.each do |dir|
+      puts "AutomationRunner cleanup: removing #{dir}"
+      FileUtils.rmtree dir
+    end
+
   end
 
 
@@ -78,19 +88,14 @@ class AutomationRunner
 
     instruments = InstrumentsRunner.new
 
-    instruments.buildArtifacts  = @buildArtifacts
-    instruments.xcodePath       = @xcodePath
     instruments.appLocation     = @appLocation
-    instruments.reportPath      = @reportPath
     instruments.hardwareID      = @hardwareID
     instruments.simDevice       = @simDevice
     instruments.simLanguage     = @simLanguage
 
-
     #instruments.startupTimeout = startupTimeout
     #instruments.report = report
     #instruments.verbose = verbose
-
 
     instruments.start
 
@@ -203,13 +208,13 @@ class AutomationRunner
   end
 
 
-
   def reportCrash()
-    FileUtils.mkdir_p @crashReportsPath unless File.directory?(@crashReportsPath)
+    crashReportsPath = BuildArtifacts.instance.crashReports
+    FileUtils.mkdir_p crashReportsPath unless File.directory?(crashReportsPath)
 
     outputFilename = 'crashReport.txt'
     Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |crashPath|
-      crashReportPath = "#{@crashReportsPath}/#{outputFilename}"
+      crashReportPath = "#{crashReportsPath}/#{outputFilename}"
       XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
       file = File.open(crashReportPath, 'rb')
       puts file.read.red
@@ -218,22 +223,18 @@ class AutomationRunner
 
 
   def generateCoverage(options)
-    destinationFile = "#{@buildArtifacts}/coverage.xml"
+    destinationFile      = BuildArtifacts.instance.coverageReportFile
+    xcodeArtifactsFolder = BuildArtifacts.instance.xcode
+    destinationPath      = BuildArtifacts.instance.objectFiles
+
     excludeRegex = '.*(Debug|contrib).*'
     puts "Generating automation test coverage to #{destinationFile}".green
-    sleep (3)
+    sleep (3) # TODO: we are waiting for the app process to complete, maybe do this a different way
 
-    xcodeArtifactsFolder = Pathname.new("#{@buildArtifacts}/xcodeArtifacts").realpath.to_s
-    destinationPath = "#{@buildArtifacts}/objectFiles"
-
-    #cleanup
+    # cleanup
     FileUtils.rm destinationFile, :force => true
-    FileUtils.rm_rf destinationPath
-    unless File.directory?(destinationPath)
-      FileUtils.mkdir_p destinationPath
-    end
-    destinationPath = Pathname.new("#{@buildArtifacts}/objectFiles").realpath.to_s
 
+    # we copy all the relevant build artifacts for coverage into a second folder.  we may not need to do this.
     filePaths = []
     Find.find(xcodeArtifactsFolder) do |pathP|
       path = pathP.to_s

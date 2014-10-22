@@ -78,10 +78,10 @@ function actionCompareScreenshotToMaster(parm) {
 
     delay(delayCapture); // wait for any animations to settle
 
-    var diff_pngPath = automatorRoot + "/scripts/diff_png.sh";
+    var diff_pngPath = IlluminatorRootDirectory + "/scripts/diff_png.sh";
     UIATarget.localTarget().captureScreenWithName(captureTitle);
 
-    var screenshotDir   = automatorRoot + "/buildArtifacts/UIAutomationReport/Run 1"; // it's always Run 1
+    var screenshotDir   = IlluminatorInstrumentsOutputDirectory + "/Run 1"; // it's always Run 1
     var screenshotFile  = captureTitle + ".png";
     var screenshotPath  = screenshotDir + "/" + screenshotFile;
     var compareFileBase = screenshotDir + "/compared_" + captureTitle;

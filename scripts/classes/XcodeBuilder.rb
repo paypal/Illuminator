@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'colorize'
 
+require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
+
 class XcodeBuilder
 
   def initialize
@@ -8,7 +10,6 @@ class XcodeBuilder
     @environmentVariables = Hash.new
     @shouldClean = FALSE
     @shouldTest = FALSE
-    @shouldReport = FALSE
     @shouldBuild = TRUE
     @shouldArchive = FALSE
   end
@@ -20,11 +21,11 @@ class XcodeBuilder
   def addEnvironmentVariable(parameterName = '',parameterValue = '')
     @environmentVariables[parameterName] = parameterValue
   end
-  
+
   def skipBuild
     @shouldBuild = FALSE
   end
-  
+
   def clean
     @shouldClean = TRUE
   end
@@ -35,10 +36,6 @@ class XcodeBuilder
 
   def test
     @shouldTest = TRUE
-  end
-
-  def report
-    @shouldReport = TRUE
   end
 
 
@@ -60,35 +57,35 @@ class XcodeBuilder
     if @shouldClean
       command << ' clean'
     end
-    
+
     if @shouldBuild
       command << ' build'
     end
-    
+
     if @shouldArchive
       command << ' archive'
     end
-    
+
     if @shouldTest
       command << ' test'
     end
-    
-    command << " | tee '#{File.dirname(__FILE__)}/../../buildArtifacts/xcodebuild.log' | xcpretty -c"
-  
-    if @shouldTest
-      command << ' -r junit'
-    end
-    
+
+    logPath = BuildArtifacts.instance.console
+    command << " | tee '#{logPath}/xcodebuild.log' | xcpretty -c"
+
+    # reporting
+    command << ' -r junit'
+
     puts 'created command:'
     puts command.green
     command
 
   end
-  
+
   def run
     command = self.buildCommand
     output = ""
-    
+
     process = IO.popen(command) do |io|
       while line = io.gets
         line.chomp!
@@ -106,9 +103,9 @@ class XcodeBuilder
         end
       end
     end
-    
-    
-    
+
+
+
   end
 
   def killSim

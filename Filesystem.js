@@ -68,7 +68,7 @@ function writeToFile(path, data) {
 
 function getPlistData(path) {
     var jsonOutput;
-    var scriptPath = automatorRoot + "/scripts/plist_to_json.sh";
+    var scriptPath = IlluminatorRootDirectory + "/scripts/plist_to_json.sh";
     UIALogger.logDebug("Running " + scriptPath + " '" + path + "'");
 
     var output = target().host().performTaskWithPathArgumentsTimeout(scriptPath, [path], 30);

@@ -49,11 +49,7 @@
         "customConfig": false,
     };
 
-    // read config and create temp dir
-    var jsonConfig = getPlistData(automatorRoot + "/buildArtifacts/generatedConfig.plist");
-    target().host().performTaskWithPathArgumentsTimeout("/bin/mkdir", ["-p", automatorRoot + "/buildArtifacts/js-tmp"], 5);
-    config.tmpDir = automatorRoot + "/buildArtifacts/js-tmp";
-
+    var jsonConfig = getPlistData(IlluminatorBuildArtifactsDirectory + "/IlluminatorGeneratedConfig.plist");
     // check for keys we don't expect
     for (var k in jsonConfig) {
         if (expectedKeys[k] === undefined) {
@@ -77,5 +73,10 @@
         UIALogger.logMessage("(optional) customConfig was not supplied in generated config; skipping.")
     }
 
+    // create temp dir
+    var tmpDir = IlluminatorBuildArtifactsDirectory + "/js-tmp";
+    target().host().performTaskWithPathArgumentsTimeout("/bin/mkdir", ["-p", tmpDir], 5);
+    config.tmpDir = tmpDir;
 
 }).call(this);
+

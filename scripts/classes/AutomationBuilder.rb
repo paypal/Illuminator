@@ -3,6 +3,7 @@ require 'fileutils'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'ParameterStorage.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 
 ####################################################################################################
 # Builder
@@ -12,12 +13,12 @@ class AutomationBuilder
 
   def initialize
 
-    @resultPath = "'#{File.dirname(__FILE__)}/../../buildArtifacts/xcodeArtifacts'"
+    @resultPath = BuildArtifacts.instance.xcode
 
     @builder = XcodeBuilder.new
     @builder.addParameter('configuration', 'Debug')
-    @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR', @resultPath)
-    @builder.addEnvironmentVariable('CONFIGURATION_TEMP_DIR', @resultPath)
+    @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR', "'#{@resultPath}'")
+    @builder.addEnvironmentVariable('CONFIGURATION_TEMP_DIR', "'#{@resultPath}'")
     @builder.addEnvironmentVariable('UIAUTOMATION_BUILD', true)
     @builder.killSim
   end
@@ -43,7 +44,7 @@ class AutomationBuilder
     end
 
     preprocessorDefinitions = '$(value) UIAUTOMATION_BUILD=1'
-    
+
     if hardwareID.nil?
       if sdk
         @builder.addParameter('sdk', sdk)
@@ -65,9 +66,9 @@ class AutomationBuilder
     @builder.addEnvironmentVariable('GCC_PREPROCESSOR_DEFINITIONS', "'#{preprocessorDefinitions}'")
 
     @builder.addParameter('xcconfig', "'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'")
-    
+
     @builder.addParameter('scheme', scheme)
-    
+
     @builder.run
 
     Dir.chdir(directory)

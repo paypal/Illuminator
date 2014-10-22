@@ -1,21 +1,24 @@
 require 'erb'
 require 'pathname'
 require File.join(File.expand_path(File.dirname(__FILE__)), '/ParameterStorage.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '/BuildArtifacts.rb')
 
 
 class AutomationConfig
 
   def initialize(implementation, testPath)
+    # instance variables required for renderTemplate
     @testPath = testPath
-    @automatorRoot = Pathname.new(File.dirname(__FILE__) + '/../..').realpath.to_s
+    @illuminatorRoot = Pathname.new(File.dirname(__FILE__) + '/../..').realpath.to_s
+    @artifactsRoot = BuildArtifacts.instance.root
+    @illuminatorInstrumentsRoot = BuildArtifacts.instance.instruments
+    @environmentFile = BuildArtifacts.instance.illuminatorJsEnvironment
 
-    FileUtils.mkdir_p(File.dirname(__FILE__) + '/../../buildArtifacts')
-    self.renderTemplate '/../resources/testAutomatically.erb', '/../../buildArtifacts/testAutomatically.js'
-    self.renderTemplate '/../resources/environment.erb', '/../../buildArtifacts/environment.js'
+    self.renderTemplate '/../resources/IlluminatorGeneratedRunnerForInstruments.erb', BuildArtifacts.instance.illuminatorJsRunner
+    self.renderTemplate '/../resources/IlluminatorGeneratedEnvironment.erb', BuildArtifacts.instance.illuminatorJsEnvironment
 
     @plistStorage = PLISTStorage.new
-    @plistStorage.clearAtPath(self.configPath())
-
+    @plistStorage.clearAtPath(BuildArtifacts.instance.illuminatorConfigFile)
 
     #implementation
     @plistStorage.addParameterToStorage('implementation', implementation)
@@ -69,10 +72,6 @@ class AutomationConfig
     self.setEntryPoint 'describe'
   end
 
-  def configPath
-    return @automatorRoot + '/buildArtifacts/generatedConfig.plist'
-  end
-
   def renderTemplate sourceFile, destinationFile
 
     file = File.open(File.dirname(__FILE__) + sourceFile)
@@ -82,14 +81,14 @@ class AutomationConfig
     }
 
     renderer = ERB.new(contents)
-    newFile = File.open(File.dirname(__FILE__) + destinationFile, 'w')
+    newFile = File.open(destinationFile, 'w')
     newFile.write(renderer.result(binding))
     newFile.close
 
   end
 
   def save
-    @plistStorage.saveToPath(self.configPath())
+    @plistStorage.saveToPath(BuildArtifacts.instance.illuminatorConfigFile)
   end
 
 end

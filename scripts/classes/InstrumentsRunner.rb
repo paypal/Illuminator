@@ -6,6 +6,7 @@ require 'pty'
 require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/FullOutput.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/JunitOutput.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 
 
 ####################################################################################################
@@ -58,10 +59,7 @@ end
 ####################################################################################################
 
 class InstrumentsRunner
-  attr_accessor :buildArtifacts
-  attr_accessor :xcodePath
   attr_accessor :appLocation
-  attr_accessor :reportPath
   attr_accessor :hardwareID
   attr_accessor :simDevice
   attr_accessor :simLanguage
@@ -76,17 +74,19 @@ class InstrumentsRunner
 
 
   def start
-    junitReportPath = @reportPath + '/testAutomatically.xml'
+    reportPath = BuildArtifacts.instance.instruments
     @parsers.push FullOutput.new
-    @parsers.push JunitOutput.new junitReportPath
+    @parsers.push JunitOutput.new BuildArtifacts.instance.junitReportFile
 
     @startupTimeout = 30
     @attempts = 30
-    testCase = "#{@buildArtifacts}/testAutomatically.js"
+    buildArtifactsDir = BuildArtifacts.instance.root
+    testCase = BuildArtifacts.instance.illuminatorJsRunner
 
+    xcodePath    = XcodeUtils.instance.getXcodePath
     templatePath = XcodeUtils.instance.getInstrumentsTemplatePath
 
-    command = "env DEVELOPER_DIR='#{@xcodePath}' /usr/bin/instruments"
+    command = "env DEVELOPER_DIR='#{xcodePath}' /usr/bin/instruments"
     if hardwareID
       command << " -w '" + @hardwareID + "'"
     elsif simDevice
@@ -96,10 +96,10 @@ class InstrumentsRunner
     command << " -t '#{templatePath}' "
     command << "'#{@appLocation}'"
     command << " -e UIASCRIPT '#{testCase}'"
-    command << " -e UIARESULTSPATH '#{@reportPath}'"
+    command << " -e UIARESULTSPATH '#{reportPath}'"
 
     command << " #{@simLanguage}" if @simLanguage
-    Dir.chdir(@reportPath)
+    Dir.chdir(reportPath)
     self.runCommand command
   end
 
