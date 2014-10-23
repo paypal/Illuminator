@@ -159,8 +159,8 @@ class AutomationRunner
       config.setSimVersion options['simVersion']
     end
 
-    unless options['plistSettingsPath'].nil?
-      config.setCustomConfig options['plistSettingsPath']
+    unless options['customJSConfigPath'].nil?
+      config.setCustomJSConfigPath options['customJSConfigPath']
     end
 
     unless options['randomSeed'].nil?

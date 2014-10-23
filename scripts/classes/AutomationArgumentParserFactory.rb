@@ -1,4 +1,4 @@
-require 'ostruct'
+#require 'ostruct'
 
 class AutomationParserFactory
 
@@ -16,7 +16,7 @@ class AutomationParserFactory
       'n' => 'tagsNone',
       'q' => 'sdk',
       's' => 'scheme',
-      'j' => 'plistSettingsPath',
+      'j' => 'customSettingsJSONPath',
       'd' => 'hardwareID',
       'i' => 'implementation',
       'b' => 'simDevice',
@@ -34,7 +34,7 @@ class AutomationParserFactory
     }
 
     @letterProcessing = {
-      'j' => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to pList
+      'j' => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to settings file
     }
 
     @defaultValues = {'i'=> 'iPhone',
@@ -58,7 +58,7 @@ class AutomationParserFactory
     self.addSwitch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])
     self.addSwitch('q', ['-q', '--sdk SDK', 'SDK to build against, defaults to iphonesimulator8.1'])
     self.addSwitch('s', ['-s', '--scheme SCHEME', 'Build and run specific tests on given workspace scheme'])
-    self.addSwitch('j', ['-j', '--plistSettingsPath PATH', 'path to settings plist'])
+    self.addSwitch('j', ['-j', '--jsonSettingsPath PATH', 'path to JSON file containing custom configuration parameters'])
     self.addSwitch('d', ['-d', '--hardwareID ID', 'hardware id of device you run on'])
     self.addSwitch('i', ['-i', '--implementation IMPL', 'Device tests implementation (iPhone|iPad)'])
     self.addSwitch('b', ['-b', '--simDevice DEVICE', 'Run on given simulated device'])

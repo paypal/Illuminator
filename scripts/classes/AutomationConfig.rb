@@ -40,8 +40,8 @@ class AutomationConfig
     @fullConfig['automatorSequenceRandomSeed'] = randomSeed
   end
 
-  def setCustomConfig customConfig
-    @fullConfig['customConfig'] = customConfig
+  def setCustomJSConfigPath customConfigJSONPath
+    @fullConfig['customJSConfigPath'] = customConfigJSONPath
   end
 
   def setEntryPoint entryPoint

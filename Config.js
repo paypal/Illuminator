@@ -25,8 +25,12 @@
         case "automatorSequenceRandomSeed":
             config.automatorSequenceRandomSeed = parseInt(value);
             break;
-        case "customConfig":
-            config.customConfig = getPlistData(value)
+        case "customJSConfigPath":
+            try {
+                config.customConfig = getJSONData(value)
+            } catch (e) {
+                throw new IlluminatorSetupException(key + " of '" + value + "' couldn't be parsed as JSON; error was: " + e);
+            }
             break;
         default:
             config[key] = value;
@@ -46,14 +50,14 @@
         "automatorTagsNone": false,
         "automatorScenarioNames": false,
         "automatorSequenceRandomSeed": false,
-        "customConfig": false,
+        "customJSConfigPath": false,
     };
 
     var jsonConfig = getJSONData(IlluminatorBuildArtifactsDirectory + "/IlluminatorGeneratedConfig.json");
     // check for keys we don't expect
     for (var k in jsonConfig) {
         if (expectedKeys[k] === undefined) {
-            UIALogger.logWarning("Config got unexpected key " + k);
+            UIALogger.logMessage("Config got unexpected key " + k);
         }
     }
 
@@ -62,15 +66,8 @@
         if (jsonConfig[k] !== undefined) {
             config.setField(k, jsonConfig[k]);
         } else if (expectedKeys[k]) {
-                UIALogger.logWarning("Couldn't read " + k + " from generated config");
+            UIALogger.logWarning("Couldn't read " + k + " from generated config");
         }
-    }
-
-    // set the custom config from the plist
-    try {
-        config.setCustomConfig(jsonConfig.customConfig);
-    } catch (e) {
-        UIALogger.logMessage("(optional) customConfig was not supplied in generated config; skipping.")
     }
 
     // create temp dir
