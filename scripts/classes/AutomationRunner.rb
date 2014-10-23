@@ -4,9 +4,9 @@ require 'find'
 require 'pathname'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationConfig.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'JavascriptRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 
@@ -124,49 +124,34 @@ class AutomationRunner
     ####################################################################################################
 
     raise ArgumentError, 'Path to all tests was not supplied' if options['testPath'].nil?
+    raise ArgumentError, 'Implementation was not supplied' if options['implementation'].nil?
 
     ####################################################################################################
     # Storing parameters
     ####################################################################################################
 
+    jsConfig = JavascriptRunner.new
+    jsConfig.implementation = options['implementation']
 
-    tagsAny_arr = Array.new(0)
+    jsConfig.entryPoint          = "runTestsByTag"
+    jsConfig.tagsAny             = options['tagsAny'].split(',') unless options['tagsAny'].nil?
+    jsConfig.tagsAll             = options['tagsAll'].split(',') unless options['tagsAll'].nil?
+    jsConfig.tagsNone            = options['tagsNone'].split(',') unless options['tagsNone'].nil?
 
-    tagsAny_arr = options['tagsAny'].split(',') unless options['tagsAny'].nil?
-
-    tagsAll_arr = Array.new(0)
-    tagsAll_arr = options['tagsAll'].split(',') unless options['tagsAll'].nil?
-
-    tagsNone_arr = Array.new(0)
-    tagsNone_arr = options['tagsNone'].split(',') unless options['tagsNone'].nil?
+    jsConfig.hardwareID          = options['hardwareID'] unless options['hardwareID'].nil?
+    jsConfig.simDevice           = options['simDevice'] unless options['simDevice'].nil?
+    jsConfig.simVersion          = options['simVersion'] unless options['simVersion'].nil?
+    jsConfig.customJSConfigPath  = options['customJSConfigPath'] unless options['customJSConfigPath'].nil?
+    jsConfig.randomSeed          = options['randomSeed'] unless options['randomSeed'].nil?
 
     pathToAllTests = options['testPath']
     unless pathToAllTests.start_with? workspace
       pathToAllTests = workspace + '/' + pathToAllTests
     end
 
-    config = AutomationConfig.new(options['implementation'], pathToAllTests)
+    jsConfig.writeConfiguration pathToAllTests
 
-    unless options['hardwareID'].nil?
-      config.setHardwareID options['hardwareID']
-    end
 
-    unless options['simDevice'].nil?
-      config.setSimDevice options['simDevice']
-    end
-
-    unless options['simVersion'].nil?
-      config.setSimVersion options['simVersion']
-    end
-
-    unless options['customJSConfigPath'].nil?
-      config.setCustomJSConfigPath options['customJSConfigPath']
-    end
-
-    unless options['randomSeed'].nil?
-      config.setRandomSeed options['randomSeed']
-    end
-    config.defineTags tagsAny_arr, tagsAll_arr, tagsNone_arr
 
 
     ####################################################################################################
@@ -198,7 +183,6 @@ class AutomationRunner
       skipKillAfter = TRUE
     end
 
-    config.save() # must save AFTER automationRunner initializes
     runner.runAllTests(options['report'], !skipKillAfter, options['verbose'], options['timeout'])
 
     if options['coverage']
