@@ -95,7 +95,6 @@ class XcodeBuilder
       io.close
       exitCode = $?.to_i
       unless exitCode == 0
-
         puts "xcodebuild exit code is #{exitCode}".red
         unless exitCode == 256  # xcode returns this, no documentation as to why
           puts 'Build failed, check logs for results'.red
@@ -103,9 +102,6 @@ class XcodeBuilder
         end
       end
     end
-
-
-
   end
 
   def killSim
