@@ -15,11 +15,10 @@ class AutomationBuilder
     @resultPath = BuildArtifacts.instance.xcode
 
     @builder = XcodeBuilder.new
-    @builder.addParameter('configuration', 'Debug')
+    @builder.configuration = 'Debug'
     @builder.addEnvironmentVariable('CONFIGURATION_BUILD_DIR', "'#{@resultPath}'")
     @builder.addEnvironmentVariable('CONFIGURATION_TEMP_DIR', "'#{@resultPath}'")
     @builder.addEnvironmentVariable('UIAUTOMATION_BUILD', true)
-    @builder.killSim
   end
 
 
@@ -29,48 +28,34 @@ class AutomationBuilder
     end
   end
 
-
                                                                        # TODO: forceClean = FALSE
   def buildScheme(scheme, sdk, hardwareID = nil, workspace = nil, coverage = FALSE, skipClean = FALSE)
-
-    unless skipClean
-      @builder.clean
-    end
-
-    directory = Dir.pwd
-    unless workspace.nil?
-      Dir.chdir(workspace)
-    end
 
     preprocessorDefinitions = '$(value) UIAUTOMATION_BUILD=1'
 
     if hardwareID.nil?
-      if sdk
-        @builder.addParameter('sdk', sdk)
-      else
-        @builder.addParameter('sdk', 'iphonesimulator')
-      end
-      @builder.addParameter('arch', 'i386')
+      sdk ||= 'iphonesimulator'
+      @builder.arch = 'i386'
     else
-      if sdk
-        @builder.addParameter('sdk', sdk)
-      else
-        @builder.addParameter('sdk', 'iphoneos')
-      end
-      @builder.addParameter('arch', 'armv7')
-      @builder.addParameter('destination', "id=#{hardwareID}")
-      preprocessorDefinitions = preprocessorDefinitions + " AUTOMATION_UDID=#{hardwareID}"
+      sdk ||= 'iphoneos'
+      @builder.arch = 'armv7'
+      @builder.destination = "id=#{hardwareID}"
+      preprocessorDefinitions += " AUTOMATION_UDID=#{hardwareID}"
     end
+
+    @builder.doClean = (not skipClean)
+    @builder.sdk = sdk
+    @builder.xcconfig = "'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'"
+    @builder.scheme = scheme
 
     @builder.addEnvironmentVariable('GCC_PREPROCESSOR_DEFINITIONS', "'#{preprocessorDefinitions}'")
 
-    @builder.addParameter('xcconfig', "'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'")
-
-    @builder.addParameter('scheme', scheme)
-
+    # switch to a directory (if desired) and build
+    directory = Dir.pwd
+    Dir.chdir(workspace) unless workspace.nil?
     @builder.run
+    Dir.chdir(directory) unless workspace.nil?
 
-    Dir.chdir(directory)
   end
 
 end

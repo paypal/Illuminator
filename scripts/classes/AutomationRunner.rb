@@ -4,7 +4,6 @@ require 'find'
 require 'pathname'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'JavascriptRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
@@ -16,10 +15,14 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 
 class AutomationRunner
 
+  attr_reader :hardwareID
+
+  attr_reader :automationBuilder
+  attr_reader :instrumentsRunner
+  attr_reader :javascriptRunner
+
   def initialize(appName)
-    @xcodePath        = XcodeUtils.instance.getXcodePath
     @crashPath        = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
-    @xBuilder         = XcodeBuilder.new
 
     appOutputDirectory = BuildArtifacts.instance.xcode
 
@@ -30,21 +33,24 @@ class AutomationRunner
       @appLocation = "#{appOutputDirectory}/#{appName}.app"
     end
     @appName = appName
-    self.cleanup
+
+    @javascriptRunner = JavascriptRunner.new
+    @automationBuilder = AutomationBuilder.new
+    @instrumentsRunner = InstrumentsRunner.new
+
+    @instrumentsRunner.appLocation  = @appLocation
+    @instrumentsRunner.hardwareID   = @hardwareID
   end
 
+
   def setupForSimulator(simDevice, simVersion, simLanguage, skipSetSim)
-    @simDevice = XcodeUtils.instance.getSimulatorID(simDevice, simVersion)
-    @simLanguage = simLanguage
+    @instrumentsRunner.simDevice = XcodeUtils.instance.getSimulatorID(simDevice, simVersion)
+    @instrumentsRunner.simLanguage = simLanguage
 
     unless skipSetSim
       command = "osascript '#{File.dirname(__FILE__)}/../reset_simulator.applescript'"
       self.runAnnotatedCommand(command)
     end
-  end
-
-  def setHardwareID(hardwareID)
-    @hardwareID = hardwareID
   end
 
 
@@ -67,42 +73,18 @@ class AutomationRunner
       FileUtils.rmtree dir
     end
 
+    @instrumentsRunner.cleanup
+    # TODO: @javascriptRunner cleanup?
+    # TODO: @automationBuilder cleanup?
   end
 
 
   def installOnDevice
     currentDir = Dir.pwd
     Dir.chdir "#{File.dirname(__FILE__)}/../../contrib/ios-deploy"
-    command = "./ios-deploy -b '#{@appLocation}' -i #{@hardwareID} -r -n"
-    self.runAnnotatedCommand(command)
+    # TODO: detect ios-deploy
+    self.runAnnotatedCommand("./ios-deploy -b '#{@appLocation}' -i #{@hardwareID} -r -n")
     Dir.chdir currentDir
-  end
-
-
-  def runAllTests (report, doKillAfter, verbose = FALSE, startupTimeout = 30)
-
-    unless @hardwareID.nil?
-      self.installOnDevice
-    end
-
-    instruments = InstrumentsRunner.new
-
-    instruments.appLocation     = @appLocation
-    instruments.hardwareID      = @hardwareID
-    instruments.simDevice       = @simDevice
-    instruments.simLanguage     = @simLanguage
-
-    #instruments.startupTimeout = startupTimeout
-    #instruments.report = report
-    #instruments.verbose = verbose
-
-    instruments.start
-
-    self.reportCrash
-    if doKillAfter
-      @xBuilder.killSim
-    end
-
   end
 
 
@@ -115,22 +97,9 @@ class AutomationRunner
   end
 
 
-  def self.runWithOptions(options, workspace)
-    options['workspace'] = Dir.pwd
-    Dir.chdir(File.dirname(__FILE__) + '/../')
+  def configureJavascriptRunner(options, workspace)
+    jsConfig = @javascriptRunner
 
-    ####################################################################################################
-    # Sanity checks
-    ####################################################################################################
-
-    raise ArgumentError, 'Path to all tests was not supplied' if options['testPath'].nil?
-    raise ArgumentError, 'Implementation was not supplied' if options['implementation'].nil?
-
-    ####################################################################################################
-    # Storing parameters
-    ####################################################################################################
-
-    jsConfig = JavascriptRunner.new
     jsConfig.implementation = options['implementation']
 
     jsConfig.entryPoint          = "runTestsByTag"
@@ -146,66 +115,84 @@ class AutomationRunner
 
     pathToAllTests = options['testPath']
     unless pathToAllTests.start_with? workspace
-      pathToAllTests = workspace + '/' + pathToAllTests
+      pathToAllTests = File.join(workspace, pathToAllTests)
     end
 
     jsConfig.writeConfiguration pathToAllTests
+  end
 
 
+  ################################################################################################
+  # MAIN ENTRY POINT
+  ################################################################################################
+  def self.runWithOptions(options, workspace)
+    gcovrWorkspace = Dir.pwd
+    Dir.chdir(File.dirname(__FILE__) + '/../')
 
+    # Sanity checks
+    raise ArgumentError, 'Path to all tests was not supplied' if options['testPath'].nil?
+    raise ArgumentError, 'Implementation was not supplied' if options['implementation'].nil?
 
-    ####################################################################################################
-    # Script action
-    ####################################################################################################
+    # Initialization
+    runner = AutomationRunner.new(options['appName']) # can be nil
+    builder = runner.automationBuilder
+    instruments = runner.instrumentsRunner
+    jsConfig = runner.javascriptRunner
 
-    builder = AutomationBuilder.new()
+    # pre-run cleanup
+    runner.cleanup
 
+    # Setup javascript
+    runner.configureJavascriptRunner(options, workspace)
 
+    # set up instruments
+    instruments.startupTimeout = options['timeout']
+    # instruments.report = options['report'] # currently removed
+    # instruments.verbose = options['verbose'] # not added yet
+
+    # Run appropriate shell scripts for cleaning, building, and running real hardware
     unless options['skipBuild']
-
       # if app name is not specified, make sure that we will only have one to run
-      unless options['appName']
-        builder.removeExistingApps()
-      end
+      builder.removeExistingApps() unless options['appName']
       builder.buildScheme(options['scheme'], options['sdk'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
     end
 
-    runner = AutomationRunner.new(options['appName']) # can be nil
-
-    if !options['hardwareID'].nil?
-      runner.setHardwareID options['hardwareID']
-    elsif
+    if options['hardwareID'].nil?
       runner.setupForSimulator options['simDevice'], options['simVersion'], options['simLanguage'], options['skipSetSim']
+    else
+      runner.hardwareID = options['hardwareID']
+      self.installOnDevice
     end
 
-    skipKillAfter = options['skipKillAfter']
-    if options['coverage']
-      skipKillAfter = TRUE
-    end
+    instruments.runOnce
 
-    runner.runAllTests(options['report'], !skipKillAfter, options['verbose'], options['timeout'])
+    numCrashes = runner.reportAnyAppCrashes
+    runner.generateCoverage gcovrWorkspace if options['coverage'] #TODO: only if there are no crashes?
 
-    if options['coverage']
-      runner.generateCoverage options
+    unless options['skipKillAfter']
+      #TODO: call kill_all_sim_processes.sh
     end
   end
 
 
-  def reportCrash()
+  def reportAnyAppCrashes()
     crashReportsPath = BuildArtifacts.instance.crashReports
     FileUtils.mkdir_p crashReportsPath unless File.directory?(crashReportsPath)
 
+    crashes = 0
     outputFilename = 'crashReport.txt'
     Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |crashPath|
       crashReportPath = "#{crashReportsPath}/#{outputFilename}"
       XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
       file = File.open(crashReportPath, 'rb')
       puts file.read.red
+      crashes += 1
     end
+    crashes
   end
 
 
-  def generateCoverage(options)
+  def generateCoverage(workspace)
     destinationFile      = BuildArtifacts.instance.coverageReportFile
     xcodeArtifactsFolder = BuildArtifacts.instance.xcode
     destinationPath      = BuildArtifacts.instance.objectFiles
@@ -236,7 +223,7 @@ class AutomationRunner
       FileUtils.cp path, destinationPath
     end
 
-    command = "gcovr -r '" + options['workspace'] + "' --exclude='#{excludeRegex}' --xml '#{destinationPath}' > '#{destinationFile}'"
+    command = "gcovr -r '#{workspace}' --exclude='#{excludeRegex}' --xml '#{destinationPath}' > '#{destinationFile}'"
     self.runAnnotatedCommand(command)
 
   end

@@ -4,14 +4,25 @@ require 'colorize'
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 
 class XcodeBuilder
+  attr_accessor :configuration
+  attr_accessor :sdk
+  attr_accessor :arch
+  attr_accessor :scheme
+  attr_accessor :destination
+  attr_accessor :xcconfig
+  attr_accessor :doClean
+  attr_accessor :doTest
+  attr_accessor :doBuild
+  attr_accessor :doArchive
+
 
   def initialize
     @parameters = Hash.new
-    @environmentVariables = Hash.new
-    @shouldClean = FALSE
-    @shouldTest = FALSE
-    @shouldBuild = TRUE
-    @shouldArchive = FALSE
+    @environmentVars = Hash.new
+    @doClean = FALSE
+    @doTest = FALSE
+    @doBuild = TRUE
+    @doArchive = FALSE
   end
 
   def addParameter(parameterName = '',parameterValue = '')
@@ -19,79 +30,60 @@ class XcodeBuilder
   end
 
   def addEnvironmentVariable(parameterName = '',parameterValue = '')
-    @environmentVariables[parameterName] = parameterValue
+    @environmentVars[parameterName] = parameterValue
   end
 
-  def skipBuild
-    @shouldBuild = FALSE
-  end
+  def assembleConfig
+    # put standard parameters into parameters
+    keyDefs = {
+      'configuration' => @configuration,
+      'sdk' => @sdk,
+      'arch' => @arch,
+      'scheme' => @scheme,
+      'destination' => @destination,
+      'xcconfig' => @xcconfig,
+    }
 
-  def clean
-    @shouldClean = TRUE
-  end
-
-  def archive
-    @shouldArchive = TRUE
-  end
-
-  def test
-    @shouldTest = TRUE
+    keyDefs.each do |key, value|
+        self.addParameter(key, value) unless value.nil?
+    end
   end
 
 
   def buildCommand
-    command = 'set -o pipefail && xcodebuild'
+    self.assembleConfig
+
     parameters = ''
-    environmentVariables = ''
+    environmentVars = ''
+    tasks = ''
 
-    @parameters.each do |name, value|
-      parameters << " -#{name} #{value}"
-    end
+    @parameters.each      { |name, value| parameters << " -#{name} #{value}" }
+    @environmentVars.each { |name, value| environmentVars << " #{name}=#{value}" }
 
-    @environmentVariables.each do |name, value|
-      parameters << " #{name}=#{value}"
-    end
+    tasks << ' clean'    if @doClean
+    tasks << ' build'    if @doBuild
+    tasks << ' archive'  if @doArchive
+    tasks << ' test'     if @doTest
 
-    command << parameters << environmentVariables
-
-    if @shouldClean
-      command << ' clean'
-    end
-
-    if @shouldBuild
-      command << ' build'
-    end
-
-    if @shouldArchive
-      command << ' archive'
-    end
-
-    if @shouldTest
-      command << ' test'
-    end
-
-    logPath = BuildArtifacts.instance.console
-    command << " | tee '#{logPath}/xcodebuild.log' | xcpretty -c"
-
-    # reporting
-    command << ' -r junit'
-
+    command = 'set -o pipefail && xcodebuild'
+    command << parameters << environmentVars << tasks
+    command << " | tee '#{self.logfilePath}' | xcpretty -c -r junit"
     puts 'created command:'
     puts command.green
     command
-
   end
+
+
+  def logfilePath
+    logFile = File.join(BuildArtifacts.instance.console, 'xcodebuild.log')
+  end
+
 
   def run
     command = self.buildCommand
-    output = ""
 
     process = IO.popen(command) do |io|
-      while line = io.gets
-        line.chomp!
-        puts line
-        output = output + line
-      end
+      io.each {|line| puts line}
       io.close
       exitCode = $?.to_i
       unless exitCode == 0
@@ -104,10 +96,4 @@ class XcodeBuilder
     end
   end
 
-  def killSim
-    killCommand = "killall 'iPhone Simulator'"
-    IO.popen killCommand do |io|
-      io.each {||}
-    end
-  end
 end

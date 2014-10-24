@@ -66,22 +66,38 @@ class InstrumentsRunner
   attr_accessor :attempts
   attr_accessor :startupTimeout
 
-  @parsers
-
   def initialize
     @parsers = Array.new
   end
 
 
-  def start
+  def cleanup
+    dirsToRemove = []
+    buildArtifactKeys = [:instruments]
+    # get the directories without creating them (the 'true' arg), add them to our list
+    buildArtifactKeys.each do |key|
+      dir = BuildArtifacts.instance.method(key).call(true)
+      dirsToRemove << dir
+    end
+
+    # remove directories in the list
+    dirsToRemove.each do |dir|
+      puts "InstrumentsRunner cleanup: removing #{dir}"
+      FileUtils.rmtree dir
+    end
+
+  end
+
+
+  def runOnce
     reportPath = BuildArtifacts.instance.instruments
     @parsers.push FullOutput.new
     @parsers.push JunitOutput.new BuildArtifacts.instance.junitReportFile
 
     @startupTimeout = 30
     @attempts = 30
-    buildArtifactsDir = BuildArtifacts.instance.root
-    testCase = BuildArtifacts.instance.illuminatorJsRunner
+
+    globalJSFile = BuildArtifacts.instance.illuminatorJsRunner
 
     xcodePath    = XcodeUtils.instance.getXcodePath
     templatePath = XcodeUtils.instance.getInstrumentsTemplatePath
@@ -95,8 +111,9 @@ class InstrumentsRunner
 
     command << " -t '#{templatePath}' "
     command << "'#{@appLocation}'"
-    command << " -e UIASCRIPT '#{testCase}'"
+    command << " -e UIASCRIPT '#{globalJSFile}'"
     command << " -e UIARESULTSPATH '#{reportPath}'"
+    # TODO: either make the reporting conditional, or remove the option from AutomationArgumentParserFactory
 
     command << " #{@simLanguage}" if @simLanguage
     Dir.chdir(reportPath)
