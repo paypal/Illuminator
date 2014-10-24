@@ -96,7 +96,9 @@ class XcodeBuilder
         output = output + line
       end
       io.close
-      unless $?.to_i == 0 
+      exitCode = $?.to_i
+      unless exitCode == 0 
+        puts "xcodebuild exit code is #{exitCode}".red
         puts 'Build failed, check logs for results'.red
         exit $?.to_i
       end
