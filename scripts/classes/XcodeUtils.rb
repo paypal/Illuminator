@@ -85,6 +85,13 @@ class XcodeUtils
 
   end
 
+  # use the provided applescript to reset the content and settings of the simulator
+  def self.resetSimulator
+    command = "osascript '#{File.dirname(__FILE__)}/../reset_simulator.applescript'"
+    puts command.green
+    `#{command}`
+  end
+
   # remove any apps in the specified directory
   def removeExistingApps xcodeOutputDir
     Dir["#{xcodeOutputDir}/*.app"].each do |app|
@@ -93,5 +100,10 @@ class XcodeUtils
     end
   end
 
+  def self.killAllSimulatorProcesses
+    command = "'#{File.dirname(__FILE__)}/../kill_all_sim_processes.sh'"
+    puts command.green
+    `#{command}`
+  end
 
 end
