@@ -93,7 +93,7 @@ class XcodeUtils
   end
 
   # remove any apps in the specified directory
-  def removeExistingApps xcodeOutputDir
+  def self.removeExistingApps xcodeOutputDir
     Dir["#{xcodeOutputDir}/*.app"].each do |app|
       puts "XcodeUtils: removing #{app}"
       FileUtils.rm_rf app

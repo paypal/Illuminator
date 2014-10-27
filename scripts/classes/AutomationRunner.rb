@@ -3,7 +3,6 @@ require 'fileutils'
 require 'find'
 require 'pathname'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'JavascriptRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
@@ -13,44 +12,18 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 # runner
 ####################################################################################################
 
+
 class AutomationRunner
+  attr_accessor :appName
+  attr_accessor :workspace
 
-  attr_reader :hardwareID
-
-  attr_reader :automationBuilder
   attr_reader :instrumentsRunner
   attr_reader :javascriptRunner
 
-  def initialize(appName)
+  def initialize
     @crashPath        = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
-
-    appOutputDirectory = BuildArtifacts.instance.xcode
-
-    # if app name is not defined, assume that only one app exists and use that
-    if appName.nil?
-      @appLocation = Dir["#{appOutputDirectory}/*.app"][0]
-    else
-      @appLocation = "#{appOutputDirectory}/#{appName}.app"
-    end
-    @appName = appName
-
     @javascriptRunner = JavascriptRunner.new
-    @automationBuilder = AutomationBuilder.new
     @instrumentsRunner = InstrumentsRunner.new
-
-    @instrumentsRunner.appLocation  = @appLocation
-    @instrumentsRunner.hardwareID   = @hardwareID
-  end
-
-
-  def setupForSimulator(simDevice, simVersion, simLanguage, skipSetSim)
-    @instrumentsRunner.simDevice = XcodeUtils.instance.getSimulatorID(simDevice, simVersion)
-    @instrumentsRunner.simLanguage = simLanguage
-
-    unless skipSetSim
-      command = "osascript '#{File.dirname(__FILE__)}/../reset_simulator.applescript'"
-      self.runAnnotatedCommand(command)
-    end
   end
 
 
@@ -72,19 +45,6 @@ class AutomationRunner
       puts "AutomationRunner cleanup: removing #{dir}"
       FileUtils.rmtree dir
     end
-
-    @instrumentsRunner.cleanup
-    # TODO: @javascriptRunner cleanup?
-    # TODO: @automationBuilder cleanup?
-  end
-
-
-  def installOnDevice
-    currentDir = Dir.pwd
-    Dir.chdir "#{File.dirname(__FILE__)}/../../contrib/ios-deploy"
-    # TODO: detect ios-deploy
-    self.runAnnotatedCommand("./ios-deploy -b '#{@appLocation}' -i #{@hardwareID} -r -n")
-    Dir.chdir currentDir
   end
 
 
@@ -97,7 +57,7 @@ class AutomationRunner
   end
 
 
-  def configureJavascriptRunner(options, workspace)
+  def configureJavascriptRunner(options)
     jsConfig = @javascriptRunner
 
     jsConfig.implementation = options['implementation']
@@ -114,18 +74,15 @@ class AutomationRunner
     jsConfig.randomSeed          = options['randomSeed'] unless options['randomSeed'].nil?
 
     pathToAllTests = options['testPath']
-    unless pathToAllTests.start_with? workspace
-      pathToAllTests = File.join(workspace, pathToAllTests)
+    unless pathToAllTests.start_with? @workspace
+      pathToAllTests = File.join(@workspace, pathToAllTests)
     end
 
     jsConfig.writeConfiguration pathToAllTests
   end
 
 
-  ################################################################################################
-  # MAIN ENTRY POINT
-  ################################################################################################
-  def self.runWithOptions(options, workspace)
+  def runWithOptions(options)
     gcovrWorkspace = Dir.pwd
     Dir.chdir(File.dirname(__FILE__) + '/../')
 
@@ -133,53 +90,37 @@ class AutomationRunner
     raise ArgumentError, 'Path to all tests was not supplied' if options['testPath'].nil?
     raise ArgumentError, 'Implementation was not supplied' if options['implementation'].nil?
 
-    # Initialization
-    runner = AutomationRunner.new(options['appName']) # can be nil
-    builder = runner.automationBuilder
-    instruments = runner.instrumentsRunner
-    jsConfig = runner.javascriptRunner
+    @appName = options['appName']
+    appOutputDirectory = BuildArtifacts.instance.xcode
+    if @appName.nil?
+      # assume that only one app exists and use that
+      @appLocation = Dir["#{appOutputDirectory}/*.app"][0]
+    else
+      @appLocation = "#{appOutputDirectory}/#{appName}.app"
+    end
 
     # pre-run cleanup
-    runner.cleanup
+    self.cleanup
+    @instrumentsRunner.cleanup
+    # TODO: @javascriptRunner cleanup?
 
     # Setup javascript
-    runner.configureJavascriptRunner(options, workspace)
+    self.configureJavascriptRunner(options)
 
     # set up instruments
-    instruments.startupTimeout = options['timeout']
-    # instruments.report = options['report'] # currently removed
-    # instruments.verbose = options['verbose'] # not added yet
+    @instrumentsRunner.startupTimeout = options['timeout']
+    @instrumentsRunner.hardwareID     = options['hardwareID']
+    @instrumentsRunner.appLocation    = @appLocation
+    @instrumentsRunner.simDevice      = XcodeUtils.instance.getSimulatorID(options['simDevice'], options['simVersion']) if options['hardwareID'].nil?
+    @instrumentsRunner.simLanguage    = options['simLanguage'] if options['hardwareID'].nil?
 
-    # Run appropriate shell scripts for cleaning, building, and running real hardware
-    unless options['skipBuild']
-      # TODO: forceClean = FALSE
-      builder.scheme = options['scheme']
-      builder.workspace = workspace
-      builder.doClean = (not options['skipClean'])
+    XcodeUtils.killAllSimulatorProcesses
+    XcodeUtils.resetSimulator if options['hardwareID'].nil? and not options['skipSetSim']
 
-      # if app name is not specified, make sure that we will only have one to run
-      XcodeUtils.instance.removeExistingApps(BuildArtifacts.instance.xcode) unless options['appName']
-      if not builder.buildForAutomation(options['sdk'], options['hardwareID'])
-        puts 'Build failed, check logs for results'.red
-        exit builder.exitCode
-      end
-    end
+    @instrumentsRunner.runOnce
 
-    if options['hardwareID'].nil?
-      runner.setupForSimulator options['simDevice'], options['simVersion'], options['simLanguage'], options['skipSetSim']
-    else
-      runner.hardwareID = options['hardwareID']
-      self.installOnDevice
-    end
-
-    instruments.runOnce
-
-    numCrashes = runner.reportAnyAppCrashes
-    runner.generateCoverage gcovrWorkspace if options['coverage'] #TODO: only if there are no crashes?
-
-    unless options['skipKillAfter']
-      #TODO: call kill_all_sim_processes.sh
-    end
+    numCrashes = self.reportAnyAppCrashes
+    self.generateCoverage gcovrWorkspace if options['coverage'] #TODO: only if there are no crashes?
   end
 
 
@@ -200,7 +141,7 @@ class AutomationRunner
   end
 
 
-  def generateCoverage(workspace)
+  def generateCoverage(gcWorkspace)
     destinationFile      = BuildArtifacts.instance.coverageReportFile
     xcodeArtifactsFolder = BuildArtifacts.instance.xcode
     destinationPath      = BuildArtifacts.instance.objectFiles
@@ -231,7 +172,7 @@ class AutomationRunner
       FileUtils.cp path, destinationPath
     end
 
-    command = "gcovr -r '#{workspace}' --exclude='#{excludeRegex}' --xml '#{destinationPath}' > '#{destinationFile}'"
+    command = "gcovr -r '#{gcWorkspace}' --exclude='#{excludeRegex}' --xml '#{destinationPath}' > '#{destinationFile}'"
     self.runAnnotatedCommand(command)
 
   end
