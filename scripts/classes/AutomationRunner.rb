@@ -152,9 +152,17 @@ class AutomationRunner
 
     # Run appropriate shell scripts for cleaning, building, and running real hardware
     unless options['skipBuild']
+      # TODO: forceClean = FALSE
+      builder.scheme = options['scheme']
+      builder.workspace = workspace
+      builder.doClean = (not options['skipClean'])
+
       # if app name is not specified, make sure that we will only have one to run
-      builder.removeExistingApps() unless options['appName']
-      builder.buildScheme(options['scheme'], options['sdk'], options['hardwareID'], workspace, options['coverage'], options['skipClean'])
+      XcodeUtils.instance.removeExistingApps(BuildArtifacts.instance.xcode) unless options['appName']
+      if not builder.buildForAutomation(options['sdk'], options['hardwareID'])
+        puts 'Build failed, check logs for results'.red
+        exit builder.exitCode
+      end
     end
 
     if options['hardwareID'].nil?

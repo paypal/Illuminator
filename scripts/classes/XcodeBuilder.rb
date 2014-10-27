@@ -8,6 +8,7 @@ class XcodeBuilder
   attr_accessor :sdk
   attr_accessor :arch
   attr_accessor :scheme
+  attr_accessor :workspace
   attr_accessor :destination
   attr_accessor :xcconfig
   attr_accessor :doClean
@@ -15,14 +16,17 @@ class XcodeBuilder
   attr_accessor :doBuild
   attr_accessor :doArchive
 
+  attr_reader :exitCode
 
   def initialize
     @parameters = Hash.new
     @environmentVars = Hash.new
+    @workspace = nil
     @doClean = FALSE
     @doTest = FALSE
     @doBuild = TRUE
     @doArchive = FALSE
+    @exitCode = nil
   end
 
   def addParameter(parameterName = '',parameterValue = '')
@@ -33,7 +37,7 @@ class XcodeBuilder
     @environmentVars[parameterName] = parameterValue
   end
 
-  def assembleConfig
+  def _assembleConfig
     # put standard parameters into parameters
     keyDefs = {
       'configuration' => @configuration,
@@ -50,8 +54,9 @@ class XcodeBuilder
   end
 
 
-  def buildCommand
-    self.assembleConfig
+  def _buildCommand
+    usePipefail = false  # debug option
+    self._assembleConfig
 
     parameters = ''
     environmentVars = ''
@@ -65,9 +70,13 @@ class XcodeBuilder
     tasks << ' archive'  if @doArchive
     tasks << ' test'     if @doTest
 
-    command = 'set -o pipefail && xcodebuild'
+    command = ''
+    command << 'set -o pipefail && ' if usePipefail
+    command << 'xcodebuild'
     command << parameters << environmentVars << tasks
     command << " | tee '#{self.logfilePath}' | xcpretty -c -r junit"
+    command << ' && exit ${PIPESTATUS[0]}' unless usePipefail
+
     puts 'created command:'
     puts command.green
     command
@@ -79,21 +88,28 @@ class XcodeBuilder
   end
 
 
-  def run
-    command = self.buildCommand
-
+  def _executeBuildCommand command
     process = IO.popen(command) do |io|
       io.each {|line| puts line}
       io.close
-      exitCode = $?.to_i
-      unless exitCode == 0
-        puts "xcodebuild exit code is #{exitCode}".red
-        unless exitCode == 256  # xcode returns this, no documentation as to why
-          puts 'Build failed, check logs for results'.red
-          exit $?.to_i
-        end
-      end
     end
+
+    ec = $?
+    @exitCode = ec.exitstatus
+    return @exitCode == 0
+  end
+
+
+  def build
+    command = self._buildCommand
+
+    # switch to a directory (if desired) and build
+    directory = Dir.pwd
+    Dir.chdir(@workspace) unless @workspace.nil?
+    retval = self._executeBuildCommand command
+    Dir.chdir(directory) unless @workspace.nil?
+
+    retval
   end
 
 end
