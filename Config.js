@@ -72,6 +72,7 @@
 
     // find the directory where screenshots will go
     IlluminatorInstrumentsOutputDirectory
+    // handles globbing of a path that may have spaces in it, assumes newest directory is the run directory
     var findMostRecentDirCmd = 'eval ls -1td "' + IlluminatorInstrumentsOutputDirectory + '/Run*" | head -n 1';
     var output = target().host().performTaskWithPathArgumentsTimeout("/bin/bash", ["-c", findMostRecentDirCmd], 5);
     config.screenshotDir = output.stdout;

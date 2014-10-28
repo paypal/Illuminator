@@ -37,10 +37,11 @@ class IlluminatorFramework
       DeviceInstaller.instance.installOnDevice(appLocation, hardwareID)
     end
 
-    # Initialize and run
+    # Initialize automation
     runner = AutomationRunner.new
     runner.workspace = workspace
     runner.appName   = appName
+    runner.cleanup
     runner.runWithOptions(options)
 
     # Kill sim if desired

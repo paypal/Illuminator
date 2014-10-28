@@ -50,6 +50,11 @@ class AutomationRunner
       puts "AutomationRunner cleanup: removing #{dir}"
       FileUtils.rmtree dir
     end
+
+    # run cleanups for variables we own
+    @instrumentsRunner.cleanup
+    # TODO: @javascriptRunner cleanup?
+
   end
 
 
@@ -98,10 +103,6 @@ class AutomationRunner
     @appName = options['appName']
     @appLocation = BuildArtifacts.instance.appLocation(options['appName'])
 
-    # pre-run cleanup
-    self.cleanup
-    @instrumentsRunner.cleanup
-    # TODO: @javascriptRunner cleanup?
 
     # Setup javascript
     self.configureJavascriptRunner(options)

@@ -57,6 +57,10 @@ class BuildArtifacts
     self._setupAndUse "#{@_root}/UIAutomation-outputs", skipSetup
   end
 
+  def state(skipSetup = false)
+    self._setupAndUse "#{@_root}/Illuminator-state", skipSetup
+  end
+
 
   ################## FILES
 
