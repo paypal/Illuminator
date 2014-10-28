@@ -26,8 +26,8 @@ class AutomationRunner
   attr_reader :javascriptRunner
 
   def initialize
-    @crashPath        = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
-    @javascriptRunner = JavascriptRunner.new
+    @crashPath         = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
+    @javascriptRunner  = JavascriptRunner.new
     @instrumentsRunner = InstrumentsRunner.new
   end
 

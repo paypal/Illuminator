@@ -87,12 +87,12 @@ function actionCompareScreenshotToMaster(parm) {
     var compareFileBase = screenshotDir + "/compared_" + captureTitle;
 
     var output = target().host().performTaskWithPathArgumentsTimeout("/bin/sh",
-                                                                   [diff_pngPath,
-                                                                    masterPath,
-                                                                    screenshotPath,
-                                                                    maskPath,
-                                                                    compareFileBase],
-                                                                   20);
+                                                                     [diff_pngPath,
+                                                                      masterPath,
+                                                                      screenshotPath,
+                                                                      maskPath,
+                                                                      compareFileBase],
+                                                                     20);
 
     // turn the output into key/value pairs separated by ":"
     var outputArr = output.stdout.split("\n");
