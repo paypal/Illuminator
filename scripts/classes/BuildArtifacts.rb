@@ -45,6 +45,16 @@ class BuildArtifacts
 
   ################## FILES
 
+  def appLocation(appName = nil)
+    appOutputDirectory = self.xcode
+    if appName.nil?
+      # assume that only one app exists and use that
+      return Dir["#{appOutputDirectory}/*.app"][0]
+    else
+      return "#{appOutputDirectory}/#{appName}.app"
+    end
+  end
+
   def coverageReportFile(skipSetup = false)
     self._setupAndUse @_root, skipSetup
     "#{@_root}/coverage.xml"

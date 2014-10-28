@@ -13,6 +13,11 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 ####################################################################################################
 
 
+# responsibilities:
+#  - convert combined settings hash into individual class settings
+#  - prepare javascript config, and start instruments
+#  - process any crashes
+#  - run coverage
 class AutomationRunner
   attr_accessor :appName
   attr_accessor :workspace
@@ -91,13 +96,7 @@ class AutomationRunner
     raise ArgumentError, 'Implementation was not supplied' if options['implementation'].nil?
 
     @appName = options['appName']
-    appOutputDirectory = BuildArtifacts.instance.xcode
-    if @appName.nil?
-      # assume that only one app exists and use that
-      @appLocation = Dir["#{appOutputDirectory}/*.app"][0]
-    else
-      @appLocation = "#{appOutputDirectory}/#{appName}.app"
-    end
+    @appLocation = BuildArtifacts.instance.appLocation(options['appName'])
 
     # pre-run cleanup
     self.cleanup
@@ -115,7 +114,7 @@ class AutomationRunner
     @instrumentsRunner.simLanguage    = options['simLanguage'] if options['hardwareID'].nil?
 
     XcodeUtils.killAllSimulatorProcesses
-    XcodeUtils.resetSimulator if options['hardwareID'].nil? and not options['skipSetSim']
+    XcodeUtils.resetSimulator if options['hardwareID'].nil? unless options['skipSetSim']
 
     @instrumentsRunner.runOnce
 

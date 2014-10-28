@@ -1,6 +1,7 @@
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationRunner.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'DeviceInstaller.rb')
 
 
 class IlluminatorFramework
@@ -10,47 +11,42 @@ class IlluminatorFramework
   ################################################################################################
   def self.runWithOptions(options, workspace)
 
-    # Initialization
-    builder = AutomationBuilder.new
-    runner = AutomationRunner.new
+    hardwareID = options['hardwareID']
+    appName    = options['appName']
 
-    # Run appropriate shell scripts for cleaning, building, and running real hardware
+    # Initialize builder and build
     unless options['skipBuild']
-      # TODO: forceClean = FALSE
-      builder.scheme = options['scheme']
+      builder = AutomationBuilder.new
       builder.workspace = workspace
-      builder.doClean = (not options['skipClean'])
+      builder.scheme    = options['scheme']
+      builder.doClean   = (not options['skipClean'])  # TODO: skip clean by default with array of things to clean
 
       # if app name is not specified, make sure that we will only have one to run
-      XcodeUtils.removeExistingApps(BuildArtifacts.instance.xcode) unless options['appName']
-      if not builder.buildForAutomation(options['sdk'], options['hardwareID'])
+      XcodeUtils.removeExistingApps(BuildArtifacts.instance.xcode) if appName.nil?
+      if builder.buildForAutomation(options['sdk'], hardwareID)
+        puts 'Build succeded'.green
+      else
         puts 'Build failed, check logs for results'.red
         exit builder.exitCode
       end
     end
 
-    self.installOnDevice unless options['hardwareID'].nil?
+    # Install on real device
+    unless hardwareID.nil?
+      appLocation = BuildArtifacts.instance.appLocation(appName)
+      DeviceInstaller.instance.installOnDevice(appLocation, hardwareID)
+    end
 
+    # Initialize and run
+    runner = AutomationRunner.new
     runner.workspace = workspace
-    runner.appName = options['appName']
-
+    runner.appName   = appName
     runner.runWithOptions(options)
 
+    # Kill sim if desired
     unless options['skipKillAfter']
-      #TODO: call kill_all_sim_processes.sh
+      XcodeUtils.killAllSimulatorProcesses
     end
   end
-
-
-  # TODO: make a class that does this
-  def self.installOnDevice
-    currentDir = Dir.pwd
-    Dir.chdir "#{File.dirname(__FILE__)}/../../contrib/ios-deploy"
-    # TODO: detect ios-deploy
-    self.runAnnotatedCommand("./ios-deploy -b '#{@appLocation}' -i #{@hardwareID} -r -n")
-    Dir.chdir currentDir
-  end
-
-
 
 end
