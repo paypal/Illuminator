@@ -81,10 +81,9 @@ function actionCompareScreenshotToMaster(parm) {
     var diff_pngPath = IlluminatorRootDirectory + "/scripts/diff_png.sh";
     UIATarget.localTarget().captureScreenWithName(captureTitle);
 
-    var screenshotDir   = IlluminatorInstrumentsOutputDirectory + "/Run 1"; // it's always Run 1
     var screenshotFile  = captureTitle + ".png";
-    var screenshotPath  = screenshotDir + "/" + screenshotFile;
-    var compareFileBase = screenshotDir + "/compared_" + captureTitle;
+    var screenshotPath  = config.screenshotDir + "/" + screenshotFile;
+    var compareFileBase = config.screenshotDir + "/compared_" + captureTitle;
 
     var output = target().host().performTaskWithPathArgumentsTimeout("/bin/sh",
                                                                      [diff_pngPath,

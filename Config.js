@@ -70,6 +70,12 @@
         }
     }
 
+    // find the directory where screenshots will go
+    IlluminatorInstrumentsOutputDirectory
+    var findMostRecentDirCmd = 'eval ls -1td "' + IlluminatorInstrumentsOutputDirectory + '/Run*" | head -n 1';
+    var output = target().host().performTaskWithPathArgumentsTimeout("/bin/bash", ["-c", findMostRecentDirCmd], 5);
+    config.screenshotDir = output.stdout;
+
     // create temp dir
     var tmpDir = IlluminatorBuildArtifactsDirectory + "/UIAutomation-outputs";
     target().host().performTaskWithPathArgumentsTimeout("/bin/mkdir", ["-p", tmpDir], 5);
