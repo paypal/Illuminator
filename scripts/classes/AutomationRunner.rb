@@ -128,13 +128,22 @@ class AutomationRunner
     FileUtils.mkdir_p crashReportsPath unless File.directory?(crashReportsPath)
 
     crashes = 0
-    outputFilename = 'crashReport.txt'
+    # TODO: glob if @appName is nil
     Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |crashPath|
-      crashReportPath = "#{crashReportsPath}/#{outputFilename}"
+      # TODO: extract process name and ignore ["launchd_sim", ...]
+
+      puts "Found a crash report from this test run at #{crashPath}"
+      crashName = File.basename(crashPath, ".crash")
+      crashReportPath = "#{crashReportsPath}/#{crashName}.txt"
       XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
       file = File.open(crashReportPath, 'rb')
-      puts file.read.red
+      file.each do |line|
+        break if line.match(/^Binary Images/)
+        print line.red
+      end
+      file.close
       crashes += 1
+      puts "Full crash report saved at #{crashReportPath}"
     end
     crashes
   end
