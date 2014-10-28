@@ -71,7 +71,7 @@
     }
 
     // create temp dir
-    var tmpDir = IlluminatorBuildArtifactsDirectory + "/js-tmp";
+    var tmpDir = IlluminatorBuildArtifactsDirectory + "/UIAutomation-outputs";
     target().host().performTaskWithPathArgumentsTimeout("/bin/mkdir", ["-p", tmpDir], 5);
     config.tmpDir = tmpDir;
 

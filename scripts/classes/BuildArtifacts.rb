@@ -53,6 +53,10 @@ class BuildArtifacts
     self._setupAndUse "#{@_root}/console", skipSetup
   end
 
+  def UIAutomation(skipSetup = false)
+    self._setupAndUse "#{@_root}/UIAutomation-outputs", skipSetup
+  end
+
 
   ################## FILES
 
