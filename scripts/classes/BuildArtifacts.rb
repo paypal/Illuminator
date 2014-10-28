@@ -9,10 +9,21 @@ class BuildArtifacts
   def initialize
     # use a default root directory location that's inside this project
     @_root = Pathname.new(File.dirname(__FILE__) + '/../../buildArtifacts').realpath.to_s
+    @artifactsHaveBeenCreated = false
+  end
+
+  def setRoot(dir)
+    if @_root != dir and @artifactsHaveBeenCreated
+      puts "Warning: changing BuildArtifacts root to '#{dir}' after creating artifacts in '#{@_root}'".red
+      @_root = dir
+    end
   end
 
   def _setupAndUse(dir, skipSetup)
-    FileUtils.mkdir_p dir unless skipSetup or File.directory?(dir)
+    unless skipSetup or File.directory?(dir)
+      FileUtils.mkdir_p dir
+      @artifactsHaveBeenCreated = true
+    end
     dir
   end
 
