@@ -3,8 +3,8 @@ require 'fileutils'
 require 'colorize'
 require 'pty'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/FullOutput.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/JunitOutput.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/FullOutput.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/JunitOutput.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 
@@ -13,7 +13,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 # status
 ####################################################################################################
 
-class Status
+class ParsedInstrumentsMessage
 
   attr_accessor :message
   attr_accessor :fullLine
@@ -23,19 +23,19 @@ class Status
   attr_accessor :tz
 
   # parse lines in the form:    2014-10-20 20:43:41 +0000 Default: BLAH BLAH BLAH ACTUAL MESSAGE
-  def self.statusWithLine (line)
+  def self.fromLine (line)
     parsed = line.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) ([+-]\d{4}) ([^:]+): (.*)$/).to_a
     _, dateString, timeString, tzString, statusString, msgString = parsed
 
-    status = Status.new
-    status.fullLine = line
-    status.message  = msgString
-    status.status   = self.parseStatus(statusString)
-    status.date     = dateString
-    status.time     = timeString
-    status.tz       = tzString
+    message = ParsedInstrumentsMessage.new
+    message.fullLine = line
+    message.message  = msgString
+    message.status   = self.parseStatus(statusString)
+    message.date     = dateString
+    message.time     = timeString
+    message.tz       = tzString
 
-    status
+    message
   end
 
   def self.parseStatus(status)
@@ -67,7 +67,7 @@ class InstrumentsRunner
   attr_accessor :startupTimeout
 
   def initialize
-    @parsers = Array.new
+    @listeners = Array.new
   end
 
 
@@ -91,8 +91,8 @@ class InstrumentsRunner
 
   def runOnce
     reportPath = BuildArtifacts.instance.instruments
-    @parsers.push FullOutput.new
-    @parsers.push JunitOutput.new BuildArtifacts.instance.junitReportFile
+    @listeners.push FullOutput.new
+    @listeners.push JunitOutput.new BuildArtifacts.instance.junitReportFile
 
     @startupTimeout = 30
     @attempts = 30
@@ -139,9 +139,7 @@ class InstrumentsRunner
               if (line.include? ' +0000 ') && (not line.include? ' +0000 Fail: The target application appears to have died') then
                 started = true
               end
-              @parsers.each { |output|
-                output.addStatus(Status.statusWithLine(line))
-              }
+              @listeners.each { |listener| listener.receive(ParsedInstrumentsMessage.fromLine(line)) }
               failed = true if line =~ /Instruments Trace Error/i
             else
               failed = true
@@ -166,9 +164,7 @@ class InstrumentsRunner
         STDERR.puts 'Instruments exited unexpectedly'
         exit 1 if started
       ensure
-        @parsers.each { |output|
-          output.automationFinished failed
-        }
+        @listeners.each { |listener| listener.onAutomationFinished failed }
         exit 1 if failed
       end
     end

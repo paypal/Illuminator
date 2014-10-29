@@ -56,6 +56,7 @@ end
 
 # Creates a XML report that conforms to # https://svn.jenkins-ci.org/trunk/hudson/dtkit/dtkit-format/dtkit-junit-model/src/main/resources/com/thalesgroup/dtkit/junit/model/xsd/junit-4.xsd
 class JunitOutput
+
   def initialize(filename)
     @filename = filename
     @suite = TestSuite.new(File.basename(filename, File.extname(filename)))
@@ -66,22 +67,22 @@ class JunitOutput
     @suite.test_cases.last << line
   end
 
-  def addStatus(status)
-    case status.status
+  def receive(message)
+    case message.status
       when :start
-        @suite.test_cases << TestCase.new(status.message)
+        @suite.test_cases << TestCase.new(message.message)
       when :pass
         @suite.test_cases.last.pass! if @suite.test_cases.last != nil
       when :fail
         @suite.test_cases.last.fail! if @suite.test_cases.last != nil
       else
         if @suite.test_cases.last != nil && @suite.test_cases.last.time == 0
-          @suite.test_cases.last << "#{status.status.to_s.capitalize}: #{status.message}"
+          @suite.test_cases.last << "#{message.status.to_s.capitalize}: #{message.message}"
         end
     end
   end
 
-  def automationFinished(failed)
+  def onAutomationFinished(failed)
     File.open(@filename, 'w') { |f| f.write(serialize(@suite)) }
     puts "CI report written to #{@filename}".green
   end

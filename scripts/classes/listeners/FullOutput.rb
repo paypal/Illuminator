@@ -5,25 +5,25 @@ require 'rubygems'
 ####################################################################################################
 
 class FullOutput
-  @stats
+
   def initialize
-    @stats = {}
+    @lines = {}
   end
 
-  def addStatus (status)
-    puts status.fullLine
+  def receive (message)
+    puts message.fullLine
 
-    @stats[:total] = @stats[:total].to_i + 1 if status.status == :start
-    @stats[status.status] = @stats[status.status].to_i + 1
+    @lines[:total] = @lines[:total].to_i + 1 if message.status == :start
+    @lines[message.status] = @lines[message.status].to_i + 1
   end
 
-  def automationFinished(failed)
+  def onAutomationFinished(failed)
 
-    if failed || failed?(@stats)
-      STDERR.puts self.formatStatistics(@stats)
+    if failed || failed?(@lines)
+      STDERR.puts self.formatStatistics(@lines)
       STDERR.puts 'Tests failed, see log output for details'.red
     else
-      STDOUT.puts self.formatStatistics(@stats)
+      STDOUT.puts self.formatStatistics(@lines)
       STDOUT.puts 'TEST PASSED'.green
     end
   end
