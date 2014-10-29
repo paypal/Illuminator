@@ -40,6 +40,7 @@
 
     // expected keys, and whether they are required
     var expectedKeys = {
+        "saltinel": true,
         "entryPoint": true,
         "implementation": true,
         "automatorDesiredSimDevice": true,

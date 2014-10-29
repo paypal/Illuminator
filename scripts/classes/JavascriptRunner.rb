@@ -24,7 +24,6 @@ class JavascriptRunner
 
   def initialize
     @saltinel = Digest::SHA1.hexdigest (Time.now.to_i.to_s + Socket.gethostname)
-    puts "saltinel = #{@saltinel}".red
     @tagsAny = Array.new(0)
     @tagsAll = Array.new(0)
     @tagsNone = Array.new(0)

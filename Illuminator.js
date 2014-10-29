@@ -45,6 +45,15 @@ function IlluminatorIlluminate() {
 }
 
 
+/**
+ * Send a message back to the log analyzers (ruby)
+ *
+ * @param message string
+ */
+function notifyIlluminatorFramework(message) {
+    UIALogger.logDebug(config.saltinel + " " + message + " " + config.saltinel);
+}
+
 function isMatchingVersion(input, prefix, major, minor, rev) {
     var findStr = prefix + major;
 

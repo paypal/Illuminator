@@ -443,6 +443,10 @@ var debugAutomator = false;
         // run initial callback and only continue on if it succeeds
         if (!automator._executeCallback("prepare", undefined, false, false)) return;
 
+        // At this point, we consider the instruments/app launch to be a success
+        // this function will also serve as notification to the framework that we consider instruments to have started
+        automator.saveIntendedTestList(scenarioList);
+
         var dt;
         var t0 = getTime();
         // iterate through scenarios and run them
@@ -468,6 +472,25 @@ var debugAutomator = false;
         return this;
     };
 
+
+    /**
+     * Save a JSON structure indicating the list of tests that will be run
+     *
+     * @param scenarioList an array of scenario objects
+     */
+    automator.saveIntendedTestList = function (scenarioList) {
+        var names = [];
+        for (var i = 0; i < scenarioList.length; ++i) {
+            names.push(scenarioList[i].title);
+        }
+
+        var intendedListPath = config.tmpDir + "/intendedTestList.json";
+        if (!writeToFile(intendedListPath, JSON.stringify({scenarioNames: names}, null, "    "))) {
+            throw new IlluminatorRuntimeException("Could not save intended test list to " + intendedListPath);
+        }
+
+        notifyIlluminatorFramework("Saved intended test list to: " + intendedListPath);
+    };
 
     /**
      * Save a report to disk of the amount of time evaluating selectors (CSV)
