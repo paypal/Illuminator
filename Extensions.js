@@ -1604,13 +1604,14 @@ extendPrototype(UIATableView, {
             // find this visible cell
             for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
                 thisVisibleCell = i;
-                var ret = getSomethingFn(this);
-                if (isNotNilElement(ret)) {
-                    ret.scrollToVisible();
-                    delay(delayToPreventUIAutomationBug);
-                    return ret;
-                }
             }
+            var ret = getSomethingFn(this);
+            if (isNotNilElement(ret)) {
+                ret.scrollToVisible();
+                delay(delayToPreventUIAutomationBug);
+                return ret;
+            }
+
             UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
                                + " didn't match " + thingDescription);
 
