@@ -23,10 +23,10 @@ class JavascriptRunner
   attr_accessor :scenarioList
 
   def initialize
-    @saltinel = Digest::SHA1.hexdigest (Time.now.to_i.to_s + Socket.gethostname)
-    @tagsAny = Array.new(0)
-    @tagsAll = Array.new(0)
-    @tagsNone = Array.new(0)
+    @saltinel     = Digest::SHA1.hexdigest (Time.now.to_i.to_s + Socket.gethostname)
+    @tagsAny      = Array.new(0)
+    @tagsAll      = Array.new(0)
+    @tagsNone     = Array.new(0)
     @scenarioList = Array.new(0)
   end
 
@@ -36,18 +36,18 @@ class JavascriptRunner
 
     # a mapping of the full config key name to the local value that corresponds to it
     keyDefs = {
-      'saltinel' => @saltinel,
-      'entryPoint' => @entryPoint,
-      'implementation' => @implementation,
-      'automatorDesiredSimDevice' => @simDevice,
-      'automatorDesiredSimVersion' => @simVersion,
-      'hardwareID' => @hardwareID,
-      'automatorSequenceRandomSeed' => @randomSeed,
-      'customJSConfigPath' => @customJSConfigPath,
-      'automatorTagsAny' => @tagsAny,
-      'automatorTagsAll' => @tagsAll,
-      'automatorTagsNone' => @tagsNone,
-      'automatorSenarioNames' => @scenarioNames,
+      'saltinel'                     => @saltinel,
+      'entryPoint'                   => @entryPoint,
+      'implementation'               => @implementation,
+      'automatorDesiredSimDevice'    => @simDevice,
+      'automatorDesiredSimVersion'   => @simVersion,
+      'hardwareID'                   => @hardwareID,
+      'automatorSequenceRandomSeed'  => @randomSeed,
+      'customJSConfigPath'           => @customJSConfigPath,
+      'automatorTagsAny'             => @tagsAny,
+      'automatorTagsAll'             => @tagsAll,
+      'automatorTagsNone'            => @tagsNone,
+      'automatorSenarioNames'        => @scenarioNames,
     }
 
     keyDefs.each do |key, value|
@@ -59,11 +59,11 @@ class JavascriptRunner
 
   def writeConfiguration(testPath)
     # instance variables required for renderTemplate
-    @testPath = testPath
-    @illuminatorRoot = Pathname.new(File.dirname(__FILE__) + '/../..').realpath.to_s
-    @artifactsRoot = BuildArtifacts.instance.root
+    @testPath                   = testPath
+    @illuminatorRoot            = Pathname.new(File.dirname(__FILE__) + '/../..').realpath.to_s
+    @artifactsRoot              = BuildArtifacts.instance.root
     @illuminatorInstrumentsRoot = BuildArtifacts.instance.instruments
-    @environmentFile = BuildArtifacts.instance.illuminatorJsEnvironment
+    @environmentFile            = BuildArtifacts.instance.illuminatorJsEnvironment
 
     self.renderTemplate '/../resources/IlluminatorGeneratedRunnerForInstruments.erb', BuildArtifacts.instance.illuminatorJsRunner
     self.renderTemplate '/../resources/IlluminatorGeneratedEnvironment.erb', BuildArtifacts.instance.illuminatorJsEnvironment

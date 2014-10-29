@@ -29,11 +29,11 @@ class Status
 
     status = Status.new
     status.fullLine = line
-    status.message =  msgString
-    status.status =   self.parseStatus(statusString)
-    status.date =     dateString
-    status.time =     timeString
-    status.tz =       tzString
+    status.message  = msgString
+    status.status   = self.parseStatus(statusString)
+    status.date     = dateString
+    status.time     = timeString
+    status.tz       = tzString
 
     status
   end
