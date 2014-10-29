@@ -1,10 +1,7 @@
-require 'rubygems'
 
-####################################################################################################
-# defaultParser
-####################################################################################################
+require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsListener.rb')
 
-class FullOutput
+class FullOutput < InstrumentsListener
 
   def initialize
     @lines = {}
