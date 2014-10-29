@@ -455,19 +455,7 @@ var debugAutomator = false;
         UIALogger.logMessage("Automation completed in " + secondsToHMS(dt));
 
         // create a CSV report for the amount of time spent evaluating selectors
-        var totalSelectorTime = 0;
-        var selectorReportCsvPath = config.tmpDir + "/selectorTimeCostReport.csv";
-        var csvLines = ["\"Total time (seconds)\",Count,\"Average time\",Selector"];
-        var selectorReport = extensionProfiler.getCriteriaCost();
-        for (var i = 0; i < selectorReport.length; ++i) {
-            var rec = selectorReport[i];
-            totalSelectorTime += rec.time;
-            csvLines.push(rec.time.toString() + "," + rec.hits + "," + (rec.time / rec.hits) + ",\"" + rec.criteria.replace(/"/g, '""') + '"');
-        }
-        if (writeToFile(selectorReportCsvPath, csvLines.join("\n"))) {
-            UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime)
-                                 + " - full report at " + selectorReportCsvPath);
-        }
+        automator.saveSelectorReportCSV("selectorTimeCostReport.csv");
 
         // run completion callback
         var info = {
@@ -480,6 +468,28 @@ var debugAutomator = false;
         return this;
     };
 
+
+    /**
+     * Save a report to disk of the amount of time evaluating selectors (CSV)
+     *
+     * @param selectorReport the value of extensionProfiler.getCriteriaCost()
+     * @param reportName the basename of the report -- no path, no .csv extension
+     */
+    automator.saveSelectorReportCSV = function (reportName) {
+        var totalSelectorTime = 0;
+        var selectorReportCsvPath = config.tmpDir + "/" + reportName + ".csv";
+        var csvLines = ["\"Total time (seconds)\",Count,\"Average time\",Selector"];
+        var selectorReport = extensionProfiler.getCriteriaCost();
+        for (var i = 0; i < selectorReport.length; ++i) {
+            var rec = selectorReport[i];
+            totalSelectorTime += rec.time;
+            csvLines.push(rec.time.toString() + "," + rec.hits + "," + (rec.time / rec.hits) + ",\"" + rec.criteria.replace(/"/g, '""') + '"');
+        }
+        if (writeToFile(selectorReportCsvPath, csvLines.join("\n"))) {
+            UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime)
+                                 + " - full report at " + selectorReportCsvPath);
+        }
+    };
 
     /**
      * Run a single scenario and handle all its reporting callbacks
