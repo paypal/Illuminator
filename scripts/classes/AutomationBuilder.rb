@@ -11,7 +11,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 class AutomationBuilder < XcodeBuilder
 
   def initialize
-    super()
+    super
     @configuration = 'Debug'
 
     resultPath = BuildArtifacts.instance.xcode
