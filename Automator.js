@@ -697,6 +697,7 @@ var debugAutomator = false;
 
             UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             UIALogger.logDebug(["FAILED:", failmsg].join(" "));
+            notifyIlluminatorFramework("Stack trace follows:");
             automator.logScreenInfo();
             automator.logStackInfo(exception);
             UIATarget.localTarget().captureScreenWithName(step.name);

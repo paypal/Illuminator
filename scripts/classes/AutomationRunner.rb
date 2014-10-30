@@ -40,6 +40,8 @@ class AutomationRunner
     @testDefs          = nil
     @testSuite         = nil
     @currentTest       = nil
+    @stackTraceLines   = nil
+    @stackTraceRecord  = false
     @javascriptRunner  = JavascriptRunner.new
     @instrumentsRunner = InstrumentsRunner.new
 
@@ -99,10 +101,17 @@ class AutomationRunner
   end
 
 
+  def saltinelAgentGotStacktraceHint
+    @stackTraceRecord = true
+  end
+
+
   def testListenerGotTestStart name
     @testSuite[@currentTest].error "ILLUMINATOR FAILURE TO LISTEN" unless @currentTest.nil?
     @testSuite[name].start!
     @currentTest = name
+    @stackTraceRecord = false
+    @stackTraceLines = Array.new
   end
 
   def testListenerGotTestPass name
@@ -115,6 +124,7 @@ class AutomationRunner
     puts "ILLUMINATOR FAILURE TO LISTEN 2".red if @currentTest.nil?
     return if message == "The target application appears to have died" # assume a crash report exists!!!
     @testSuite[@currentTest].fail message
+    @testSuite[@currentTest].stacktrace = @stackTraceLines.join("\n")
     @currentTest = nil
   end
 
@@ -123,6 +133,7 @@ class AutomationRunner
     line = message
     line = "#{status}: #{line}" unless status.nil?
     @testSuite[@currentTest] << line
+    @stackTraceLines         << line if @stackTraceRecord
   end
 
 

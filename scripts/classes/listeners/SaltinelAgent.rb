@@ -11,6 +11,10 @@ module SaltinelAgentEventSink
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
+  def saltinelAgentGotStacktraceHint
+    puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
+  end
+
 end
 
 # Saltinel Agent handles all known saltinel messages and runs callbacks
@@ -20,8 +24,9 @@ class SaltinelAgent < SaltinelListener
 
   def onInit
     @recognizers = {
-      "recognizeTestList" => /Saved intended test list to: (.*)/,
-      "recognizeTestDefs" => /Saved scenario definitions to: (.*)/,
+      "recognizeTestList"   => /Saved intended test list to: (.*)/,
+      "recognizeTestDefs"   => /Saved scenario definitions to: (.*)/,
+      "recognizeStacktrace" => /Stack trace follows:/,
     }
   end
 
@@ -33,6 +38,10 @@ class SaltinelAgent < SaltinelListener
   def recognizeTestDefs regexResult
     # assume developer has set eventSink already
     @eventSink.saltinelAgentGotScenarioDefinitions(regexResult.to_a[1])
+  end
+
+  def recognizeStacktrace _
+    @eventSink.saltinelAgentGotStacktraceHint
   end
 
   def reset
