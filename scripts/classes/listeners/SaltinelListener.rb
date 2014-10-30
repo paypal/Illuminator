@@ -7,7 +7,10 @@ class SaltinelListener < InstrumentsListener
 
   def initialize saltinel
     @saltinel = saltinel
-    self.reset
+    self.onInit
+  end
+
+  def onInit
   end
 
   def receive (message)

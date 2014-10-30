@@ -2,14 +2,18 @@ require 'rubygems'
 require 'fileutils'
 require 'find'
 require 'pathname'
+require 'json'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'JavascriptRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'TestSuite.rb')
+
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/FullOutput.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/JunitOutput.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/SaltinelListener.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/TestListener.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/SaltinelAgent.rb')
+#TODO: listener that saves the console log
 
 ####################################################################################################
 # runner
@@ -22,6 +26,9 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/SaltinelL
 #  - process any crashes
 #  - run coverage
 class AutomationRunner
+  include SaltinelAgentEventSink
+  include TestListenerEventSink
+
   attr_accessor :appName
   attr_accessor :workspace
 
@@ -30,11 +37,13 @@ class AutomationRunner
 
   def initialize
     @crashPath         = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
+    @testDefs          = nil
+    @testSuite         = nil
+    @currentTest       = nil
     @javascriptRunner  = JavascriptRunner.new
     @instrumentsRunner = InstrumentsRunner.new
 
-    @instrumentsRunner.addListener("fulloutput", FullOutput.new)
-    @instrumentsRunner.addListener("junit", JunitOutput.new(BuildArtifacts.instance.junitReportFile))
+    @instrumentsRunner.addListener("consoleoutput", FullOutput.new)
   end
 
 
@@ -44,7 +53,8 @@ class AutomationRunner
 
     # FIXME: this should probably get moved to instrument runner
     # keys to the methods of the BuildArtifacts singleton that we want to remove
-    buildArtifactKeys = [:crashReports, :instruments, :objectFiles, :coverageReportFile]
+    buildArtifactKeys = [:crashReports, :instruments, :objectFiles, :coverageReportFile,
+                         :junitReportFile, :illuminatorJsRunner, :illuminatorJsEnvironment, :illuminatorConfigFile]
     # get the directories without creating them (the 'true' arg), add them to our list
     buildArtifactKeys.each do |key|
       dir = BuildArtifacts.instance.method(key).call(true)
@@ -64,6 +74,58 @@ class AutomationRunner
   end
 
 
+  def saltinelAgentGotScenarioDefinitions jsonPath
+    return unless @testDefs.nil?
+    rawDefs = JSON.parse( IO.read(jsonPath) )
+
+    # save test defs for use later (as lookups)
+    @testDefs = {}
+    rawDefs["scenarios"].each { |scen| @testDefs[scen["title"]] = scen }
+  end
+
+
+  def saltinelAgentGotScenarioList jsonPath
+    return unless @testSuite.nil?
+    rawList = JSON.parse( IO.read(jsonPath) )
+
+    # create a test suite, and add test cases to it.  look up class names from test defs
+    @testSuite = TestSuite.new
+    rawList["scenarioNames"].each do |n|
+      testFileName = @testDefs[n]["inFile"]
+      testFnName   = @testDefs[n]["definedBy"]
+      className    = testFileName.sub(".", "_") + "." + testFnName
+      @testSuite.addTestCase(className, n)
+    end
+  end
+
+
+  def testListenerGotTestStart name
+    @testSuite[@currentTest].error "ILLUMINATOR FAILURE TO LISTEN" unless @currentTest.nil?
+    @testSuite[name].start!
+    @currentTest = name
+  end
+
+  def testListenerGotTestPass name
+    puts "ILLUMINATOR FAILURE TO SORT TESTS".red unless name == @currentTest
+    @testSuite[name].pass!
+    @currentTest = nil
+  end
+
+  def testListenerGotTestFail message
+    puts "ILLUMINATOR FAILURE TO LISTEN 2".red if @currentTest.nil?
+    return if message == "The target application appears to have died" # assume a crash report exists!!!
+    @testSuite[@currentTest].fail message
+    @currentTest = nil
+  end
+
+  def testListenerGotLine(status, message)
+    return if @testSuite.nil? or @currentTest.nil?
+    line = message
+    line = "#{status}: #{line}" unless status.nil?
+    @testSuite[@currentTest] << line
+  end
+
+
   def runAnnotatedCommand(command)
     puts "\n"
     puts command.green
@@ -72,6 +134,10 @@ class AutomationRunner
     end
   end
 
+  def getPathToAllJavascriptTests (options)
+    pathToAllTests = options['testPath']
+    pathToAllTests = File.join(@workspace, pathToAllTests) unless pathToAllTests.start_with? @workspace
+  end
 
   def configureJavascriptRunner(options)
     jsConfig = @javascriptRunner
@@ -89,12 +155,17 @@ class AutomationRunner
     jsConfig.customJSConfigPath  = options['customJSConfigPath'] unless options['customJSConfigPath'].nil?
     jsConfig.randomSeed          = options['randomSeed'] unless options['randomSeed'].nil?
 
-    pathToAllTests = options['testPath']
-    unless pathToAllTests.start_with? @workspace
-      pathToAllTests = File.join(@workspace, pathToAllTests)
-    end
+    jsConfig.writeConfiguration(getPathToAllJavascriptTests(options))
+  end
 
-    jsConfig.writeConfiguration pathToAllTests
+  def configureJavascriptReRunner scenarioList, pathToAllTests
+    jsConfig = @javascriptRunner
+
+    jsConfig.randomSeed = nil
+    jsConfig.entryPoint = "runTestsByName"
+    jsConfig.scenarioList = scenarioList
+
+    jsConfig.writeConfiguration(pathToAllTests)
   end
 
 
@@ -117,19 +188,53 @@ class AutomationRunner
     @instrumentsRunner.simDevice      = XcodeUtils.instance.getSimulatorID(options['simDevice'], options['simVersion']) if options['hardwareID'].nil?
     @instrumentsRunner.simLanguage    = options['simLanguage'] if options['hardwareID'].nil?
 
+    # setup listeners on instruments
+    testListener = TestListener.new
+    testListener.eventSink = self
+    @instrumentsRunner.addListener("testListener", testListener)
+
+
     XcodeUtils.killAllSimulatorProcesses
     XcodeUtils.resetSimulator if options['hardwareID'].nil? unless options['skipSetSim']
 
+    @testSuite = nil
 
-    # Setup javascript
-    self.configureJavascriptRunner(options)
-    #@instrumentsRunner.addListener("saltinel", SaltinelListener.new(@javascriptRunner.saltinel))
-    @instrumentsRunner.runOnce @javascriptRunner.saltinel
-    numCrashes = self.reportAnyAppCrashes
+    # loop until all test cases are covered.
+    # we won't get the actual test list until partway through -- from a listener callback
+    begin
+      self.removeAnyAppCrashes
+
+      # Setup javascript
+      if @testSuite.nil?
+        self.configureJavascriptRunner options
+      else
+        self.configureJavascriptReRunner(@testSuite.unStartedTests, getPathToAllJavascriptTests(options))
+      end
+
+      # Setup new saltinel listener
+      agentListener = SaltinelAgent.new(@javascriptRunner.saltinel)
+      agentListener.eventSink = self
+      @instrumentsRunner.addListener("saltinelAgent", agentListener)
+
+      @instrumentsRunner.runOnce @javascriptRunner.saltinel
+      numCrashes = self.reportAnyAppCrashes
+    end while not (@testSuite.nil? or @testSuite.unStartedTests.empty?)
+
+
+    # DONE LOOPING
+    f = File.open(BuildArtifacts.instance.junitReportFile, 'w')
+    f.write(@testSuite.to_xml)
+    f.close
+
     self.generateCoverage gcovrWorkspace if options['coverage'] #TODO: only if there are no crashes?
 
   end
 
+  def removeAnyAppCrashes()
+    Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |crashPath|
+      FileUtils.rmtree crashPath
+    end
+  end
 
   def reportAnyAppCrashes()
     crashReportsPath = BuildArtifacts.instance.crashReports
@@ -144,14 +249,28 @@ class AutomationRunner
       crashName = File.basename(crashPath, ".crash")
       crashReportPath = "#{crashReportsPath}/#{crashName}.txt"
       XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
+
+      # get the first few lines for the log
+      crashText = []
       file = File.open(crashReportPath, 'rb')
       file.each do |line|
         break if line.match(/^Binary Images/)
-        print line.red
+        crashText << line
       end
       file.close
       crashes += 1
-      puts "Full crash report saved at #{crashReportPath}"
+
+      logLine = "Full crash report saved at #{crashReportPath}"
+      puts logLine.red
+      crashText << "\n"
+      crashText << logLine
+
+      # tell the current test suite about any failures
+      unless @currentTest.nil?
+        @testSuite[@currentTest].error "The target application appears to have died."
+        @testSuite[@currentTest].stacktrace = crashText.join("")
+        @currentTest = nil
+      end
     end
     crashes
   end

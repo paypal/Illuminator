@@ -26,7 +26,7 @@ class JavascriptRunner
     @tagsAny      = Array.new(0)
     @tagsAll      = Array.new(0)
     @tagsNone     = Array.new(0)
-    @scenarioList = Array.new(0)
+    @scenarioList = nil
   end
 
 
@@ -46,7 +46,7 @@ class JavascriptRunner
       'automatorTagsAny'             => @tagsAny,
       'automatorTagsAll'             => @tagsAll,
       'automatorTagsNone'            => @tagsNone,
-      'automatorSenarioNames'        => @scenarioNames,
+      'automatorScenarioNames'       => @scenarioList,
     }
 
     keyDefs.each do |key, value|

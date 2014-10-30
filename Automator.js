@@ -247,6 +247,7 @@ var debugAutomator = false;
         }
         automator.allScenarioNames[scenarioName] = true;
 
+        // create base object
         automator.lastScenario = {
             title: scenarioName,
             steps: []
@@ -258,12 +259,26 @@ var debugAutomator = false;
                                 ].join(""));
         }
 
+        // add tags to objects
         automator.lastScenario.tags_obj = {}; // convert tags to object
         for (var i = 0; i < tags.length; ++i) {
             var t = tags[i];
             automator.lastScenario.tags_obj[t] = true;
         }
 
+        // add information about where scenario was created (roughly)
+        var stack = getStackTrace();
+        for (var i = 0; i < stack.length; ++i) {
+            var l = stack[i];
+            if (!(l.nativeCode || l.file == "Automator.js")) {
+                automator.lastScenario.inFile = l.file;
+                automator.lastScenario.definedBy = l.functionName;
+                break;
+            }
+        }
+
+
+        // add new scenario to list
         automator.allScenarios.push(automator.lastScenario);
 
         return this;
@@ -979,22 +994,32 @@ var debugAutomator = false;
 
 
     /**
-     * Render the automator scenarios (tags and steps) to JSON
+     * Render the automator scenarios (tags and steps) to a javascript object
      *
+     * @param includeSteps whether to include the list of test steps in the output
      * @return object
      */
-    automator.toScenarioObject = function () {
+    automator.toScenarioObject = function (includeSteps) {
         var ret = {scenarios: []};
 
         // iterate over scenarios
         for (var i = 0; i < automator.allScenarios.length; ++i) {
             var scenario = automator.allScenarios[i];
-            var outScenario = {title: scenario.title, tags: Object.keys(scenario.tags_obj), steps: []};
+            var outScenario = {
+                title: scenario.title,
+                tags: Object.keys(scenario.tags_obj),
+                inFile: scenario.inFile,
+                definedBy: scenario.definedBy,
+            };
 
-            // iterate over steps (actions)
-            for (var j = 0; j < scenario.steps.length; ++j) {
-                var step = scenario.steps[j];
-                outScenario.steps.push(step.action.screenName + "." + step.action.name);
+            if (includeSteps) {
+                outScenario.steps = [];
+
+                // iterate over steps (actions)
+                for (var j = 0; j < scenario.steps.length; ++j) {
+                    var step = scenario.steps[j];
+                    outScenario.steps.push(step.action.screenName + "." + step.action.name);
+                }
             }
             ret.scenarios.push(outScenario);
         }

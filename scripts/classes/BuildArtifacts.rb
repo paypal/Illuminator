@@ -95,8 +95,8 @@ class BuildArtifacts
   end
 
   def junitReportFile(skipSetup = false)
-    instDir = self.instruments skipSetup
-    "#{instDir}/IlluminatorJUnitReport.xml"
+    self._setupAndUse @_root, skipSetup
+    "#{@_root}/IlluminatorJUnitReport.xml"
   end
 
 end
