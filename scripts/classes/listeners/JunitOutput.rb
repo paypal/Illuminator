@@ -100,12 +100,11 @@ class JunitOutput < InstrumentsListener
 
   def initialize(filename)
     @filename = filename
-    @suite = TestSuite.new(File.basename(filename, File.extname(filename)))
+    self.reset
   end
 
-  def add(line)
-    return if @suite.test_cases.empty?
-    @suite.test_cases.last << line
+  def reset
+    @suite = TestSuite.new(File.basename(@filename, File.extname(@filename)))
   end
 
   def receive(message)
@@ -128,9 +127,9 @@ class JunitOutput < InstrumentsListener
     end
   end
 
-  def onAutomationFinished(failed)
+  def onAutomationFinished
     File.open(@filename, 'w') { |f| f.write(@suite.to_xml) }
-    puts "CI report written to #{@filename}".green
+    puts "JUnit report written to #{@filename}".green
   end
 
 end

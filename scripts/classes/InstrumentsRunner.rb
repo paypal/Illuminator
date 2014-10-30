@@ -3,10 +3,10 @@ require 'fileutils'
 require 'colorize'
 require 'pty'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/FullOutput.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/JunitOutput.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/InstrumentsListener.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/StartDetector.rb')
 
 
 ####################################################################################################
@@ -59,6 +59,8 @@ end
 ####################################################################################################
 
 class InstrumentsRunner
+  include StartDetectorEventSink
+
   attr_accessor :appLocation
   attr_accessor :hardwareID
   attr_accessor :simDevice
@@ -66,10 +68,17 @@ class InstrumentsRunner
   attr_accessor :attempts
   attr_accessor :startupTimeout
 
+  attr_reader :started
+
   def initialize
-    @listeners = Array.new
+    @listeners      = Hash.new
+    @attempts       = 5
+    @startupTimeout = 30
   end
 
+  def addListener (name, listener)
+    @listeners[name] = listener
+  end
 
   def cleanup
     dirsToRemove = []
@@ -85,20 +94,23 @@ class InstrumentsRunner
       puts "InstrumentsRunner cleanup: removing #{dir}"
       FileUtils.rmtree dir
     end
-
   end
 
 
-  def runOnce
-    reportPath = BuildArtifacts.instance.instruments
-    @listeners.push FullOutput.new
-    @listeners.push JunitOutput.new BuildArtifacts.instance.junitReportFile
+  def startDetectorTriggered
+    @fullyStarted = true
+  end
 
-    @startupTimeout = 30
-    @attempts = 30
+
+  def runOnce saltinel
+    reportPath = BuildArtifacts.instance.instruments
+
+    # add saltinel listener
+    startDetector = StartDetector.new(saltinel)
+    startDetector.eventSink = self
+    self.addListener("startDetector", startDetector)
 
     globalJSFile = BuildArtifacts.instance.illuminatorJsRunner
-
     xcodePath    = XcodeUtils.instance.getXcodePath
     templatePath = XcodeUtils.instance.getInstrumentsTemplatePath
 
@@ -117,33 +129,40 @@ class InstrumentsRunner
 
     command << " #{@simLanguage}" if @simLanguage
     Dir.chdir(reportPath)
-    self.runCommand command
+
+    return self.runInstrumentsCommand command
   end
 
 
-  def runCommand (command)
+  def runInstrumentsCommand (command)
+    @fullyStarted = false
     puts command.green
-    started = false
     remaining_attempts = @attempts
 
-    while (not started) && remaining_attempts > 0 do
-      failed = false
+    # launch & re-launch instruments until it triggers the StartDetector
+    while (not @fullyStarted) && remaining_attempts > 0 do
+      successfulRun = true
       remaining_attempts = remaining_attempts - 1
-      warn "\n Launching instruments.  #{remaining_attempts} retries left".red
+      puts "\nRelaunching instruments.  #{remaining_attempts} retries left".red unless (remaining_attempts + 1) == @attempts
 
+      # spawn process and catch unexpected exits
       begin
         PTY.spawn(*command) do |r, w, pid|
-          while not failed do
+
+          doneReadingOutput = false
+          # select on the output and send it to the listeners
+          while not doneReadingOutput do
             if IO.select([r], nil, nil, @startupTimeout) then
               line = r.readline.rstrip
-              if (line.include? ' +0000 ') && (not line.include? ' +0000 Fail: The target application appears to have died') then
-                started = true
+              @listeners.each { |_, listener| listener.receive(ParsedInstrumentsMessage.fromLine(line)) }
+              if line =~ /Instruments Trace Error/i
+                successfulRun = false
+                doneReadingOutput = true
               end
-              @listeners.each { |listener| listener.receive(ParsedInstrumentsMessage.fromLine(line)) }
-              failed = true if line =~ /Instruments Trace Error/i
             else
-              failed = true
-              puts "\n Timeout #{options.timeout} reached without any output - ".red
+              successfulRun = false
+              doneReadingOutput = true
+              puts "\n Timeout #{@startupTimeout} reached without any output - ".red
               puts "killing Instruments (pid #{pid})...".red
               begin
                 Process.kill(9, pid)
@@ -153,6 +172,8 @@ class InstrumentsRunner
               rescue PTY::ChildExited
               end
               puts "Pid #{pid} killed.".red
+              puts "killing simulator processes...".red
+              XcodeUtils.killAllSimulatorProcesses
             end
           end
         end
@@ -162,13 +183,16 @@ class InstrumentsRunner
       rescue EOFError
       rescue PTY::ChildExited
         STDERR.puts 'Instruments exited unexpectedly'
-        exit 1 if started
+        if @fullyStarted
+          successfulRun = false
+          doneReadingOutput = true
+        end
       ensure
-        @listeners.each { |listener| listener.onAutomationFinished failed }
-        exit 1 if failed
+        @listeners.each { |_, listener| listener.onAutomationFinished }
       end
     end
 
+    return successfulRun
   end
 
 end

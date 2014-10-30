@@ -23,7 +23,6 @@ class JavascriptRunner
   attr_accessor :scenarioList
 
   def initialize
-    @saltinel     = Digest::SHA1.hexdigest (Time.now.to_i.to_s + Socket.gethostname)
     @tagsAny      = Array.new(0)
     @tagsAll      = Array.new(0)
     @tagsNone     = Array.new(0)
@@ -59,6 +58,7 @@ class JavascriptRunner
 
   def writeConfiguration(testPath)
     # instance variables required for renderTemplate
+    @saltinel                   = Digest::SHA1.hexdigest (Time.now.to_i.to_s + Socket.gethostname)
     @testPath                   = testPath
     @illuminatorRoot            = Pathname.new(File.dirname(__FILE__) + '/../..').realpath.to_s
     @artifactsRoot              = BuildArtifacts.instance.root

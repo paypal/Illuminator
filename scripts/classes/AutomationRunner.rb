@@ -7,6 +7,9 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.r
 require File.join(File.expand_path(File.dirname(__FILE__)), 'JavascriptRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/FullOutput.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/JunitOutput.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/SaltinelListener.rb')
 
 ####################################################################################################
 # runner
@@ -29,6 +32,9 @@ class AutomationRunner
     @crashPath         = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
     @javascriptRunner  = JavascriptRunner.new
     @instrumentsRunner = InstrumentsRunner.new
+
+    @instrumentsRunner.addListener("fulloutput", FullOutput.new)
+    @instrumentsRunner.addListener("junit", JunitOutput.new(BuildArtifacts.instance.junitReportFile))
   end
 
 
@@ -104,9 +110,6 @@ class AutomationRunner
     @appLocation = BuildArtifacts.instance.appLocation(options['appName'])
 
 
-    # Setup javascript
-    self.configureJavascriptRunner(options)
-
     # set up instruments
     @instrumentsRunner.startupTimeout = options['timeout']
     @instrumentsRunner.hardwareID     = options['hardwareID']
@@ -117,10 +120,14 @@ class AutomationRunner
     XcodeUtils.killAllSimulatorProcesses
     XcodeUtils.resetSimulator if options['hardwareID'].nil? unless options['skipSetSim']
 
-    @instrumentsRunner.runOnce
 
+    # Setup javascript
+    self.configureJavascriptRunner(options)
+    #@instrumentsRunner.addListener("saltinel", SaltinelListener.new(@javascriptRunner.saltinel))
+    @instrumentsRunner.runOnce @javascriptRunner.saltinel
     numCrashes = self.reportAnyAppCrashes
     self.generateCoverage gcovrWorkspace if options['coverage'] #TODO: only if there are no crashes?
+
   end
 
 
