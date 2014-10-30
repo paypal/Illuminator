@@ -459,7 +459,7 @@ var debugAutomator = false;
         UIALogger.logMessage("Automation completed in " + secondsToHMS(dt));
 
         // create a CSV report for the amount of time spent evaluating selectors
-        automator.saveSelectorReportCSV("selectorTimeCostReport.csv");
+        automator.saveSelectorReportCSV("selectorTimeCostReport");
 
         // run completion callback
         var info = {
