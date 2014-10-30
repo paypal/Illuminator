@@ -613,9 +613,10 @@ var debugAutomator = false;
      */
     automator._evaluateScenario = function (scenario, message) {
 
-        var testname = [scenario.title, " [", Object.keys(scenario.tags_obj).join(", "), "]"].join("");
+        var testname = scenario.title;
         UIALogger.logDebug("###############################################################");
         UIALogger.logStart(testname);
+        UIALogger.logMessage(["Scenario tags are [", Object.keys(scenario.tags_obj).join(", "), "]"].join(""));
         if (undefined !== message) {
             UIALogger.logMessage(message);
         }
