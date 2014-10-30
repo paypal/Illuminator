@@ -19,6 +19,7 @@
     config.automatorTagsAll = []; // none by default
     config.automatorTagsNone = [];
     config.automatorSequenceRandomSeed = undefined;
+    config.buildArtifacts = {};
 
     config.setField = function (key, value) {
         switch (key) {
@@ -78,9 +79,14 @@
     var output = target().host().performTaskWithPathArgumentsTimeout("/bin/bash", ["-c", findMostRecentDirCmd], 5);
     config.screenshotDir = output.stdout;
 
-    // create temp dir
+    // create temp dir for build artifacts and note path names
     var tmpDir = IlluminatorBuildArtifactsDirectory + "/UIAutomation-outputs";
     target().host().performTaskWithPathArgumentsTimeout("/bin/mkdir", ["-p", tmpDir], 5);
-    config.tmpDir = tmpDir;
+    config.buildArtifacts.root = tmpDir;
+    config.buildArtifacts.appMapMarkdown        = tmpDir + "/appMap.md";
+    config.buildArtifacts.automatorMarkdown     = tmpDir + "/automator.md";
+    config.buildArtifacts.automatorJSON         = tmpDir + "/automator.json";
+    config.buildArtifacts.automatorScenarioJSON = tmpDir + "/automatorScenarios.json";
+    config.buildArtifacts.intendedTestList      = tmpDir + "/intendedTestList.json";
 
 }).call(this);

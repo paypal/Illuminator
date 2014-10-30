@@ -27,10 +27,9 @@ function IlluminatorIlluminate() {
         break;
 
     case "describe":
-        var now = Math.round(getTime());
-        var appMapMarkdownPath = config.tmpDir + "/appMap-" + now + ".md";
-        var automatorMarkdownPath = config.tmpDir + "/automator-" + now + ".md";
-        var automatorJSONPath = config.tmpDir + "/automator-" + now + ".json";
+        var appMapMarkdownPath    = config.buildArtifacts.appMapMarkdown;
+        var automatorMarkdownPath = config.buildArtifacts.automatorMarkdown;
+        var automatorJSONPath     = config.buildArtifacts.automatorJSON;
         writeToFile(appMapMarkdownPath, appmap.toMarkdown());
         UIALogger.logMessage("Wrote AppMap definitions to " + appMapMarkdownPath);
         writeToFile(automatorMarkdownPath, automator.toMarkdown());

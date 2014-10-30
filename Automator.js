@@ -484,7 +484,7 @@ var debugAutomator = false;
             names.push(scenarioList[i].title);
         }
 
-        var intendedListPath = config.tmpDir + "/intendedTestList.json";
+        var intendedListPath = config.buildArtifacts.intendedTestList;
         if (!writeToFile(intendedListPath, JSON.stringify({scenarioNames: names}, null, "    "))) {
             throw new IlluminatorRuntimeException("Could not save intended test list to " + intendedListPath);
         }
@@ -500,7 +500,7 @@ var debugAutomator = false;
      */
     automator.saveSelectorReportCSV = function (reportName) {
         var totalSelectorTime = 0;
-        var selectorReportCsvPath = config.tmpDir + "/" + reportName + ".csv";
+        var selectorReportCsvPath = config.buildArtifacts.root + "/" + reportName + ".csv";
         var csvLines = ["\"Total time (seconds)\",Count,\"Average time\",Selector"];
         var selectorReport = extensionProfiler.getCriteriaCost();
         for (var i = 0; i < selectorReport.length; ++i) {
