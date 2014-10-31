@@ -21,8 +21,20 @@ class TestSuite
 
   def unStartedTests
     ret = Array.new
-    @testCases.each {|t| ret << t.name unless t.ran? }
+    @testCases.each { |t| ret << t.name unless t.ran? }
     ret
+  end
+
+  def allTests
+    @testCases.dup
+  end
+
+  def passedTests
+    @testCases.select { |t| t.passed? }
+  end
+
+  def failedTests
+    @testCases.select { |t| not t.passed? }
   end
 
   def to_xml
@@ -79,6 +91,19 @@ class TestCase
 
   def ran?
     not (@timeStart.nil? or @timeFinish.nil?)
+  end
+
+  def passed?
+    @failTag.nil?
+  end
+
+  # this is NOT the opposite of passed!  this does not count errored tests
+  def failed?
+    @failTag == "failure"
+  end
+
+  def errored?
+    @failTag == "error"
   end
 
   def time

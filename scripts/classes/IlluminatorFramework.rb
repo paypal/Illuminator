@@ -42,12 +42,15 @@ class IlluminatorFramework
     runner.workspace = workspace
     runner.appName   = appName
     runner.cleanup
-    runner.runWithOptions(options)
+    success = runner.runWithOptions(options)
 
     # Kill sim if desired
     unless options['skipKillAfter']
       XcodeUtils.killAllSimulatorProcesses
     end
+
+    return success
   end
+
 
 end

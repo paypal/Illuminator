@@ -9,6 +9,7 @@ class AutomationParserFactory
 
     # build the list of how each parameter will be saved in the output
     @letterMap = {
+      'x' => 'entryPoint',
       'p' => 'testPath',
       'a' => 'appName',
       't' => 'tagsAny',
@@ -35,14 +36,16 @@ class AutomationParserFactory
 
     @letterProcessing = {
       'j' => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to settings file
+      'p' => lambda {|p| (Pathname.new p).realPath().to_s },     # get real path to tests file
     }
 
-    @defaultValues = {'i'=> 'iPhone',
-                      'b' => 'iPhone 6',
-                      'z' => '8.1',
-                      'q' => 'iphonesimulator8.1',
-                      'l' => 'en',
-                      'm' => 30 }
+    @defaultValues = {
+      'b' => 'iPhone',
+      'z' => '7.1',
+      'q' => 'iphonesimulator7.1',
+      'l' => 'en',
+      'x' => 'runTestsByTag',
+      'm' => 30 }
   end
 
   # you must custom prepare before you can add custom switches... otherwise things get all stupid
@@ -51,6 +54,7 @@ class AutomationParserFactory
     @letterProcessing = @letterProcessing.merge(letterProcessingUpdates) unless letterProcessingUpdates.nil?
     @defaultValues = @defaultValues.merge defaultValues unless defaultValues.nil?
 
+    self.addSwitch('x', ['-x', '--entryPoint LABEL', 'The execution entry point (runTestsByTag, runTestsByName, describe)'])
     self.addSwitch('p', ['-p', '--testPath PATH', 'Path to js file with all tests imported'])
     self.addSwitch('a', ['-a', '--appName APPNAME', "Name of the app to run"])
     self.addSwitch('t', ['-t', '--tags-any TAGSANY', 'Run tests with any of the given tags'])

@@ -11,6 +11,7 @@ class JavascriptRunner
 
   attr_reader   :saltinel # the salted sentinel
   attr_accessor :entryPoint
+  attr_accessor :testPath
   attr_accessor :implementation
   attr_accessor :simDevice
   attr_accessor :simVersion
@@ -56,10 +57,9 @@ class JavascriptRunner
   end
 
 
-  def writeConfiguration(testPath)
+  def writeConfiguration()
     # instance variables required for renderTemplate
     @saltinel                   = Digest::SHA1.hexdigest (Time.now.to_i.to_s + Socket.gethostname)
-    @testPath                   = testPath
     @illuminatorRoot            = Pathname.new(File.dirname(__FILE__) + '/../..').realpath.to_s
     @artifactsRoot              = BuildArtifacts.instance.root
     @illuminatorInstrumentsRoot = BuildArtifacts.instance.instruments
@@ -70,7 +70,9 @@ class JavascriptRunner
 
     self.assembleConfig
 
-    File.open(BuildArtifacts.instance.illuminatorConfigFile, 'w') { |f| f << JSON.pretty_generate(@fullConfig) }
+    f = File.open(BuildArtifacts.instance.illuminatorConfigFile, 'w')
+    f << JSON.pretty_generate(@fullConfig)
+    f.close
 
   end
 

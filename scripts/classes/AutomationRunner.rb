@@ -146,17 +146,14 @@ class AutomationRunner
     end
   end
 
-  def getPathToAllJavascriptTests (options)
-    pathToAllTests = options['testPath']
-    pathToAllTests = File.join(@workspace, pathToAllTests) unless pathToAllTests.start_with? @workspace
-  end
-
   def configureJavascriptRunner(options)
     jsConfig = @javascriptRunner
 
     jsConfig.implementation = options['implementation']
 
-    jsConfig.entryPoint          = "runTestsByTag"
+    jsConfig.entryPoint          = options['entryPoint']
+    jsConfig.scenarioList        = options['scenarioList']
+    jsConfig.testPath            = options['testPath']
     jsConfig.tagsAny             = options['tagsAny'].split(',') unless options['tagsAny'].nil?
     jsConfig.tagsAll             = options['tagsAll'].split(',') unless options['tagsAll'].nil?
     jsConfig.tagsNone            = options['tagsNone'].split(',') unless options['tagsNone'].nil?
@@ -167,17 +164,17 @@ class AutomationRunner
     jsConfig.customJSConfigPath  = options['customJSConfigPath'] unless options['customJSConfigPath'].nil?
     jsConfig.randomSeed          = options['randomSeed'] unless options['randomSeed'].nil?
 
-    jsConfig.writeConfiguration(getPathToAllJavascriptTests(options))
+    jsConfig.writeConfiguration()
   end
 
-  def configureJavascriptReRunner scenarioList, pathToAllTests
+  def configureJavascriptReRunner scenarioList
     jsConfig = @javascriptRunner
 
     jsConfig.randomSeed = nil
     jsConfig.entryPoint = "runTestsByName"
     jsConfig.scenarioList = scenarioList
 
-    jsConfig.writeConfiguration(pathToAllTests)
+    jsConfig.writeConfiguration()
   end
 
 
@@ -205,13 +202,12 @@ class AutomationRunner
     testListener.eventSink = self
     @instrumentsRunner.addListener("testListener", testListener)
 
+    # listener to provide screen output
     if options['verbose']
       @instrumentsRunner.addListener("consoleoutput", FullOutput.new)
     else
       @instrumentsRunner.addListener("consoleoutput", PrettyOutput.new)
     end
-
-
 
     XcodeUtils.killAllSimulatorProcesses
     XcodeUtils.resetSimulator if options['hardwareID'].nil? unless options['skipSetSim']
@@ -227,7 +223,7 @@ class AutomationRunner
       if @testSuite.nil?
         self.configureJavascriptRunner options
       else
-        self.configureJavascriptReRunner(@testSuite.unStartedTests, getPathToAllJavascriptTests(options))
+        self.configureJavascriptReRunner(@testSuite.unStartedTests)
       end
 
       # Setup new saltinel listener
@@ -241,11 +237,76 @@ class AutomationRunner
 
 
     # DONE LOOPING
-    f = File.open(BuildArtifacts.instance.junitReportFile, 'w')
-    f.write(@testSuite.to_xml)
-    f.close
+    unless @testSuite.nil?
+      f = File.open(BuildArtifacts.instance.junitReportFile, 'w')
+      f.write(@testSuite.to_xml)
+      f.close
 
-    self.generateCoverage gcovrWorkspace if options['coverage'] #TODO: only if there are no crashes?
+      self.generateCoverage gcovrWorkspace if options['coverage'] #TODO: only if there are no crashes?
+      self.saveFailedTestsConfig(options, @testSuite.failedTests)
+    end
+
+    self.summarizeTestResults @testSuite
+
+    # return value: we got tests, more than zero passed, and none failed
+    (not @testSuite.nil?) and (0 < @testSuite.passedTests.length) and (0 == @testSuite.failedTests.length)
+
+  end
+
+
+  def summarizeTestResults testSuite
+    if testSuite.nil?
+      puts "No test cases were received from the Javascript environment; check logs for possible setup problems.".red
+      return
+    end
+
+    allTests    = testSuite.allTests
+    failedTests = testSuite.failedTests
+
+    if 0 == allTests.length
+      puts "No tests ran".yellow
+    elsif 0 < failedTests.length
+      result = "Result: "
+      allTests.each do |t|
+        if not t.ran?
+          result << "-"
+        elsif t.failed?
+          result << "!"
+        elsif t.errored?
+          result << "@"
+        else
+          result << "."
+        end
+      end
+      puts result.red
+      puts "#{failedTests.length} of #{allTests.length} tests FAILED".red
+    else
+      puts "All #{allTests.length} tests PASSED"
+    end
+
+  end
+
+  def saveFailedTestsConfig(options, failedTests)
+    return unless 0 < failedTests.length
+
+    # save options to re-run failed tests
+    newOptions = options.dup
+    newOptions['randomSeed'] = nil
+    newOptions['entryPoint'] = "runTestsByName"
+    newOptions['scenarioList'] = failedTests.map { |t| t.name }
+    customOptions = nil
+
+    unless newOptions['customJSConfigPath'].nil?
+      customOptions = JSON.parse( IO.read(newOptions['customJSConfigPath']) )
+      newOptions['customJSConfigPath'] = nil
+    end
+
+    f = File.open(BuildArtifacts.instance.illuminatorRerunFailedTestsSettings, 'w')
+    f << JSON.pretty_generate({
+                                "options" => newOptions,
+                                "customConfig" => customOptions,
+                              })
+    f.close
 
   end
 

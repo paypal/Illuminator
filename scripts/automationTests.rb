@@ -9,9 +9,9 @@ workspace = Dir.pwd
 options = {}
 parserFactory = AutomationParserFactory.new()
 parserFactory.prepare()
-parser = parserFactory.buildParser(options, 'patonsjdiq#bzl#fek#crvmw')
+parser = parserFactory.buildParser(options, 'xpatonsjdiq#bzl#fek#crvmw')
 
 parser.parse! ARGV
 
-options['workspace'] = workspace
-IlluminatorFramework.runWithOptions options, workspace
+success = IlluminatorFramework.runWithOptions options, workspace
+exit 1 unless success
