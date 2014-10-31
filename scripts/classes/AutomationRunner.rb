@@ -10,6 +10,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'TestSuite.rb')
 
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/PrettyOutput.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/FullOutput.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/ConsoleLogger.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/TestListener.rb')
@@ -45,7 +46,6 @@ class AutomationRunner
     @javascriptRunner  = JavascriptRunner.new
     @instrumentsRunner = InstrumentsRunner.new
 
-    @instrumentsRunner.addListener("consoleoutput", FullOutput.new)
     @instrumentsRunner.addListener("consolelogger", ConsoleLogger.new)
   end
 
@@ -204,6 +204,13 @@ class AutomationRunner
     testListener = TestListener.new
     testListener.eventSink = self
     @instrumentsRunner.addListener("testListener", testListener)
+
+    if options['verbose']
+      @instrumentsRunner.addListener("consoleoutput", FullOutput.new)
+    else
+      @instrumentsRunner.addListener("consoleoutput", PrettyOutput.new)
+    end
+
 
 
     XcodeUtils.killAllSimulatorProcesses
