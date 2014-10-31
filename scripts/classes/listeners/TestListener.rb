@@ -29,18 +29,21 @@ class TestListener < InstrumentsListener
 
   def receive(message)
     # assume developer has set eventSink already
-    case message.status
-    when :start
-      @eventSink.testListenerGotTestStart message.message
-    when :pass
-      @eventSink.testListenerGotTestPass message.message
-    when :fail
-      @eventSink.testListenerGotTestFail message.message
-    when :unknown
+
+    # signal test starts before general logging
+    @eventSink.testListenerGotTestStart message.message if message.status == :start
+
+    # log all lines
+    if message.status == :unknown
       @eventSink.testListenerGotLine nil, message.fullLine
     else
       @eventSink.testListenerGotLine message.status, message.message
     end
+
+    # signal test ends after logs
+    @eventSink.testListenerGotTestPass message.message if message.status == :pass
+    @eventSink.testListenerGotTestFail message.message if message.status == :fail
+
   end
 
   def onAutomationFinished

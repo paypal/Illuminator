@@ -11,9 +11,9 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'TestSuite.rb')
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/FullOutput.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/ConsoleLogger.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/TestListener.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/SaltinelAgent.rb')
-#TODO: listener that saves the console log
 
 ####################################################################################################
 # runner
@@ -46,6 +46,7 @@ class AutomationRunner
     @instrumentsRunner = InstrumentsRunner.new
 
     @instrumentsRunner.addListener("consoleoutput", FullOutput.new)
+    @instrumentsRunner.addListener("consolelogger", ConsoleLogger.new)
   end
 
 
