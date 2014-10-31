@@ -1,6 +1,5 @@
 require 'singleton'
 require 'fileutils'
-require 'pathname'
 
 # Convenience functions for command-line actions done in Xcode
 class BuildArtifacts
@@ -8,7 +7,7 @@ class BuildArtifacts
 
   def initialize
     # use a default root directory location that's inside this project
-    @_root = Pathname.new(File.dirname(__FILE__) + '/../../buildArtifacts').realpath.to_s
+    @_root = File.join(File.dirname(__FILE__), "../../buildArtifacts")
     @artifactsHaveBeenCreated = false
   end
 
