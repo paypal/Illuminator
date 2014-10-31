@@ -4,6 +4,7 @@ Dir.chdir 'SampleApp/AutomatorSampleApp'
 workspace = Dir.pwd
 #ruby ../../scripts/automationTests.rb -s AutomatorSampleApp -t smoke -p ../../SampleApp/SampleTests/tests/AllTests.js
 allTestPath = '../../SampleApp/SampleTests/tests/AllTests.js'
+allTestPath = (Pathname.new (allTestPath)).realpath.to_s
 ####################################################################################################
 # Storing custom parameters
 ####################################################################################################
