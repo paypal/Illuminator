@@ -348,7 +348,14 @@ function isHardSelector(selector) {
  * UIAutomation doesn't give us access to the UIAElementNil constructor, so do it our own way
  */
 function newUIAElementNil() {
-    return UIATarget.localTarget().frontMostApp().windows().firstWithPredicate("name == 'x' and name != 'x'");
+    try {
+        UIATarget.localTarget().pushTimeout(0);
+        return UIATarget.localTarget().frontMostApp().windows().firstWithPredicate("name == 'x' and name != 'x'");
+    } catch(e) {
+        throw e;
+    } finally {
+        UIATarget.localTarget().popTimeout();
+    }
 }
 
 
@@ -764,7 +771,7 @@ extendPrototype(UIASwitch, {
             }
         }
         if (exception !== null) {
-            throw exception;   
+            throw exception;
         }
     },
 });
@@ -1597,13 +1604,14 @@ extendPrototype(UIATableView, {
             // find this visible cell
             for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
                 thisVisibleCell = i;
-                var ret = getSomethingFn(this);
-                if (isNotNilElement(ret)) {
-                    ret.scrollToVisible();
-                    delay(delayToPreventUIAutomationBug);
-                    return ret;
-                }
             }
+            var ret = getSomethingFn(this);
+            if (isNotNilElement(ret)) {
+                ret.scrollToVisible();
+                delay(delayToPreventUIAutomationBug);
+                return ret;
+            }
+
             UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
                                + " didn't match " + thingDescription);
 

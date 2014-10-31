@@ -247,6 +247,7 @@ var debugAutomator = false;
         }
         automator.allScenarioNames[scenarioName] = true;
 
+        // create base object
         automator.lastScenario = {
             title: scenarioName,
             steps: []
@@ -258,12 +259,26 @@ var debugAutomator = false;
                                 ].join(""));
         }
 
+        // add tags to objects
         automator.lastScenario.tags_obj = {}; // convert tags to object
         for (var i = 0; i < tags.length; ++i) {
             var t = tags[i];
             automator.lastScenario.tags_obj[t] = true;
         }
 
+        // add information about where scenario was created (roughly)
+        var stack = getStackTrace();
+        for (var i = 0; i < stack.length; ++i) {
+            var l = stack[i];
+            if (!(l.nativeCode || l.file == "Automator.js")) {
+                automator.lastScenario.inFile = l.file;
+                automator.lastScenario.definedBy = l.functionName;
+                break;
+            }
+        }
+
+
+        // add new scenario to list
         automator.allScenarios.push(automator.lastScenario);
 
         return this;
@@ -443,6 +458,10 @@ var debugAutomator = false;
         // run initial callback and only continue on if it succeeds
         if (!automator._executeCallback("prepare", undefined, false, false)) return;
 
+        // At this point, we consider the instruments/app launch to be a success
+        // this function will also serve as notification to the framework that we consider instruments to have started
+        automator.saveIntendedTestList(scenarioList);
+
         var dt;
         var t0 = getTime();
         // iterate through scenarios and run them
@@ -455,19 +474,7 @@ var debugAutomator = false;
         UIALogger.logMessage("Automation completed in " + secondsToHMS(dt));
 
         // create a CSV report for the amount of time spent evaluating selectors
-        var totalSelectorTime = 0;
-        var selectorReportCsvPath = config.tmpDir + "/selectorTimeCostReport.csv";
-        var csvLines = ["\"Total time (seconds)\",Count,\"Average time\",Selector"];
-        var selectorReport = extensionProfiler.getCriteriaCost();
-        for (var i = 0; i < selectorReport.length; ++i) {
-            var rec = selectorReport[i];
-            totalSelectorTime += rec.time;
-            csvLines.push(rec.time.toString() + "," + rec.hits + "," + (rec.time / rec.hits) + ",\"" + rec.criteria.replace(/"/g, '""') + '"');
-        }
-        if (writeToFile(selectorReportCsvPath, csvLines.join("\n"))) {
-            UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime)
-                                 + " - full report at " + selectorReportCsvPath);
-        }
+        automator.saveSelectorReportCSV("selectorTimeCostReport");
 
         // run completion callback
         var info = {
@@ -480,6 +487,47 @@ var debugAutomator = false;
         return this;
     };
 
+
+    /**
+     * Save a JSON structure indicating the list of tests that will be run
+     *
+     * @param scenarioList an array of scenario objects
+     */
+    automator.saveIntendedTestList = function (scenarioList) {
+        var names = [];
+        for (var i = 0; i < scenarioList.length; ++i) {
+            names.push(scenarioList[i].title);
+        }
+
+        var intendedListPath = config.buildArtifacts.intendedTestList;
+        if (!writeToFile(intendedListPath, JSON.stringify({scenarioNames: names}, null, "    "))) {
+            throw new IlluminatorRuntimeException("Could not save intended test list to " + intendedListPath);
+        }
+
+        notifyIlluminatorFramework("Saved intended test list to: " + intendedListPath);
+    };
+
+    /**
+     * Save a report to disk of the amount of time evaluating selectors (CSV)
+     *
+     * @param selectorReport the value of extensionProfiler.getCriteriaCost()
+     * @param reportName the basename of the report -- no path, no .csv extension
+     */
+    automator.saveSelectorReportCSV = function (reportName) {
+        var totalSelectorTime = 0;
+        var selectorReportCsvPath = config.buildArtifacts.root + "/" + reportName + ".csv";
+        var csvLines = ["\"Total time (seconds)\",Count,\"Average time\",Selector"];
+        var selectorReport = extensionProfiler.getCriteriaCost();
+        for (var i = 0; i < selectorReport.length; ++i) {
+            var rec = selectorReport[i];
+            totalSelectorTime += rec.time;
+            csvLines.push(rec.time.toString() + "," + rec.hits + "," + (rec.time / rec.hits) + ",\"" + rec.criteria.replace(/"/g, '""') + '"');
+        }
+        if (writeToFile(selectorReportCsvPath, csvLines.join("\n"))) {
+            UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime)
+                                 + " - full report at " + selectorReportCsvPath);
+        }
+    };
 
     /**
      * Run a single scenario and handle all its reporting callbacks
@@ -580,9 +628,10 @@ var debugAutomator = false;
      */
     automator._evaluateScenario = function (scenario, message) {
 
-        var testname = [scenario.title, " [", Object.keys(scenario.tags_obj).join(", "), "]"].join("");
+        var testname = scenario.title;
         UIALogger.logDebug("###############################################################");
         UIALogger.logStart(testname);
+        UIALogger.logMessage(["Scenario tags are [", Object.keys(scenario.tags_obj).join(", "), "]"].join(""));
         if (undefined !== message) {
             UIALogger.logMessage(message);
         }
@@ -648,6 +697,7 @@ var debugAutomator = false;
 
             UIALogger.logDebug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             UIALogger.logDebug(["FAILED:", failmsg].join(" "));
+            notifyIlluminatorFramework("Stack trace follows:");
             automator.logScreenInfo();
             automator.logStackInfo(exception);
             UIATarget.localTarget().captureScreenWithName(step.name);
@@ -945,22 +995,32 @@ var debugAutomator = false;
 
 
     /**
-     * Render the automator scenarios (tags and steps) to JSON
+     * Render the automator scenarios (tags and steps) to a javascript object
      *
+     * @param includeSteps whether to include the list of test steps in the output
      * @return object
      */
-    automator.toScenarioObject = function () {
+    automator.toScenarioObject = function (includeSteps) {
         var ret = {scenarios: []};
 
         // iterate over scenarios
         for (var i = 0; i < automator.allScenarios.length; ++i) {
             var scenario = automator.allScenarios[i];
-            var outScenario = {title: scenario.title, tags: Object.keys(scenario.tags_obj), steps: []};
+            var outScenario = {
+                title: scenario.title,
+                tags: Object.keys(scenario.tags_obj),
+                inFile: scenario.inFile,
+                definedBy: scenario.definedBy,
+            };
 
-            // iterate over steps (actions)
-            for (var j = 0; j < scenario.steps.length; ++j) {
-                var step = scenario.steps[j];
-                outScenario.steps.push(step.action.screenName + "." + step.action.name);
+            if (includeSteps) {
+                outScenario.steps = [];
+
+                // iterate over steps (actions)
+                for (var j = 0; j < scenario.steps.length; ++j) {
+                    var step = scenario.steps[j];
+                    outScenario.steps.push(step.action.screenName + "." + step.action.name);
+                }
             }
             ret.scenarios.push(outScenario);
         }

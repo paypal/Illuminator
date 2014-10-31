@@ -3,15 +3,17 @@ require 'fileutils'
 require 'colorize'
 require 'pty'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/FullOutput.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'parsers/JunitOutput.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/InstrumentsListener.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/StartDetector.rb')
 
 
 ####################################################################################################
 # status
 ####################################################################################################
 
-class Status
+class ParsedInstrumentsMessage
 
   attr_accessor :message
   attr_accessor :fullLine
@@ -20,33 +22,32 @@ class Status
   attr_accessor :time
   attr_accessor :tz
 
-  def self.statusWithLine (line)
+  # parse lines in the form:    2014-10-20 20:43:41 +0000 Default: BLAH BLAH BLAH ACTUAL MESSAGE
+  def self.fromLine (line)
+    parsed = line.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) ([+-]\d{4}) ([^:]+): (.*)$/).to_a
+    _, dateString, timeString, tzString, statusString, msgString = parsed
 
-    _, dateString, timeString, tzString, statusString, msgString = line.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) ([+-]\d{4}) ([^:]+): (.*)$/).to_a
+    message = ParsedInstrumentsMessage.new
+    message.fullLine = line
+    message.message  = msgString
+    message.status   = self.parseStatus(statusString)
+    message.date     = dateString
+    message.time     = timeString
+    message.tz       = tzString
 
-    statusValue = self.parseStatus(statusString)
-
-    status = Status.new
-    status.fullLine = line
-    status.message = msgString
-    status.status = statusValue
-    status.date = dateString
-    status.time = timeString
-    status.tz = tzString
-
-    status
+    message
   end
 
   def self.parseStatus(status)
     case status
-      when /start/i then :start
-      when /pass/i then :pass
-      when /fail/i then :fail
-      when /error/i then :error
-      when /warning/i then :warning
-      when /issue/i then :issue
-      when /default/i then :default
-      when /debug/i then :debug
+      when /start/i    then :start
+      when /pass/i     then :pass
+      when /fail/i     then :fail
+      when /error/i    then :error
+      when /warning/i  then :warning
+      when /issue/i    then :issue
+      when /default/i  then :default
+      when /debug/i    then :debug
       else :unknown
     end
   end
@@ -58,46 +59,62 @@ end
 ####################################################################################################
 
 class InstrumentsRunner
-  attr_accessor :buildArtifacts
-  attr_accessor :xcodePath
+  include StartDetectorEventSink
+
   attr_accessor :appLocation
-  attr_accessor :reportPath
   attr_accessor :hardwareID
   attr_accessor :simDevice
   attr_accessor :simLanguage
   attr_accessor :attempts
   attr_accessor :startupTimeout
 
-  @parsers
+  attr_reader :started
 
   def initialize
-    @parsers = Array.new
+    @listeners      = Hash.new
+    @attempts       = 5
+    @startupTimeout = 30
+  end
 
+  def addListener (name, listener)
+    @listeners[name] = listener
+  end
+
+  def cleanup
+    dirsToRemove = []
+    buildArtifactKeys = [:instruments]
+    # get the directories without creating them (the 'true' arg), add them to our list
+    buildArtifactKeys.each do |key|
+      dir = BuildArtifacts.instance.method(key).call(true)
+      dirsToRemove << dir
+    end
+
+    # remove directories in the list
+    dirsToRemove.each do |dir|
+      puts "InstrumentsRunner cleanup: removing #{dir}"
+      FileUtils.rmtree dir
+    end
   end
 
 
-  def start
-    junitReportPath = @reportPath + '/testAutomatically.xml'
-    @parsers.push FullOutput.new
-    @parsers.push JunitOutput.new junitReportPath
-
-    @startupTimeout = 30
-    @attempts = 30
-    testCase = "#{@buildArtifacts}/testAutomatically.js"
-    sdkRootDirectory = `/usr/bin/xcodebuild -version -sdk iphoneos | grep PlatformPath`.split(':')[1].chomp.sub(/^\s+/, '')
-
-    instrumentsFolder = ''
-
-    if File.directory? "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/"
-      instrumentsFolder = "AutomationInstrument.xrplugin";
-    else
-    #fallback to old instruments bundle (pre Xcode6)
-      instrumentsFolder = "AutomationInstrument.bundle";
-    end
-    templatePath = `[ -f /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate ] && echo "#{sdkRootDirectory}/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate" || echo "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"`.chomp.sub(/^\s+/, '')
+  def startDetectorTriggered
+    @fullyStarted = true
+  end
 
 
-    command = "env DEVELOPER_DIR='#{@xcodePath}' /usr/bin/instruments"
+  def runOnce saltinel
+    reportPath = BuildArtifacts.instance.instruments
+
+    # add saltinel listener
+    startDetector = StartDetector.new(saltinel)
+    startDetector.eventSink = self
+    self.addListener("startDetector", startDetector)
+
+    globalJSFile = BuildArtifacts.instance.illuminatorJsRunner
+    xcodePath    = XcodeUtils.instance.getXcodePath
+    templatePath = XcodeUtils.instance.getInstrumentsTemplatePath
+
+    command = "env DEVELOPER_DIR='#{xcodePath}' /usr/bin/instruments"
     if hardwareID
       command << " -w '" + @hardwareID + "'"
     elsif simDevice
@@ -106,41 +123,46 @@ class InstrumentsRunner
 
     command << " -t '#{templatePath}' "
     command << "'#{@appLocation}'"
-    command << " -e UIASCRIPT '#{testCase}'"
-    command << " -e UIARESULTSPATH '#{@reportPath}'"
-
+    command << " -e UIASCRIPT '#{globalJSFile}'"
+    command << " -e UIARESULTSPATH '#{reportPath}'"
+    # TODO: either make the reporting conditional, or remove the option from AutomationArgumentParserFactory
 
     command << " #{@simLanguage}" if @simLanguage
-    Dir.chdir(@reportPath)
-    self.runCommand command
+    Dir.chdir(reportPath)
 
+    return self.runInstrumentsCommand command
   end
 
-  def runCommand (command)
+
+  def runInstrumentsCommand (command)
+    @fullyStarted = false
     puts command.green
-    started = false
     remaining_attempts = @attempts
 
-    while (not started) && remaining_attempts > 0 do
-      failed = false
+    # launch & re-launch instruments until it triggers the StartDetector
+    while (not @fullyStarted) && remaining_attempts > 0 do
+      successfulRun = true
       remaining_attempts = remaining_attempts - 1
-      warn "\n Launching instruments.  #{remaining_attempts} retries left".red
+      puts "\nRelaunching instruments.  #{remaining_attempts} retries left".red unless (remaining_attempts + 1) == @attempts
 
+      # spawn process and catch unexpected exits
       begin
         PTY.spawn(*command) do |r, w, pid|
-          while not failed do
+
+          doneReadingOutput = false
+          # select on the output and send it to the listeners
+          while not doneReadingOutput do
             if IO.select([r], nil, nil, @startupTimeout) then
               line = r.readline.rstrip
-              if (line.include? ' +0000 ') && (not line.include? ' +0000 Fail: The target application appears to have died') then
-                started = true
+              @listeners.each { |_, listener| listener.receive(ParsedInstrumentsMessage.fromLine(line)) }
+              if line =~ /Instruments Trace Error/i
+                successfulRun = false
+                doneReadingOutput = true
               end
-              @parsers.each { |output|
-                output.addStatus(Status.statusWithLine(line))
-              }
-              failed = true if line =~ /Instruments Trace Error/i
             else
-              failed = true
-              puts "\n Timeout #{options.timeout} reached without any output - ".red
+              successfulRun = false
+              doneReadingOutput = true
+              puts "\n Timeout #{@startupTimeout} reached without any output - ".red
               puts "killing Instruments (pid #{pid})...".red
               begin
                 Process.kill(9, pid)
@@ -150,6 +172,8 @@ class InstrumentsRunner
               rescue PTY::ChildExited
               end
               puts "Pid #{pid} killed.".red
+              puts "killing simulator processes...".red
+              XcodeUtils.killAllSimulatorProcesses
             end
           end
         end
@@ -159,15 +183,16 @@ class InstrumentsRunner
       rescue EOFError
       rescue PTY::ChildExited
         STDERR.puts 'Instruments exited unexpectedly'
-        exit 1 if started
+        if @fullyStarted
+          successfulRun = false
+          doneReadingOutput = true
+        end
       ensure
-        @parsers.each { |output|
-          output.automationFinished failed
-        }
-        exit 1 if failed
+        @listeners.each { |_, listener| listener.onAutomationFinished }
       end
     end
 
+    return successfulRun
   end
 
 end

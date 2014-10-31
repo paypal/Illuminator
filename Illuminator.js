@@ -9,34 +9,48 @@ function IlluminatorIlluminate() {
     // initial sanity checks
     assertDesiredSimVersion();
 
+    // send test definitions back to framework
+    if (!writeToFile(config.buildArtifacts.automatorScenarioJSON,
+                     JSON.stringify(automator.toScenarioObject(false), null, "    ")))
+    {
+        throw new IlluminatorSetupException("Could not save necessary build artifact to " +
+                                            config.buildArtifacts.automatorScenarioJSON);
+    }
+    notifyIlluminatorFramework("Saved scenario definitions to: " + config.buildArtifacts.automatorScenarioJSON);
+
+    // run app-specific callback
     if (!automator._executeCallback("onInit", {entryPoint: config.entryPoint}, false, false)) return;
 
+    // choose entry point and go
     switch (config.entryPoint) {
+
+    case "runTestsByName":
+        automator.runNamedScenarios(config.automatorScenarioNames, config.automatorSequenceRandomSeed);
+        break;
 
     case "runTestsByTag":
         if (0 == (config.automatorTagsAny.length + config.automatorTagsAll.length + config.automatorTagsNone.length)) {
             UIALogger.logMessage("No tag sets (any / all / none) were defined, so printing some information about defined scenarios");
             automator.logInfo();
         } else {
-            automator.runTaggedScenarios(config.automatorTagsAny, config.automatorTagsAll, config.automatorTagsNone, config.automatorSequenceRandomSeed);
+            automator.runTaggedScenarios(config.automatorTagsAny,
+                                         config.automatorTagsAll,
+                                         config.automatorTagsNone,
+                                         config.automatorSequenceRandomSeed);
         }
         break;
 
-    case "runTestsByName":
-        automator.runNamedScenarios(config.automatorScenarioNames, config.automatorSequenceRandomSeed);
-        break;
-
     case "describe":
-        var now = Math.round(getTime());
-        var appMapMarkdownPath = config.tmpDir + "/appMap-" + now + ".md";
-        var automatorMarkdownPath = config.tmpDir + "/automator-" + now + ".md";
-        var automatorJSONPath = config.tmpDir + "/automator-" + now + ".json";
+        var appMapMarkdownPath    = config.buildArtifacts.appMapMarkdown;
+        var automatorMarkdownPath = config.buildArtifacts.automatorMarkdown;
+        var automatorJSONPath     = config.buildArtifacts.automatorJSON;
         writeToFile(appMapMarkdownPath, appmap.toMarkdown());
         UIALogger.logMessage("Wrote AppMap definitions to " + appMapMarkdownPath);
         writeToFile(automatorMarkdownPath, automator.toMarkdown());
         UIALogger.logMessage("Wrote automator definitions to " + automatorMarkdownPath);
-        writeToFile(automatorJSONPath, JSON.stringify(automator.toScenarioObject(), null, "    "));
+        writeToFile(automatorJSONPath, JSON.stringify(automator.toScenarioObject(true), null, "    "));
         UIALogger.logMessage("Wrote automator definition data to " + automatorJSONPath);
+
         break;
 
     default:
@@ -44,6 +58,15 @@ function IlluminatorIlluminate() {
     }
 }
 
+
+/**
+ * Send a message back to the log analyzers (ruby)
+ *
+ * @param message string
+ */
+function notifyIlluminatorFramework(message) {
+    UIALogger.logDebug(config.saltinel + " " + message + " " + config.saltinel);
+}
 
 function isMatchingVersion(input, prefix, major, minor, rev) {
     var findStr = prefix + major;
@@ -78,21 +101,20 @@ function actionCompareScreenshotToMaster(parm) {
 
     delay(delayCapture); // wait for any animations to settle
 
-    var diff_pngPath = automatorRoot + "/scripts/diff_png.sh";
+    var diff_pngPath = IlluminatorRootDirectory + "/scripts/diff_png.sh";
     UIATarget.localTarget().captureScreenWithName(captureTitle);
 
-    var screenshotDir   = automatorRoot + "/buildArtifacts/UIAutomationReport/Run 1"; // it's always Run 1
     var screenshotFile  = captureTitle + ".png";
-    var screenshotPath  = screenshotDir + "/" + screenshotFile;
-    var compareFileBase = screenshotDir + "/compared_" + captureTitle;
+    var screenshotPath  = config.screenshotDir + "/" + screenshotFile;
+    var compareFileBase = config.screenshotDir + "/compared_" + captureTitle;
 
     var output = target().host().performTaskWithPathArgumentsTimeout("/bin/sh",
-                                                                   [diff_pngPath,
-                                                                    masterPath,
-                                                                    screenshotPath,
-                                                                    maskPath,
-                                                                    compareFileBase],
-                                                                   20);
+                                                                     [diff_pngPath,
+                                                                      masterPath,
+                                                                      screenshotPath,
+                                                                      maskPath,
+                                                                      compareFileBase],
+                                                                     20);
 
     // turn the output into key/value pairs separated by ":"
     var outputArr = output.stdout.split("\n");

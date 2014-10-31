@@ -41,7 +41,7 @@ var debugBridge = false;
 
         var taskArguments = [];
 
-        var scriptPath = automatorRoot + "/scripts/UIAutomationBridge.rb";
+        var scriptPath = IlluminatorRootDirectory + "/scripts/UIAutomationBridge.rb";
         taskArguments.push(scriptPath);
 
         taskArguments.push("--callUID=" + UID)

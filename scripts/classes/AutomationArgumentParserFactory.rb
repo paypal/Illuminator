@@ -1,4 +1,4 @@
-require 'ostruct'
+#require 'ostruct'
 
 class AutomationParserFactory
 
@@ -9,6 +9,7 @@ class AutomationParserFactory
 
     # build the list of how each parameter will be saved in the output
     @letterMap = {
+      'x' => 'entryPoint',
       'p' => 'testPath',
       'a' => 'appName',
       't' => 'tagsAny',
@@ -16,7 +17,7 @@ class AutomationParserFactory
       'n' => 'tagsNone',
       'q' => 'sdk',
       's' => 'scheme',
-      'j' => 'plistSettingsPath',
+      'j' => 'customSettingsJSONPath',
       'd' => 'hardwareID',
       'i' => 'implementation',
       'b' => 'simDevice',
@@ -34,15 +35,17 @@ class AutomationParserFactory
     }
 
     @letterProcessing = {
-      'j' => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to pList
+      'j' => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to settings file
+      'p' => lambda {|p| (Pathname.new p).realPath().to_s },     # get real path to tests file
     }
 
-    @defaultValues = {'i'=> 'iPhone',
-                      'b' => 'iPhone 6',
-                      'z' => '8.1',
-                      'q' => 'iphonesimulator8.1',
-                      'l' => 'en',
-                      'm' => 30 }
+    @defaultValues = {
+      'b' => 'iPhone',
+      'z' => '7.1',
+      'q' => 'iphonesimulator7.1',
+      'l' => 'en',
+      'x' => 'runTestsByTag',
+      'm' => 30 }
   end
 
   # you must custom prepare before you can add custom switches... otherwise things get all stupid
@@ -51,6 +54,7 @@ class AutomationParserFactory
     @letterProcessing = @letterProcessing.merge(letterProcessingUpdates) unless letterProcessingUpdates.nil?
     @defaultValues = @defaultValues.merge defaultValues unless defaultValues.nil?
 
+    self.addSwitch('x', ['-x', '--entryPoint LABEL', 'The execution entry point (runTestsByTag, runTestsByName, describe)'])
     self.addSwitch('p', ['-p', '--testPath PATH', 'Path to js file with all tests imported'])
     self.addSwitch('a', ['-a', '--appName APPNAME', "Name of the app to run"])
     self.addSwitch('t', ['-t', '--tags-any TAGSANY', 'Run tests with any of the given tags'])
@@ -58,7 +62,7 @@ class AutomationParserFactory
     self.addSwitch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])
     self.addSwitch('q', ['-q', '--sdk SDK', 'SDK to build against, defaults to iphonesimulator8.1'])
     self.addSwitch('s', ['-s', '--scheme SCHEME', 'Build and run specific tests on given workspace scheme'])
-    self.addSwitch('j', ['-j', '--plistSettingsPath PATH', 'path to settings plist'])
+    self.addSwitch('j', ['-j', '--jsonSettingsPath PATH', 'path to JSON file containing custom configuration parameters'])
     self.addSwitch('d', ['-d', '--hardwareID ID', 'hardware id of device you run on'])
     self.addSwitch('i', ['-i', '--implementation IMPL', 'Device tests implementation (iPhone|iPad)'])
     self.addSwitch('b', ['-b', '--simDevice DEVICE', 'Run on given simulated device'])
@@ -69,7 +73,7 @@ class AutomationParserFactory
     self.addSwitch('k', ['-k', '--skip-kill-after', 'Do not kill the simulator after the run'])
     self.addSwitch('y', ['-y', '--skip-clean', 'Skip clean when building'])
     self.addSwitch('c', ['-c', '--coverage', 'Generate coverage files'])
-    self.addSwitch('r', ['-r', '--report', 'Generate Xunit reports in buildArtifacts/UIAutomationReport folder'])
+    self.addSwitch('r', ['-r', '--report', 'Generate Xunit reports'])
     self.addSwitch('v', ['-v', '--verbose', 'Show verbose output'])
     self.addSwitch('m', ['-m', '--timeout TIMEOUT', 'startup timeout'])
     self.addSwitch('w', ['-w', '--random-seed SEED', 'Randomize test order based on given integer seed'])

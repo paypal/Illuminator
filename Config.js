@@ -19,14 +19,19 @@
     config.automatorTagsAll = []; // none by default
     config.automatorTagsNone = [];
     config.automatorSequenceRandomSeed = undefined;
+    config.buildArtifacts = {};
 
     config.setField = function (key, value) {
         switch (key) {
         case "automatorSequenceRandomSeed":
             config.automatorSequenceRandomSeed = parseInt(value);
             break;
-        case "customConfig":
-            config.customConfig = getPlistData(value)
+        case "customJSConfigPath":
+            try {
+                config.customConfig = getJSONData(value)
+            } catch (e) {
+                throw new IlluminatorSetupException(key + " of '" + value + "' couldn't be parsed as JSON; error was: " + e);
+            }
             break;
         default:
             config[key] = value;
@@ -36,6 +41,7 @@
 
     // expected keys, and whether they are required
     var expectedKeys = {
+        "saltinel": true,
         "entryPoint": true,
         "implementation": true,
         "automatorDesiredSimDevice": true,
@@ -46,18 +52,14 @@
         "automatorTagsNone": false,
         "automatorScenarioNames": false,
         "automatorSequenceRandomSeed": false,
-        "customConfig": false,
+        "customJSConfigPath": false,
     };
 
-    // read config and create temp dir
-    var jsonConfig = getPlistData(automatorRoot + "/buildArtifacts/generatedConfig.plist");
-    target().host().performTaskWithPathArgumentsTimeout("/bin/mkdir", ["-p", automatorRoot + "/buildArtifacts/js-tmp"], 5);
-    config.tmpDir = automatorRoot + "/buildArtifacts/js-tmp";
-
+    var jsonConfig = getJSONData(IlluminatorBuildArtifactsDirectory + "/IlluminatorGeneratedConfig.json");
     // check for keys we don't expect
     for (var k in jsonConfig) {
         if (expectedKeys[k] === undefined) {
-            UIALogger.logWarning("Config got unexpected key " + k);
+            UIALogger.logMessage("Config got unexpected key " + k);
         }
     }
 
@@ -66,16 +68,25 @@
         if (jsonConfig[k] !== undefined) {
             config.setField(k, jsonConfig[k]);
         } else if (expectedKeys[k]) {
-                UIALogger.logWarning("Couldn't read " + k + " from generated config");
+            UIALogger.logWarning("Couldn't read " + k + " from generated config");
         }
     }
 
-    // set the custom config from the plist
-    try {
-        config.setCustomConfig(jsonConfig.customConfig);
-    } catch (e) {
-        UIALogger.logMessage("(optional) customConfig was not supplied in generated config; skipping.")
-    }
+    // find the directory where screenshots will go
+    IlluminatorInstrumentsOutputDirectory
+    // handles globbing of a path that may have spaces in it, assumes newest directory is the run directory
+    var findMostRecentDirCmd = 'eval ls -1td "' + IlluminatorInstrumentsOutputDirectory + '/Run*" | head -n 1';
+    var output = target().host().performTaskWithPathArgumentsTimeout("/bin/bash", ["-c", findMostRecentDirCmd], 5);
+    config.screenshotDir = output.stdout;
 
+    // create temp dir for build artifacts and note path names
+    var tmpDir = IlluminatorBuildArtifactsDirectory + "/UIAutomation-outputs";
+    target().host().performTaskWithPathArgumentsTimeout("/bin/mkdir", ["-p", tmpDir], 5);
+    config.buildArtifacts.root = tmpDir;
+    config.buildArtifacts.appMapMarkdown        = tmpDir + "/appMap.md";
+    config.buildArtifacts.automatorMarkdown     = tmpDir + "/automator.md";
+    config.buildArtifacts.automatorJSON         = tmpDir + "/automator.json";
+    config.buildArtifacts.automatorScenarioJSON = tmpDir + "/automatorScenarios.json";
+    config.buildArtifacts.intendedTestList      = tmpDir + "/intendedTestList.json";
 
 }).call(this);
