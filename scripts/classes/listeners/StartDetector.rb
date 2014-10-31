@@ -17,7 +17,7 @@ class StartDetector < SaltinelListener
 
   attr_accessor :eventSink
 
-  def reset
+  def onInit
     @alreadyStarted = false
   end
 

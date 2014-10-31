@@ -27,9 +27,6 @@ class TestListener < InstrumentsListener
 
   attr_accessor :eventSink
 
-  def reset
-  end
-
   def receive(message)
     # assume developer has set eventSink already
     case message.status

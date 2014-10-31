@@ -44,9 +44,6 @@ class SaltinelAgent < SaltinelListener
     @eventSink.saltinelAgentGotStacktraceHint
   end
 
-  def reset
-  end
-
   def onSaltinel innerMessage
     @recognizers.each do |fn, regex|
       result = regex.match(innerMessage)
