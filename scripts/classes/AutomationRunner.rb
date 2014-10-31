@@ -183,6 +183,7 @@ class AutomationRunner
     Dir.chdir(File.dirname(__FILE__) + '/../')
 
     # Sanity checks
+    raise ArgumentError, 'Entry point was not supplied' if options['entryPoint'].nil?
     raise ArgumentError, 'Path to all tests was not supplied' if options['testPath'].nil?
     raise ArgumentError, 'Implementation was not supplied' if options['implementation'].nil?
 

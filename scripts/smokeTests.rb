@@ -11,6 +11,7 @@ allTestPath = (Pathname.new (allTestPath)).realpath.to_s
 
 options = {}
 
+options['entryPoint'] = 'runTestsByTag'
 options['implementation'] = 'iPhone'
 options['appName'] = 'AutomatorSampleApp'
 options['scheme'] = 'AutomatorSampleApp'
