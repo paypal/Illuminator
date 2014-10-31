@@ -50,7 +50,6 @@ end
 class TestCase
   attr_reader :name
   attr_reader :className
-  attr_reader :time
 
   attr_accessor :stacktrace
 
@@ -107,7 +106,7 @@ class TestCase
   end
 
   def time
-    return 0 if @finish.nil?
+    return 0 if @timeFinish.nil?
     @timeFinish - @timeStart
   end
 
