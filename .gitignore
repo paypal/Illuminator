@@ -6,3 +6,4 @@ buildArtifacts/
 *.xcworkspace
 !default.xcworkspace
 xcuserdata
+SampleApp/AutomatorSampleApp/build

@@ -1,5 +1,5 @@
 require 'pathname'
-require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/AutomationRunner.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/IlluminatorFramework.rb')
 Dir.chdir 'SampleApp/AutomatorSampleApp'
 workspace = Dir.pwd
 #ruby ../../scripts/automationTests.rb -s AutomatorSampleApp -t smoke -p ../../SampleApp/SampleTests/tests/AllTests.js
@@ -23,4 +23,4 @@ options['verbose'] = FALSE
 options['report'] = TRUE
 options['skipBuild'] = FALSE
 
-AutomationRunner.runWithOptions options, workspace
+IlluminatorFramework.runWithOptions options, workspace
