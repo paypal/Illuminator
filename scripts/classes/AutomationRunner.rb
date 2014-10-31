@@ -247,6 +247,8 @@ class AutomationRunner
       self.saveFailedTestsConfig(options, @testSuite.failedTests)
     end
 
+    XcodeUtils.killAllSimulatorProcesses unless options['skipKillAfter']
+
     self.summarizeTestResults @testSuite
 
     # return value: we got tests, more than zero passed, and none failed
@@ -282,7 +284,7 @@ class AutomationRunner
       puts result.red
       puts "#{failedTests.length} of #{allTests.length} tests FAILED".red
     else
-      puts "All #{allTests.length} tests PASSED"
+      puts "All #{allTests.length} tests PASSED".green
     end
 
   end

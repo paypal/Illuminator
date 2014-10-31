@@ -25,4 +25,5 @@ options['verbose'] = FALSE
 options['report'] = TRUE
 options['skipBuild'] = FALSE
 
-IlluminatorFramework.runWithOptions options, workspace
+success = IlluminatorFramework.runWithOptions options, workspace
+exit 1 unless success

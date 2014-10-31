@@ -1,5 +1,6 @@
 require 'singleton'
 require 'fileutils'
+require 'pathname'
 
 # Convenience functions for command-line actions done in Xcode
 class XcodeUtils
@@ -101,8 +102,8 @@ class XcodeUtils
   end
 
   def self.killAllSimulatorProcesses
-    command = "'#{File.dirname(__FILE__)}/../kill_all_sim_processes.sh'"
-    puts command.green
+    command = (Pathname.new (File.join(File.dirname(__FILE__), "../kill_all_sim_processes.sh"))).realpath.to_s
+    puts "Running #{command}"
     `#{command}`
   end
 
