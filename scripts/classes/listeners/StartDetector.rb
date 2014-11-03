@@ -28,8 +28,11 @@ class StartDetector < SaltinelListener
   end
 
   def receive message
-    super
+    super # run the SaltinelListener processor
+
+    # error cases that should trigger a restart
     self.trigger if :error == message.status and /Script threw an uncaught JavaScript error:/ =~ message.message
+    self.trigger if /Automation Instrument ran into an exception while trying to run the script.  UIATargetHasGoneAWOLException/ =~ message.fullLine
   end
 
   def onSaltinel innerMessage
