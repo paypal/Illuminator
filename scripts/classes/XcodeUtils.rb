@@ -8,13 +8,30 @@ class XcodeUtils
 
   def initialize
     @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
+    @xcodeVersion = nil
     @sdkPath = nil
     @instrumentsPath = nil
-    @instrumentsTemplatePath = nil
   end
 
   def getXcodePath
     @xcodePath
+  end
+
+  def getXcodeVersion
+    if @xcodeVersion.nil?
+      xcodeVersion = `xcodebuild -version`
+      needle = 'Xcode (.*)'
+      match = xcodeVersion.match(needle)
+      @xcodeVersion = match.captures[0]
+    end
+    @xcodeVersion
+  end
+
+  def isXcodeMajorVersion ver
+    # should update this with 'version' gem
+    needle = '(\d+)\.?(\d+)?'
+    match = self.getXcodeVersion.match(needle)
+    return match.captures[0].to_i == ver
   end
 
   # Get the path to the SDK
@@ -37,20 +54,8 @@ class XcodeUtils
 
   # Get the path to the instruments template
   def getInstrumentsTemplatePath
-    if @instrumentsTemplatePath.nil?
-      sdkPath = self.getSdkPath
-      instrumentsFolder = self.getInstrumentsPath
-
-      xcode5TemplatePath = "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
-      xcode6TemplatePath = "#{sdkPath}/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
-
-      if File.exist? xcode6TemplatePath
-        @instrumentsTemplatePath = xcode6TemplatePath
-      else
-        @instrumentsTemplatePath = xcode5TemplatePath
-      end
-    end
-    @instrumentsTemplatePath
+    instrumentsFolder = self.getInstrumentsPath
+    "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
   end
 
   # Based on the desired device and version, get the ID of the simulator that will be passed to instruments
