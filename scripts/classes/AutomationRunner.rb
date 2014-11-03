@@ -122,11 +122,18 @@ class AutomationRunner
   end
 
   def testListenerGotTestFail message
-    puts "ILLUMINATOR FAILURE TO LISTEN 2".red if @currentTest.nil?
-    return if message == "The target application appears to have died" # assume a crash report exists!!!
-    @testSuite[@currentTest].fail message
-    @testSuite[@currentTest].stacktrace = @stackTraceLines.join("\n")
-    @currentTest = nil
+    if @testSuite.nil?
+      puts "Failure before test suite was received: #{message}".red
+      return
+    elsif @currentTest.nil?
+      puts "Failure outside of a test: #{message}".red
+    elsif message == "The target application appears to have died"
+      # do nothing; assume a crash report exists and leave it to the crash handler code to clean this up
+    else
+      @testSuite[@currentTest].fail message
+      @testSuite[@currentTest].stacktrace = @stackTraceLines.join("\n")
+      @currentTest = nil
+    end
   end
 
   def testListenerGotLine(status, message)
