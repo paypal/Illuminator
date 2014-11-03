@@ -8,6 +8,7 @@ class XcodeUtils
 
   def initialize
     @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
+    @xcodeVersion = nil
     @sdkPath = nil
     @instrumentsPath = nil
     @instrumentsTemplatePath = nil
@@ -15,6 +16,23 @@ class XcodeUtils
 
   def getXcodePath
     @xcodePath
+  end
+
+  def getXcodeVersion
+    if @xcodeVersion.nil?
+      xcodeVersion = `xcodebuild -version`
+      needle = 'Xcode (.*)'
+      match = xcodeVersion.match(needle)
+      @xcodeVersion = match.captures[0]
+    end
+    @xcodeVersion
+  end
+
+  def isXcodeMajorVersion ver
+    # should update this with 'version' gem
+    needle = '(\d+)\.?(\d+)?'
+    match = self.getXcodeVersion.match(needle)
+    return match.captures[0].to_i == ver
   end
 
   # Get the path to the SDK
