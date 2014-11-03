@@ -104,7 +104,7 @@ class XcodeUtils
   def self.killAllSimulatorProcesses
     command = (Pathname.new (File.join(File.dirname(__FILE__), "../kill_all_sim_processes.sh"))).realpath.to_s
     puts "Running #{command}"
-    `#{command}`
+    `'#{command}'`
   end
 
 end
