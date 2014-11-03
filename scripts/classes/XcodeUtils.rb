@@ -11,7 +11,6 @@ class XcodeUtils
     @xcodeVersion = nil
     @sdkPath = nil
     @instrumentsPath = nil
-    @instrumentsTemplatePath = nil
   end
 
   def getXcodePath
@@ -55,20 +54,8 @@ class XcodeUtils
 
   # Get the path to the instruments template
   def getInstrumentsTemplatePath
-    if @instrumentsTemplatePath.nil?
-      sdkPath = self.getSdkPath
-      instrumentsFolder = self.getInstrumentsPath
-
-      xcode5TemplatePath = "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
-      xcode6TemplatePath = "#{sdkPath}/Developer/Library/Instruments/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
-
-      if File.exist? xcode6TemplatePath
-        @instrumentsTemplatePath = xcode6TemplatePath
-      else
-        @instrumentsTemplatePath = xcode5TemplatePath
-      end
-    end
-    @instrumentsTemplatePath
+    instrumentsFolder = self.getInstrumentsPath
+    "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
   end
 
   # Based on the desired device and version, get the ID of the simulator that will be passed to instruments
