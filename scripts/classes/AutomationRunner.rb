@@ -277,7 +277,8 @@ class AutomationRunner
     return true
   end
 
-
+  # print a summary of the tests that ran, in the form ..........!.!!.!...!..@...@.!
+  #  where periods are passing tests, exclamations are fails, and '@' symbols are crashes
   def summarizeTestResults testSuite
     if testSuite.nil?
       puts "No test cases were received from the Javascript environment; check logs for possible setup problems.".red
