@@ -1,4 +1,4 @@
-#require 'ostruct'
+require 'optparse'
 
 class AutomationParserFactory
 

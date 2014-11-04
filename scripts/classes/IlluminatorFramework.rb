@@ -2,7 +2,7 @@
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'DeviceInstaller.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/BuildArtifacts.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 
 
 class IlluminatorFramework
@@ -57,7 +57,8 @@ class IlluminatorFramework
     savedConfig = JSON.parse( IO.read(configPath) )
 
     # process any overrides
-    overrideOptions.each { |key, value| savedConfig[key] = value }
+    options = savedConfig["options"]
+    overrideOptions.each { |key, value| options[key] = value }
 
     # write a new custom config file from the input settings
     unless savedConfig["customConfig"].nil?
@@ -69,7 +70,7 @@ class IlluminatorFramework
       savedConfig["options"]["customJSConfigPath"] = BuildArtifacts.instance.illuminatorCustomConfigFile
     end
 
-    return self.runWithOptions savedConfig["options"], workspace
+    return self.runWithOptions options, workspace
   end
 
 end
