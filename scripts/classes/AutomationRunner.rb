@@ -203,8 +203,13 @@ class AutomationRunner
     @instrumentsRunner.hardwareID     = options['hardwareID']
     @instrumentsRunner.appLocation    = @appLocation
     if options['hardwareID'].nil?
-      @instrumentsRunner.simDevice    = XcodeUtils.instance.getSimulatorID(options['simDevice'], options['simVersion'])
       @instrumentsRunner.simLanguage  = options['simLanguage']
+      @instrumentsRunner.simDevice    = XcodeUtils.instance.getSimulatorID(options['simDevice'], options['simVersion'])
+      if @instrumentsRunner.simDevice.nil?
+        puts "Could not find a simulator for device='#{options['simDevice']}', version='#{options['simVersion']}'".red
+        puts XcodeUtils.instance.getSimulatorDevices.yellow
+        return false
+      end
     else
       puts "Using hardwareID = '#{hardwareID}' instead of simulator".green
     end
