@@ -5,9 +5,8 @@ require 'pty'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/InstrumentsListener.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/StartDetector.rb')
-
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/IntermittentFailureDetector.rb')
 
 ####################################################################################################
 # status
@@ -60,6 +59,7 @@ end
 
 class InstrumentsRunner
   include StartDetectorEventSink
+  include IntermittentFailureDetectorEventSink
 
   attr_accessor :appLocation
   attr_accessor :hardwareID
@@ -101,6 +101,10 @@ class InstrumentsRunner
     @fullyStarted = true
   end
 
+  def intermittentFailureDetectorTriggered
+    @shouldAbort = true
+  end
+
 
   def runOnce saltinel
     reportPath = BuildArtifacts.instance.instruments
@@ -134,8 +138,21 @@ class InstrumentsRunner
   end
 
 
+  def killInstruments pid
+    puts "killing Instruments (pid #{pid})...".red
+    begin
+      Process.kill(9, pid)
+      w.close
+      r.close
+      Process.wait(pid)
+    rescue PTY::ChildExited
+    end
+  end
+
+
   def runInstrumentsCommand (command)
     @fullyStarted = false
+    @shouldAbort  = false
     puts command.green
     remaining_attempts = @attempts
 
@@ -152,7 +169,13 @@ class InstrumentsRunner
           doneReadingOutput = false
           # select on the output and send it to the listeners
           while not doneReadingOutput do
-            if IO.select([r], nil, nil, @startupTimeout) then
+            if @shouldAbort
+              successfulRun = false
+              doneReadingOutput = true
+              puts "\n Detected an intermittent failure condition - ".red
+              self.killInstruments pid
+
+            elsif IO.select([r], nil, nil, @startupTimeout) then
               line = r.readline.rstrip
               @listeners.each { |_, listener| listener.receive(ParsedInstrumentsMessage.fromLine(line)) }
               if line =~ /Instruments Trace Error/i
@@ -163,15 +186,7 @@ class InstrumentsRunner
               successfulRun = false
               doneReadingOutput = true
               puts "\n Timeout #{@startupTimeout} reached without any output - ".red
-              puts "killing Instruments (pid #{pid})...".red
-              begin
-                Process.kill(9, pid)
-                w.close
-                r.close
-                Process.wait(pid)
-              rescue PTY::ChildExited
-              end
-              puts "Pid #{pid} killed.".red
+              self.killInstruments pid
               puts "killing simulator processes...".red
               XcodeUtils.killAllSimulatorProcesses
             end

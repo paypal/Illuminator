@@ -1,19 +1,18 @@
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'SaltinelListener.rb')
 
-module StartDetectorEventSink
+module IntermittentFailureDetectorEventSink
 
-  def startDetectorTriggered
+  def intermittentFailureDetectorTriggered
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
 end
 
-# StartDetector monitors the logs for things that indicate a successful startup of instruments
-#  - the saltinel for the intended test list
-#  - a javascript error
+# IntermittentFailureDetector monitors the logs for things that indicate a transient failure to start instruments
+#  - UIATargetHasGoneAWOLException
 #  - etc
-class StartDetector < SaltinelListener
+class IntermittentFailureDetector < SaltinelListener
 
   attr_accessor :eventSink
 
@@ -30,12 +29,12 @@ class StartDetector < SaltinelListener
   def receive message
     super # run the SaltinelListener processor
 
-    # error cases that indicate successful start but involve errors that won't be fixed by a restart
-    self.trigger if :error == message.status and /Script threw an uncaught JavaScript error:/ =~ message.message
+    # error cases that should trigger a restart
+    self.trigger if /Automation Instrument ran into an exception while trying to run the script.  UIATargetHasGoneAWOLException/ =~ message.fullLine
   end
 
   def onSaltinel innerMessage
-    self.trigger if /Saved intended test list to/ =~ innerMessage
+    # no cases yet
   end
 
   def onAutomationFinished
