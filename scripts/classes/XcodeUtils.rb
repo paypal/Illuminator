@@ -67,8 +67,7 @@ class XcodeUtils
       puts "Found device match: #{match}".green
       return match.captures[0]
     else
-
-    #fallback to old device name behavior (pre Xcode6)
+      #fallback to old device name behavior (pre Xcode6)
       puts "Did not find UDID of device '#{simDevice}' for version '#{simVersion}'".green
       return "#{simDevice} - Simulator - iOS #{simVersion}"
     end
