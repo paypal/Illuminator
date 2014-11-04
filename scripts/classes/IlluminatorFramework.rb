@@ -50,8 +50,8 @@ class IlluminatorFramework
 
   def self.reRun(configPath, workspace, overrideOptions = nil, overrideCustomOptions = nil)
 
-    overrideOptions       = {} if overrideOptions = nil
-    overrideCustomOptions = {} if overrideCustomOptions = nil
+    overrideOptions       = {} if overrideOptions.nil?
+    overrideCustomOptions = {} if overrideCustomOptions.nil?
 
     # load config from supplied path
     savedConfig = JSON.parse( IO.read(configPath) )
