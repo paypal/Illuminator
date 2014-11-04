@@ -129,7 +129,6 @@ class InstrumentsRunner
     command << "'#{@appLocation}'"
     command << " -e UIASCRIPT '#{globalJSFile}'"
     command << " -e UIARESULTSPATH '#{reportPath}'"
-    # TODO: either make the reporting conditional, or remove the option from AutomationArgumentParserFactory
 
     command << " #{@simLanguage}" if @simLanguage
     Dir.chdir(reportPath)

@@ -1,6 +1,6 @@
 require 'optparse'
 
-class AutomationParserFactory
+class IlluminatorParserFactory
 
   # the currency of this parser factory is the "short" single-letter argument switch
   def initialize()
