@@ -265,11 +265,16 @@ class AutomationRunner
 
     XcodeUtils.killAllSimulatorProcesses unless options['skipKillAfter']
 
-    self.summarizeTestResults @testSuite
+    if "describe" == options['entryPoint']
+      return true       # no tests needed to run
+    else
+      self.summarizeTestResults @testSuite
+    end
 
-    # return value: we got tests, more than zero passed, and none failed
-    (not @testSuite.nil?) and (0 < @testSuite.passedTests.length) and (0 == @testSuite.failedTests.length)
-
+    return false if @testSuite.nil?                         # no tests were received
+    return false if 0 == @testSuite.passedTests.length      # no tests passed, or none ran
+    return false if 0 < @testSuite.failedTests.length       # 1 or more tests failed
+    return true
   end
 
 

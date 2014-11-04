@@ -36,6 +36,7 @@ class StartDetector < SaltinelListener
 
   def onSaltinel innerMessage
     self.trigger if /Saved intended test list to/ =~ innerMessage
+    self.trigger if /Successful launch/ =~ innerMessage
   end
 
   def onAutomationFinished

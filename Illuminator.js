@@ -41,6 +41,7 @@ function IlluminatorIlluminate() {
         break;
 
     case "describe":
+        notifyIlluminatorFramework("Successful launch");
         var appMapMarkdownPath    = config.buildArtifacts.appMapMarkdown;
         var automatorMarkdownPath = config.buildArtifacts.automatorMarkdown;
         var automatorJSONPath     = config.buildArtifacts.automatorJSON;
@@ -50,10 +51,10 @@ function IlluminatorIlluminate() {
         UIALogger.logMessage("Wrote automator definitions to " + automatorMarkdownPath);
         writeToFile(automatorJSONPath, JSON.stringify(automator.toScenarioObject(true), null, "    "));
         UIALogger.logMessage("Wrote automator definition data to " + automatorJSONPath);
-
         break;
 
     default:
+        notifyIlluminatorFramework("Successful launch");
         throw new IlluminatorSetupException("Unknown Illuminator entry point specified: " + config.entryPoint);
     }
 }
