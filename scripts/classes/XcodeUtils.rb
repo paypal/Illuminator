@@ -58,20 +58,25 @@ class XcodeUtils
     "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
   end
 
+  def getSimulatorDevices
+    return `instruments -s devices`
+  end
+
   # Based on the desired device and version, get the ID of the simulator that will be passed to instruments
   def getSimulatorID (simDevice, simVersion)
-    devices = `instruments -s devices`
+    devices = self.getSimulatorDevices
     needle = simDevice + ' \(' + simVersion + ' Simulator\) \[(.*)\]'
     match = devices.match(needle)
     if match
       puts "Found device match: #{match}".green
       return match.captures[0]
-    else
-
-    #fallback to old device name behavior (pre Xcode6)
+    elsif XcodeUtils.instance.isXcodeMajorVersion 5
+      #fallback to old device name behavior (pre Xcode6)
       puts "Did not find UDID of device '#{simDevice}' for version '#{simVersion}'".green
       return "#{simDevice} - Simulator - iOS #{simVersion}"
     end
+
+    return nil
   end
 
   # Create a crash report

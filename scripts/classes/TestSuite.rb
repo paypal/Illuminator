@@ -128,7 +128,7 @@ class TestCase
 
       output << "    <#{@failTag}"
       fattrs.each { |key, value| output << " #{key}=#{value.to_s.encode(:xml => :attr)}" }
-      output << ">#{@stacktrace}" << "\n"
+      output << ">#{@stacktrace.to_s.encode(:xml => :text)}" << "\n"
       output << "    </#{@failTag}>" << "\n"
     end
 

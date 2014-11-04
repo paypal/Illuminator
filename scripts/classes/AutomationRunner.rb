@@ -202,8 +202,17 @@ class AutomationRunner
     @instrumentsRunner.startupTimeout = options['timeout']
     @instrumentsRunner.hardwareID     = options['hardwareID']
     @instrumentsRunner.appLocation    = @appLocation
-    @instrumentsRunner.simDevice      = XcodeUtils.instance.getSimulatorID(options['simDevice'], options['simVersion']) if options['hardwareID'].nil?
-    @instrumentsRunner.simLanguage    = options['simLanguage'] if options['hardwareID'].nil?
+    if options['hardwareID'].nil?
+      @instrumentsRunner.simLanguage  = options['simLanguage']
+      @instrumentsRunner.simDevice    = XcodeUtils.instance.getSimulatorID(options['simDevice'], options['simVersion'])
+      if @instrumentsRunner.simDevice.nil?
+        puts "Could not find a simulator for device='#{options['simDevice']}', version='#{options['simVersion']}'".red
+        puts XcodeUtils.instance.getSimulatorDevices.yellow
+        return false
+      end
+    else
+      puts "Using hardwareID = '#{hardwareID}' instead of simulator".green
+    end
 
     # setup listeners on instruments
     testListener = TestListener.new
