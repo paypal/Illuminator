@@ -353,22 +353,25 @@ class AutomationRunner
       puts "Found a crash report from this test run at #{crashPath}"
       crashName = File.basename(crashPath, ".crash")
       crashReportPath = "#{crashReportsPath}/#{crashName}.txt"
-      XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
+      unless XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
+        puts "Failed to save crash report.".red
+      else
+        # get the first few lines for the log
+        crashText = []
+        file = File.open(crashReportPath, 'rb')
+        file.each do |line|
+          break if line.match(/^Binary Images/)
+          crashText << line
+        end
+        file.close
 
-      # get the first few lines for the log
-      crashText = []
-      file = File.open(crashReportPath, 'rb')
-      file.each do |line|
-        break if line.match(/^Binary Images/)
-        crashText << line
+        logLine = "Full crash report saved at #{crashReportPath}"
+        puts logLine.red
+        crashText << "\n"
+        crashText << logLine
       end
-      file.close
-      crashes += 1
 
-      logLine = "Full crash report saved at #{crashReportPath}"
-      puts logLine.red
-      crashText << "\n"
-      crashText << logLine
+      crashes += 1
 
       # tell the current test suite about any failures
       unless @currentTest.nil?
