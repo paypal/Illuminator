@@ -137,7 +137,7 @@ class InstrumentsRunner
   end
 
 
-  def killInstruments pid
+  def killInstruments(r, w, pid)
     puts "killing Instruments (pid #{pid})...".red
     begin
       Process.kill(9, pid)
@@ -172,7 +172,7 @@ class InstrumentsRunner
               successfulRun = false
               doneReadingOutput = true
               puts "\n Detected an intermittent failure condition - ".red
-              self.killInstruments pid
+              self.killInstruments(r, w, pid)
 
             elsif IO.select([r], nil, nil, @startupTimeout) then
               line = r.readline.rstrip
@@ -185,7 +185,7 @@ class InstrumentsRunner
               successfulRun = false
               doneReadingOutput = true
               puts "\n Timeout #{@startupTimeout} reached without any output - ".red
-              self.killInstruments pid
+              self.killInstruments(r, w, pid)
               puts "killing simulator processes...".red
               XcodeUtils.killAllSimulatorProcesses
             end
