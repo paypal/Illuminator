@@ -17,6 +17,10 @@ class XcodeUtils
     @xcodePath
   end
 
+  def getXcodeAppPath
+    Pathname.new(File.join(@xcodePath, "../../")).realpath.to_s
+  end
+
   def getXcodeVersion
     if @xcodeVersion.nil?
       xcodeVersion = `xcodebuild -version`
@@ -90,20 +94,30 @@ class XcodeUtils
     if not File.exist?(symbolicatorPath)
       symbolicatorPath = "#{frameworksPath}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
     end
+    if not File.exist?(symbolicatorPath)
+      symbolicatorPath = File.join(self.getXcodeAppPath, "Contents/SharedFrameworks/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash")
+    end
 
     command =   "DEVELOPER_DIR='#{@xcodePath}' "
     command <<  "'#{symbolicatorPath}' "
     command <<  "-o '#{crashReportPath}' '#{crashPath}' '#{appPath}.dSYM' 2>&1"
 
-    `#{command}`
+    output = `#{command}`
 
+    # log the output of the crash reporting if the file didn't appear
+    unless File.exist?(crashReportPath)
+      puts command.green
+      puts output
+      return false
+    end
+    return true
   end
 
   # use the provided applescript to reset the content and settings of the simulator
   def self.resetSimulator
     command = "osascript '#{File.dirname(__FILE__)}/../reset_simulator.applescript'"
     puts command.green
-    `#{command}`
+    puts `#{command}`
   end
 
   # remove any apps in the specified directory
@@ -117,7 +131,7 @@ class XcodeUtils
   def self.killAllSimulatorProcesses
     command = (Pathname.new (File.join(File.dirname(__FILE__), "../kill_all_sim_processes.sh"))).realpath.to_s
     puts "Running #{command}"
-    `'#{command}'`
+    puts `'#{command}'`
   end
 
 end

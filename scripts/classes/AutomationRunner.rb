@@ -156,20 +156,20 @@ class AutomationRunner
   def configureJavascriptRunner(options)
     jsConfig = @javascriptRunner
 
-    jsConfig.implementation = options['implementation']
+    jsConfig.implementation      = options.javascript.implementation
+    jsConfig.testPath            = options.javascript.testPath
+    jsConfig.customJSConfigPath  = options.javascript.customConfigPath
 
-    jsConfig.entryPoint          = options['entryPoint']
-    jsConfig.scenarioList        = options['scenarioList']
-    jsConfig.testPath            = options['testPath']
-    jsConfig.tagsAny             = options['tagsAny'].split(',') unless options['tagsAny'].nil?
-    jsConfig.tagsAll             = options['tagsAll'].split(',') unless options['tagsAll'].nil?
-    jsConfig.tagsNone            = options['tagsNone'].split(',') unless options['tagsNone'].nil?
+    jsConfig.entryPoint          = options.illuminator.entryPoint
+    jsConfig.scenarioList        = options.illuminator.test.names
+    jsConfig.tagsAny             = options.illuminator.test.tags.any
+    jsConfig.tagsAll             = options.illuminator.test.tags.all
+    jsConfig.tagsNone            = options.illuminator.test.tags.none
+    jsConfig.randomSeed          = options.illuminator.test.randomSeed
+    jsConfig.hardwareID          = options.illuminator.hardwareID
 
-    jsConfig.hardwareID          = options['hardwareID'] unless options['hardwareID'].nil?
-    jsConfig.simDevice           = options['simDevice'] unless options['simDevice'].nil?
-    jsConfig.simVersion          = options['simVersion'] unless options['simVersion'].nil?
-    jsConfig.customJSConfigPath  = options['customJSConfigPath'] unless options['customJSConfigPath'].nil?
-    jsConfig.randomSeed          = options['randomSeed'] unless options['randomSeed'].nil?
+    jsConfig.simDevice           = options.simulator.device
+    jsConfig.simVersion          = options.simulator.version
 
     jsConfig.writeConfiguration()
   end
@@ -190,28 +190,29 @@ class AutomationRunner
     Dir.chdir(File.dirname(__FILE__) + '/../')
 
     # Sanity checks
-    raise ArgumentError, 'Entry point was not supplied' if options['entryPoint'].nil?
-    raise ArgumentError, 'Path to all tests was not supplied' if options['testPath'].nil?
-    raise ArgumentError, 'Implementation was not supplied' if options['implementation'].nil?
+    raise ArgumentError, 'Entry point was not supplied'       if options.illuminator.entryPoint.nil?
+    raise ArgumentError, 'Path to all tests was not supplied' if options.javascript.testPath.nil?
+    raise ArgumentError, 'Implementation was not supplied'    if options.javascript.implementation.nil?
 
-    @appName = options['appName']
-    @appLocation = BuildArtifacts.instance.appLocation(options['appName'])
+    @appName = options.xcode.appName
+    @appLocation = BuildArtifacts.instance.appLocation(@appName)
 
 
     # set up instruments
-    @instrumentsRunner.startupTimeout = options['timeout']
-    @instrumentsRunner.hardwareID     = options['hardwareID']
+    @instrumentsRunner.startupTimeout = options.instruments.timeout
+    @instrumentsRunner.hardwareID     = options.illuminator.hardwareID
     @instrumentsRunner.appLocation    = @appLocation
-    if options['hardwareID'].nil?
-      @instrumentsRunner.simLanguage  = options['simLanguage']
-      @instrumentsRunner.simDevice    = XcodeUtils.instance.getSimulatorID(options['simDevice'], options['simVersion'])
+    if options.illuminator.hardwareID.nil?
+      @instrumentsRunner.simLanguage  = options.simulator.language
+      @instrumentsRunner.simDevice    = XcodeUtils.instance.getSimulatorID(options.simulator.device,
+                                                                           options.simulator.version)
       if @instrumentsRunner.simDevice.nil?
-        puts "Could not find a simulator for device='#{options['simDevice']}', version='#{options['simVersion']}'".red
+        puts "Could not find a simulator for device='#{options.simulator.device}', version='#{options.simulator.version}'".red
         puts XcodeUtils.instance.getSimulatorDevices.yellow
         return false
       end
     else
-      puts "Using hardwareID = '#{hardwareID}' instead of simulator".green
+      puts "Using hardwareID = '#{options.illuminator.hardwareID}' instead of simulator".green
     end
 
     # setup listeners on instruments
@@ -220,19 +221,20 @@ class AutomationRunner
     @instrumentsRunner.addListener("testListener", testListener)
 
     # listener to provide screen output
-    if options['verbose']
+    if options.instruments.doVerbose
       @instrumentsRunner.addListener("consoleoutput", FullOutput.new)
     else
       @instrumentsRunner.addListener("consoleoutput", PrettyOutput.new)
     end
 
     XcodeUtils.killAllSimulatorProcesses
-    XcodeUtils.resetSimulator if options['hardwareID'].nil? unless options['skipSetSim']
+    XcodeUtils.resetSimulator if options.illuminator.hardwareID.nil? and options.illuminator.task.setSim
 
     @testSuite = nil
 
     # loop until all test cases are covered.
     # we won't get the actual test list until partway through -- from a listener callback
+    startTime = Time.now
     begin
       self.removeAnyAppCrashes
 
@@ -251,6 +253,8 @@ class AutomationRunner
       @instrumentsRunner.runOnce @javascriptRunner.saltinel
       numCrashes = self.reportAnyAppCrashes
     end while not (@testSuite.nil? or @testSuite.unStartedTests.empty?)
+    totalTime = Time.at(Time.now - startTime).gmtime.strftime("%H:%M:%S")
+    puts "Automation completed in #{totalTime}".green
 
 
     # DONE LOOPING
@@ -259,20 +263,26 @@ class AutomationRunner
       f.write(@testSuite.to_xml)
       f.close
 
-      self.generateCoverage gcovrWorkspace if options['coverage'] #TODO: only if there are no crashes?
+      self.generateCoverage gcovrWorkspace if options.illuminator.task.coverage #TODO: only if there are no crashes?
       self.saveFailedTestsConfig(options, @testSuite.failedTests)
     end
 
-    XcodeUtils.killAllSimulatorProcesses unless options['skipKillAfter']
+    XcodeUtils.killAllSimulatorProcesses if options.simulator.killAfter
 
-    self.summarizeTestResults @testSuite
+    if "describe" == options.illuminator.entryPoint
+      return true       # no tests needed to run
+    else
+      self.summarizeTestResults @testSuite
+    end
 
-    # return value: we got tests, more than zero passed, and none failed
-    (not @testSuite.nil?) and (0 < @testSuite.passedTests.length) and (0 == @testSuite.failedTests.length)
-
+    return false if @testSuite.nil?                         # no tests were received
+    return false if 0 == @testSuite.passedTests.length      # no tests passed, or none ran
+    return false if 0 < @testSuite.failedTests.length       # 1 or more tests failed
+    return true
   end
 
-
+  # print a summary of the tests that ran, in the form ..........!.!!.!...!..@...@.!
+  #  where periods are passing tests, exclamations are fails, and '@' symbols are crashes
   def summarizeTestResults testSuite
     if testSuite.nil?
       puts "No test cases were received from the Javascript environment; check logs for possible setup problems.".red
@@ -310,19 +320,19 @@ class AutomationRunner
 
     # save options to re-run failed tests
     newOptions = options.dup
-    newOptions['randomSeed'] = nil
-    newOptions['entryPoint'] = "runTestsByName"
-    newOptions['scenarioList'] = failedTests.map { |t| t.name }
+    newOptions.illuminator.test.randomSeed = nil
+    newOptions.illuminator.entryPoint = "runTestsByName"
+    newOptions.illuminator.test.names = failedTests.map { |t| t.name }
     customOptions = nil
 
-    unless newOptions['customJSConfigPath'].nil?
-      customOptions = JSON.parse( IO.read(newOptions['customJSConfigPath']) )
-      newOptions['customJSConfigPath'] = nil
+    unless newOptions.javascript.customConfigPath.nil?
+      customOptions = JSON.parse( IO.read(newOptions.javascript.customConfigPath) )
+      newOptions.javascript.customConfigPath = nil
     end
 
     f = File.open(BuildArtifacts.instance.illuminatorRerunFailedTestsSettings, 'w')
     f << JSON.pretty_generate({
-                                "options" => newOptions,
+                                "options" => newOptions.to_h,
                                 "customConfig" => customOptions,
                               })
     f.close
@@ -334,6 +344,7 @@ class AutomationRunner
       FileUtils.rmtree crashPath
     end
   end
+
 
   def reportAnyAppCrashes()
     crashReportsPath = BuildArtifacts.instance.crashReports
@@ -347,22 +358,25 @@ class AutomationRunner
       puts "Found a crash report from this test run at #{crashPath}"
       crashName = File.basename(crashPath, ".crash")
       crashReportPath = "#{crashReportsPath}/#{crashName}.txt"
-      XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
-
-      # get the first few lines for the log
       crashText = []
-      file = File.open(crashReportPath, 'rb')
-      file.each do |line|
-        break if line.match(/^Binary Images/)
-        crashText << line
-      end
-      file.close
-      crashes += 1
+      unless XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
+        puts "Failed to save crash report.".red
+      else
+        # get the first few lines for the log
+        file = File.open(crashReportPath, 'rb')
+        file.each do |line|
+          break if line.match(/^Binary Images/)
+          crashText << line
+        end
+        file.close
 
-      logLine = "Full crash report saved at #{crashReportPath}"
-      puts logLine.red
-      crashText << "\n"
-      crashText << logLine
+        logLine = "Full crash report saved at #{crashReportPath}"
+        puts logLine.red
+        crashText << "\n"
+        crashText << logLine
+      end
+
+      crashes += 1
 
       # tell the current test suite about any failures
       unless @currentTest.nil?
