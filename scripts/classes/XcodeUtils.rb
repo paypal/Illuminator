@@ -17,6 +17,10 @@ class XcodeUtils
     @xcodePath
   end
 
+  def getXcodeAppPath
+    Pathname.new(File.join(@xcodePath, "../../")).realpath.to_s
+  end
+
   def getXcodeVersion
     if @xcodeVersion.nil?
       xcodeVersion = `xcodebuild -version`
@@ -89,6 +93,9 @@ class XcodeUtils
     symbolicatorPath = "#{frameworksPath}/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash"
     if not File.exist?(symbolicatorPath)
       symbolicatorPath = "#{frameworksPath}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
+    end
+    if not File.exist?(symbolicatorPath)
+      symbolicatorPath = File.join(self.getXcodeAppPath, "Contents/SharedFrameworks/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash")
     end
 
     command =   "DEVELOPER_DIR='#{@xcodePath}' "

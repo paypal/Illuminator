@@ -1,6 +1,84 @@
 require 'optparse'
+require 'ostruct'
+
+require File.join(File.expand_path(File.dirname(__FILE__)), 'IlluminatorSettings.rb')
+
+
+class IlluminatorParser < OptionParser
+  def initialize options
+    super
+    @_options = options
+  end
+
+
+  def checkCleanArgs
+    knownCleans = ["xcode", "buildArtifacts", "derivedData", "noDelay"]
+
+    @_options["clean"] = [] if @_options["clean"].nil?
+
+    @_options["clean"].each do |c|
+      unless knownCleans.include? c
+        puts "Got unknown clean specifier '#{c}'".yellow
+      end
+    end
+  end
+
+  # copy internal options storage into a settings object
+  def copyOptionsInto(settings)
+    self.checkCleanArgs
+
+    # load up known settings
+    settings.xcode.appName = @_options["appName"] unless @_options["appName"].nil?
+    settings.xcode.sdk     = @_options["sdk"] unless @_options["sdk"].nil?
+    settings.xcode.scheme  = @_options["scheme"] unless @_options["scheme"].nil?
+
+    settings.illuminator.entryPoint      = @_options["entryPoint"] unless @_options["entryPoint"].nil?
+    settings.illuminator.test.randomSeed = @_options["randomSeed"] unless @_options["randomSeed"].nil?
+    settings.illuminator.test.tags.any   = @_options["tagsAny"] unless @_options["tagsAny"].nil?
+    settings.illuminator.test.tags.all   = @_options["tagsAll"] unless @_options["tagsAll"].nil?
+    settings.illuminator.test.tags.none  = @_options["tagsNone"] unless @_options["tagsNone"].nil?
+
+    settings.illuminator.clean.xcode     = @_options["clean"].include? "xcode"
+    settings.illuminator.clean.derived   = @_options["clean"].include? "derivedData"
+    settings.illuminator.clean.artifacts = @_options["clean"].include? "buildArtifacts"
+    settings.illuminator.clean.noDelay   = @_options["clean"].include? "noDelay"
+
+    settings.illuminator.task.build    = (not @_options["skipBuild"]) unless @_options["skipBuild"].nil?
+    settings.illuminator.task.setSim   = (not @_options["skipSetSim"]) unless @_options["skipSetSim"].nil?
+    settings.illuminator.task.coverage = @_options["coverage"] unless @_options["coverage"].nil?
+    settings.illuminator.task.report   = @_options["report"] unless @_options["report"].nil?
+    settings.illuminator.hardwareID    = @_options["hardwareID"] unless @_options["hardwareID"].nil?
+
+    settings.simulator.device    = @_options["simDevice"] unless @_options["simDevice"].nil?
+    settings.simulator.version   = @_options["simVersion"] unless @_options["simVersion"].nil?
+    settings.simulator.language  = @_options["simLanguage"] unless @_options["simLanguage"].nil?
+    settings.simulator.killAfter = (not @_options["skipKillAfter"]) unless @_options["skipKillAfter"].nil?
+
+    settings.instruments.doVerbose = @_options["verbose"] unless @_options["verbose"].nil?
+    settings.instruments.timeout   = @_options["timeout"] unless @_options["timeout"].nil?
+
+    settings.javascript.testPath         = @_options["testPath"] unless @_options["testPath"].nil?
+    settings.javascript.customConfigPath = @_options["customSettingsJSONPath"] unless @_options["customSettingsJSONPath"].nil?
+    settings.javascript.implementation   = @_options["implementation"] unless @_options["implementation"].nil?
+
+    knownKeys = IlluminatorParserFactory.new.letterMap.values # get option keynames from a plain vanilla factory
+
+    # load up unknown settings
+    settings.appSpecific = @_options.select { |keyname, _| not (knownKeys.include? keyname) }
+
+    return settings
+  end
+
+  def parse args
+    leftovers = super(args)
+    return self.copyOptionsInto(IlluminatorSettings.new)
+  end
+
+end
 
 class IlluminatorParserFactory
+
+  attr_reader :letterMap
 
   # the currency of this parser factory is the "short" single-letter argument switch
   def initialize()
@@ -31,12 +109,16 @@ class IlluminatorParserFactory
       'v' => 'verbose',
       'm' => 'timeout',
       'w' => 'randomSeed',
-      'y' => 'skipClean',
+      'y' => 'clean',
     }
 
     @letterProcessing = {
       'j' => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to settings file
       'p' => lambda {|p| (Pathname.new p).realPath().to_s },     # get real path to tests file
+      'y' => lambda {|p| p.split(',')},                          # split comma-separated string into array
+      't' => lambda {|p| p.split(',')},                          # split comma-separated string into array
+      'o' => lambda {|p| p.split(',')},                          # split comma-separated string into array
+      'n' => lambda {|p| p.split(',')},                          # split comma-separated string into array
     }
 
     @defaultValues = {
@@ -45,7 +127,13 @@ class IlluminatorParserFactory
       'q' => 'iphonesimulator7.1',
       'l' => 'en',
       'x' => 'runTestsByTag',
-      'm' => 30 }
+      'm' => 30,
+      'f' => false,
+      'e' => false,
+      'k' => false,
+      'r' => false,
+      'c' => false,
+    }
   end
 
   # you must custom prepare before you can add custom switches... otherwise things get all stupid
@@ -71,7 +159,7 @@ class IlluminatorParserFactory
     self.addSwitch('f', ['-f', '--skip-build', 'Just automate; assume already built'])
     self.addSwitch('e', ['-e', '--skip-set-sim', 'Assume that simulator has already been chosen and properly reset'])
     self.addSwitch('k', ['-k', '--skip-kill-after', 'Do not kill the simulator after the run'])
-    self.addSwitch('y', ['-y', '--skip-clean', 'Skip clean when building'])
+    self.addSwitch('y', ['-y', '--clean PLACES', 'Comma-separated list of places to clean {xcode, buildArtifacts, derivedData}'])
     self.addSwitch('c', ['-c', '--coverage', 'Generate coverage files'])
     self.addSwitch('r', ['-r', '--report', 'Generate Xunit reports'])
     self.addSwitch('v', ['-v', '--verbose', 'Show verbose output'])
@@ -87,7 +175,9 @@ class IlluminatorParserFactory
 
     # alter opts to include the default values
     altered = false
-    if @defaultValues[letter]
+    if @defaultValues[letter].nil?
+      opts_with_default = opts
+    else
       opts_with_default = opts.map do |item|
         if (!altered and item.chars.first != '-')
           item += "        Defaults to \"#{@defaultValues[letter]}\""
@@ -95,8 +185,6 @@ class IlluminatorParserFactory
         end
         item
       end
-    else
-      opts_with_default = opts
     end
 
     @switches[letter] = OpenStruct.new(:opts => opts_with_default,
@@ -129,7 +217,7 @@ class IlluminatorParserFactory
     bad_chars = letters.chars.to_a.select{|c| c != "#" and @switches[c].nil?}
     raise ArgumentError, "buildParser got letters (" + letters + ") containing unknown option characters: " + bad_chars.to_s unless bad_chars.empty?
 
-    retval = OptionParser.new
+    retval = IlluminatorParser.new options
 
     # build a parser as specified by the user
     letters.each_char do |c|

@@ -1,6 +1,7 @@
 require 'pathname'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorFramework.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorSettings.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/XcodeUtils.rb')
 
 Dir.chdir 'SampleApp/AutomatorSampleApp'
@@ -14,24 +15,32 @@ allTestPath = (Pathname.new (allTestPath)).realpath.to_s
 # Storing custom parameters
 ####################################################################################################
 
-options = {}
 
-options['entryPoint'] = 'runTestsByTag'
-options['implementation'] = 'iPhone'
-options['appName'] = 'AutomatorSampleApp'
-options['scheme'] = 'AutomatorSampleApp'
-options['simVersion'] = '7.1'
-options["simDevice"] = 'iPhone 5'
-options['simLanguage'] = 'en'
-options['tagsAny'] = 'smoke'
-options['testPath'] = allTestPath
-options['timeout'] = 30
-options['verbose'] = FALSE
-options['report'] = TRUE
-options['skipBuild'] = FALSE
+options = IlluminatorSettings.new
+options.xcode.appName = 'AutomatorSampleApp'
+options.xcode.scheme = 'AutomatorSampleApp'
+
+options.illuminator.entryPoint = 'runTestsByTag'
+options.illuminator.test.tags.any = ['smoke']
+options.illuminator.clean.xcode = false
+options.illuminator.clean.artifacts = true
+options.illuminator.clean.noDelay = true
+options.illuminator.task.build = true
+options.illuminator.task.setSim = true
+options.illuminator.task.report = true
+options.simulator.device = 'iPhone 5'
+options.simulator.version = '7.1'
+options.simulator.language = 'en'
+options.simulator.killAfter = true
+
+options.instruments.doVerbose = false
+options.instruments.timeout = 30
+
+options.javascript.testPath = allTestPath
+options.javascript.implementation = 'iPhone'
 
 if XcodeUtils.instance.isXcodeMajorVersion 5
-  options['simDevice'] = 'iPhone Retina (4-inch)'
+  options.simulator.device = 'iPhone Retina (4-inch)'
 end
 
 success = IlluminatorFramework.runWithOptions options, workspace

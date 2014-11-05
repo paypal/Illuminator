@@ -6,8 +6,8 @@ workspace = Dir.pwd
 
 # TODO: helpful message if file isn't supplied
 
-overrideOptions = {}
-overrideCustomOptions = {}
+overrideOptions = lambda {|opts| opts}
+overrideCustomOptions = lambda {|opts| opts}
 
 success = IlluminatorFramework.reRun(ARGV[0], workspace, overrideOptions, overrideCustomOptions)
 
