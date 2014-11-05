@@ -70,10 +70,13 @@ class XcodeUtils
     if match
       puts "Found device match: #{match}".green
       return match.captures[0]
-    elsif XcodeUtils.instance.isXcodeMajorVersion 5
-      #fallback to old device name behavior (pre Xcode6)
+    elsif 
       puts "Did not find UDID of device '#{simDevice}' for version '#{simVersion}'".green
-      return "#{simDevice} - Simulator - iOS #{simVersion}"
+      if XcodeUtils.instance.isXcodeMajorVersion 5
+        fallbackName = "#{simDevice} - Simulator - iOS #{simVersion}"
+        puts "Falling back to Xcode5 name #{fallbackName}".green
+        return fallbackName
+      end
     end
 
     return nil
