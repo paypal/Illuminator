@@ -14,30 +14,30 @@ tell application "System Events"
 end tell
 *)
 
-tell application "iPhone Simulator" to launch
+tell application "iOS Simulator" to launch
 
 set inTime to current date
 repeat
     tell application "System Events"
-        if "iPhone Simulator" is in (get name of processes) then exit repeat
+        if "iOS Simulator" is in (get name of processes) then exit repeat
     end tell
     if (current date) - inTime is greater than 10 then exit repeat
     delay 0.2
 end repeat
 
-tell application "iPhone Simulator" to activate
+tell application "iOS Simulator" to activate
 
 set inTime to current date
 repeat
     tell application "System Events"
-        if visible of process "iPhone Simulator" is true then exit repeat
+        if visible of process "iOS Simulator" is true then exit repeat
     end tell
     if (current date) - inTime is greater than 10 then exit repeat
     delay 0.2
 end repeat
 
 tell application "System Events"
-    tell process "iPhone Simulator"
+    tell process "iOS Simulator"
         tell menu bar 1
             tell menu bar item "iOS Simulator"
                 tell menu "iOS Simulator"
@@ -52,12 +52,12 @@ tell application "System Events"
     end tell
 end tell
 
-tell application "iPhone Simulator" to quit
+tell application "iOS Simulator" to quit
 
 set inTime to current date
 repeat
     tell application "System Events"
-        if "iPhone Simulator" is not in (get name of processes) then exit repeat
+        if "iOS Simulator" is not in (get name of processes) then exit repeat
     end tell
     if (current date) - inTime is greater than 10 then exit repeat
     delay 0.2
