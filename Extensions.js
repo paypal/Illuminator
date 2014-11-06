@@ -1552,6 +1552,17 @@ extendPrototype(UIATextField, {
     customInputMethod: customInputMethod
 });
 
+extendPrototype(UIASecureTextField, {
+    typeString: typeString,
+    clear: function () {
+        this.typeString("", true);
+    },
+    _inputMethod: stockKeyboardInputMethod,
+    setInputMethod: setInputMethod,
+    customInputMethod: customInputMethod
+});
+
+
 extendPrototype(UIATextView, {
     typeString: typeString,
     clear: function () {
