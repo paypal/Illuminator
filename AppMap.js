@@ -400,7 +400,8 @@ var debugAppmap = false;
      */
     appmap.getInputMethod = function (methodName) {
         if (methodName in appmap.inputMethods) return appmap.inputMethods[methodName];
-        throw new IlluminatorSetupException("Input method " + methodName + " is not defined");
+        throw new IlluminatorSetupException("Input method " + methodName + " is not defined. " +
+                                            "Choices are [" + appmap.getInputMethods().join(",") + "]");
     }
 
     /**
