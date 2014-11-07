@@ -181,13 +181,16 @@ class InstrumentsRunner
                 successfulRun = false
                 doneReadingOutput = true
               end
-            else
+            elsif not @fullyStarted
               successfulRun = false
               doneReadingOutput = true
               puts "\n Timeout #{@startupTimeout} reached without any output - ".red
               self.killInstruments(r, w, pid)
               puts "killing simulator processes...".red
               XcodeUtils.killAllSimulatorProcesses
+            else
+              # We failed to get output for @startuptTimeout, but that's probably OK since we've successfully started
+              # TODO: if we need to enforce a maximum time spent without output, this is where the counter would go
             end
           end
         end
