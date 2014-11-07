@@ -963,8 +963,8 @@ extendPrototype(UIAElement, {
                 if (undefined === elemArray) continue;
                 for (var j = 0; j < elemArray.length; ++j) {
                     var newElem = elemArray[j];
-                    var preventDuplicates = vectors[i] == "windows"; // otherwise we get both .mainWindow() and .windows()[0]
-                    visit(newElem, prefix + "." + vectors[i] + "()[" + getNamedIndex(elemArray, j) + "]", preventDuplicates);
+                    if (vectors[i] == "windows" && j == 0) continue;
+                    visit(newElem, prefix + "." + vectors[i] + "()[" + getNamedIndex(elemArray, j) + "]", false);
 
                     if (checkTimeout("vector loop")) return acc; // respect timeout preference
                 }
