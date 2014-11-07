@@ -350,7 +350,7 @@ function isHardSelector(selector) {
 function newUIAElementNil() {
     try {
         UIATarget.localTarget().pushTimeout(0);
-        return UIATarget.localTarget().frontMostApp().windows().firstWithPredicate("name == 'x' and name != 'x'");
+        return UIATarget.localTarget().frontMostApp().windows().firstWithPredicate("name == 'Illuminator' and name == 'newUIAELementNil()'");
     } catch(e) {
         throw e;
     } finally {
