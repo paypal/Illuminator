@@ -9,6 +9,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'JavascriptRunner.rb
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'TestSuite.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'TestDefinitions.rb')
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/PrettyOutput.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/FullOutput.rb')
@@ -79,11 +80,7 @@ class AutomationRunner
 
   def saltinelAgentGotScenarioDefinitions jsonPath
     return unless @testDefs.nil?
-    rawDefs = JSON.parse( IO.read(jsonPath) )
-
-    # save test defs for use later (as lookups)
-    @testDefs = {}
-    rawDefs["scenarios"].each { |scen| @testDefs[scen["title"]] = scen }
+    @testDefs = TestDefinitions.new jsonPath
   end
 
 
@@ -94,8 +91,9 @@ class AutomationRunner
     # create a test suite, and add test cases to it.  look up class names from test defs
     @testSuite = TestSuite.new
     rawList["scenarioNames"].each do |n|
-      testFileName = @testDefs[n]["inFile"]
-      testFnName   = @testDefs[n]["definedBy"]
+      test = @testDefs.byName(n)
+      testFileName = test["inFile"]
+      testFnName   = test["definedBy"]
       className    = testFileName.sub(".", "_") + "." + testFnName
       @testSuite.addTestCase(className, n)
     end
