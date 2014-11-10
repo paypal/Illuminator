@@ -23,7 +23,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/SaltinelA
 
 
 # responsibilities:
-#  - convert combined settings hash into individual class settings
+#  - apply options to relevant components
 #  - prepare javascript config, and start instruments
 #  - process any crashes
 #  - run coverage

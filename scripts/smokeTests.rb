@@ -1,7 +1,7 @@
 require 'pathname'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorFramework.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorSettings.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorOptions.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/XcodeUtils.rb')
 
 Dir.chdir 'SampleApp/AutomatorSampleApp'
@@ -16,7 +16,7 @@ allTestPath = (Pathname.new (allTestPath)).realpath.to_s
 ####################################################################################################
 
 
-options = IlluminatorSettings.new
+options = IlluminatorOptions.new
 options.xcode.appName = 'AutomatorSampleApp'
 options.xcode.scheme = 'AutomatorSampleApp'
 

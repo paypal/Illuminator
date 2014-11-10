@@ -26,7 +26,7 @@ class RecursiveOpenStruct < OpenStruct
   end
 end
 
-class IlluminatorSettings < RecursiveOpenStruct
+class IlluminatorOptions < RecursiveOpenStruct
 
   def initialize(hash=nil)
     super
@@ -38,7 +38,7 @@ class IlluminatorSettings < RecursiveOpenStruct
     self.simulator   = RecursiveOpenStruct.new
     self.javascript  = RecursiveOpenStruct.new
     self.illuminator = RecursiveOpenStruct.new
-    self.appSpecific = nil    # all unknown settings will go here
+    self.appSpecific = nil    # all unknown options will go here
 
     self.illuminator.clean     = RecursiveOpenStruct.new
     self.illuminator.task      = RecursiveOpenStruct.new
