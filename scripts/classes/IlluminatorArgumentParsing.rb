@@ -1,7 +1,7 @@
 require 'optparse'
 require 'ostruct'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'IlluminatorSettings.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'IlluminatorOptions.rb')
 
 
 class IlluminatorParser < OptionParser
@@ -23,55 +23,55 @@ class IlluminatorParser < OptionParser
     end
   end
 
-  # copy internal options storage into a settings object
-  def copyOptionsInto(settings)
+  # copy internal options storage into a options object
+  def copyParsedOptionsInto(illuminatorOptions)
     self.checkCleanArgs
 
-    # load up known settings
-    settings.xcode.appName = @_options["appName"] unless @_options["appName"].nil?
-    settings.xcode.sdk     = @_options["sdk"] unless @_options["sdk"].nil?
-    settings.xcode.scheme  = @_options["scheme"] unless @_options["scheme"].nil?
+    # load up known illuminatorOptions
+    illuminatorOptions.xcode.appName = @_options["appName"] unless @_options["appName"].nil?
+    illuminatorOptions.xcode.sdk     = @_options["sdk"] unless @_options["sdk"].nil?
+    illuminatorOptions.xcode.scheme  = @_options["scheme"] unless @_options["scheme"].nil?
 
-    settings.illuminator.entryPoint      = @_options["entryPoint"] unless @_options["entryPoint"].nil?
-    settings.illuminator.test.randomSeed = @_options["randomSeed"] unless @_options["randomSeed"].nil?
-    settings.illuminator.test.tags.any   = @_options["tagsAny"] unless @_options["tagsAny"].nil?
-    settings.illuminator.test.tags.all   = @_options["tagsAll"] unless @_options["tagsAll"].nil?
-    settings.illuminator.test.tags.none  = @_options["tagsNone"] unless @_options["tagsNone"].nil?
+    illuminatorOptions.illuminator.entryPoint      = @_options["entryPoint"] unless @_options["entryPoint"].nil?
+    illuminatorOptions.illuminator.test.randomSeed = @_options["randomSeed"] unless @_options["randomSeed"].nil?
+    illuminatorOptions.illuminator.test.tags.any   = @_options["tagsAny"] unless @_options["tagsAny"].nil?
+    illuminatorOptions.illuminator.test.tags.all   = @_options["tagsAll"] unless @_options["tagsAll"].nil?
+    illuminatorOptions.illuminator.test.tags.none  = @_options["tagsNone"] unless @_options["tagsNone"].nil?
 
-    settings.illuminator.clean.xcode     = @_options["clean"].include? "xcode"
-    settings.illuminator.clean.derived   = @_options["clean"].include? "derivedData"
-    settings.illuminator.clean.artifacts = @_options["clean"].include? "buildArtifacts"
-    settings.illuminator.clean.noDelay   = @_options["clean"].include? "noDelay"
+    illuminatorOptions.illuminator.clean.xcode     = @_options["clean"].include? "xcode"
+    illuminatorOptions.illuminator.clean.derived   = @_options["clean"].include? "derivedData"
+    illuminatorOptions.illuminator.clean.artifacts = @_options["clean"].include? "buildArtifacts"
+    illuminatorOptions.illuminator.clean.noDelay   = @_options["clean"].include? "noDelay"
 
-    settings.illuminator.task.build    = (not @_options["skipBuild"]) unless @_options["skipBuild"].nil?
-    settings.illuminator.task.setSim   = (not @_options["skipSetSim"]) unless @_options["skipSetSim"].nil?
-    settings.illuminator.task.coverage = @_options["coverage"] unless @_options["coverage"].nil?
-    settings.illuminator.task.report   = @_options["report"] unless @_options["report"].nil?
-    settings.illuminator.hardwareID    = @_options["hardwareID"] unless @_options["hardwareID"].nil?
+    illuminatorOptions.illuminator.task.build    = (not @_options["skipBuild"]) unless @_options["skipBuild"].nil?
+    illuminatorOptions.illuminator.task.setSim   = (not @_options["skipSetSim"]) unless @_options["skipSetSim"].nil?
+    illuminatorOptions.illuminator.task.coverage = @_options["coverage"] unless @_options["coverage"].nil?
+    illuminatorOptions.illuminator.task.report   = @_options["report"] unless @_options["report"].nil?
+    illuminatorOptions.illuminator.hardwareID    = @_options["hardwareID"] unless @_options["hardwareID"].nil?
 
-    settings.simulator.device    = @_options["simDevice"] unless @_options["simDevice"].nil?
-    settings.simulator.version   = @_options["simVersion"] unless @_options["simVersion"].nil?
-    settings.simulator.language  = @_options["simLanguage"] unless @_options["simLanguage"].nil?
-    settings.simulator.killAfter = (not @_options["skipKillAfter"]) unless @_options["skipKillAfter"].nil?
+    illuminatorOptions.simulator.device    = @_options["simDevice"] unless @_options["simDevice"].nil?
+    illuminatorOptions.simulator.version   = @_options["simVersion"] unless @_options["simVersion"].nil?
+    illuminatorOptions.simulator.language  = @_options["simLanguage"] unless @_options["simLanguage"].nil?
+    illuminatorOptions.simulator.killAfter = (not @_options["skipKillAfter"]) unless @_options["skipKillAfter"].nil?
 
-    settings.instruments.doVerbose = @_options["verbose"] unless @_options["verbose"].nil?
-    settings.instruments.timeout   = @_options["timeout"] unless @_options["timeout"].nil?
+    illuminatorOptions.instruments.doVerbose = @_options["verbose"] unless @_options["verbose"].nil?
+    illuminatorOptions.instruments.timeout   = @_options["timeout"] unless @_options["timeout"].nil?
 
-    settings.javascript.testPath         = @_options["testPath"] unless @_options["testPath"].nil?
-    settings.javascript.customConfigPath = @_options["customSettingsJSONPath"] unless @_options["customSettingsJSONPath"].nil?
-    settings.javascript.implementation   = @_options["implementation"] unless @_options["implementation"].nil?
+    illuminatorOptions.javascript.testPath         = @_options["testPath"] unless @_options["testPath"].nil?
+    illuminatorOptions.javascript.customConfigPath = @_options["customSettingsJSONPath"] unless @_options["customSettingsJSONPath"].nil?
+    illuminatorOptions.javascript.implementation   = @_options["implementation"] unless @_options["implementation"].nil?
 
     knownKeys = IlluminatorParserFactory.new.letterMap.values # get option keynames from a plain vanilla factory
 
-    # load up unknown settings
-    settings.appSpecific = @_options.select { |keyname, _| not (knownKeys.include? keyname) }
+    # load up unknown illuminatorOptions
+    illuminatorOptions.appSpecific = @_options.select { |keyname, _| not (knownKeys.include? keyname) }
 
-    return settings
+    return illuminatorOptions
   end
 
   def parse args
     leftovers = super(args)
-    return self.copyOptionsInto(IlluminatorSettings.new)
+    return self.copyParsedOptionsInto(IlluminatorOptions.new)
   end
 
 end
