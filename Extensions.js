@@ -536,7 +536,7 @@ function getChildElementFromEval(selector, element) {
         if (e instanceof SyntaxError) {
             throw new IlluminatorSetupException("Couldn't evaluate string selector '" + selector + "': " + e);
         } else if (e instanceof TypeError) {
-            throw new IlluminatorSetupException("Evaluating string selector triggered " + e);
+            throw new IlluminatorSetupException("Evaluating string selector on element " + element + " triggered " + e);
         } else {
             throw e;
         }
