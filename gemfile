@@ -1,8 +1,3 @@
 source 'https://rubygems.org'
-gem 'plist'
-gem 'xcpretty'
-gem 'ocunit2junit'
-gem 'httparty'
 gem 'dnssd'
-gem 'chunky_png'
 gem 'colorize'

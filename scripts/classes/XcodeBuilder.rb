@@ -2,8 +2,10 @@ require 'rubygems'
 require 'colorize'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
 
 class XcodeBuilder
+  attr_accessor :project
   attr_accessor :configuration
   attr_accessor :sdk
   attr_accessor :arch
@@ -19,14 +21,14 @@ class XcodeBuilder
   attr_reader :exitCode
 
   def initialize
-    @parameters = Hash.new
+    @parameters      = Hash.new
     @environmentVars = Hash.new
-    @workspace = nil
-    @doClean = FALSE
-    @doTest = FALSE
-    @doBuild = TRUE
-    @doArchive = FALSE
-    @exitCode = nil
+    @workspace       = nil
+    @doClean         = FALSE
+    @doTest          = FALSE
+    @doBuild         = TRUE
+    @doArchive       = FALSE
+    @exitCode        = nil
   end
 
   def addParameter(parameterName = '',parameterValue = '')
@@ -40,12 +42,13 @@ class XcodeBuilder
   def _assembleConfig
     # put standard parameters into parameters
     keyDefs = {
+      'project'       => @project,
       'configuration' => @configuration,
-      'sdk' => @sdk,
-      'arch' => @arch,
-      'scheme' => @scheme,
-      'destination' => @destination,
-      'xcconfig' => @xcconfig,
+      'sdk'           => @sdk,
+      'arch'          => @arch,
+      'scheme'        => @scheme,
+      'destination'   => @destination,
+      'xcconfig'      => @xcconfig,
     }
 
     keyDefs.each do |key, value|
@@ -74,11 +77,10 @@ class XcodeBuilder
     command << 'set -o pipefail && ' if usePipefail
     command << 'xcodebuild'
     command << parameters << environmentVars << tasks
-    command << " | tee '#{self.logfilePath}' | xcpretty -c -r junit"
+    command << " | tee '#{self.logfilePath}'"
+    command << " | xcpretty -c -r junit" unless HostUtils.which("xcpretty").nil?  # use xcpretty if available
     command << ' && exit ${PIPESTATUS[0]}' unless usePipefail
 
-    puts 'created command:'
-    puts command.green
     command
   end
 
@@ -89,6 +91,7 @@ class XcodeBuilder
 
 
   def _executeBuildCommand command
+    puts command.green
     process = IO.popen(command) do |io|
       io.each {|line| puts line}
       io.close

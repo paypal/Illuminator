@@ -1,5 +1,7 @@
 require 'singleton'
 
+require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
+
 # Wrapper for possible methods of installing an app on physical hardware
 class DeviceInstaller
   include Singleton
@@ -8,23 +10,7 @@ class DeviceInstaller
     installers = ['ios-deploy']
 
     @installedInstallers = {}
-    installers.each { |exe| @installedInstallers[exe] = self.which(exe) }
-  end
-
-
-  # Cross-platform way of finding an executable in the $PATH.
-  # based on http://stackoverflow.com/a/5471032/2063546
-  #
-  #   which('ruby') #=> /usr/bin/ruby
-  def self.which program
-    exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
-    ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
-      exts.each do |ext|
-        exe = File.join(path, "#{program}#{ext}")
-        return exe if File.executable?(exe) unless File.directory?(exe)
-      end
-    end
-    return nil
+    installers.each { |exe| @installedInstallers[exe] = HostUtils.which(exe) }
   end
 
 

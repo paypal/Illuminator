@@ -46,6 +46,7 @@ class IlluminatorOptions < RecursiveOpenStruct
     self.illuminator.test.tags = RecursiveOpenStruct.new
 
     # name all the keys (just for visibiilty)
+    self.xcode.project = nil
     self.xcode.appName = nil
     self.xcode.sdk = nil
     self.xcode.scheme = nil

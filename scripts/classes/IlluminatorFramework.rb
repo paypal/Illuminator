@@ -52,6 +52,7 @@ class IlluminatorFramework
     if options.illuminator.task.build
       builder = AutomationBuilder.new
       builder.workspace = workspace
+      builder.project   = options.xcode.project
       builder.scheme    = options.xcode.scheme
       builder.doClean   = options.illuminator.clean.xcode
 
