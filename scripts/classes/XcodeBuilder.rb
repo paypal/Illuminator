@@ -2,6 +2,7 @@ require 'rubygems'
 require 'colorize'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
 
 class XcodeBuilder
   attr_accessor :configuration
@@ -74,11 +75,10 @@ class XcodeBuilder
     command << 'set -o pipefail && ' if usePipefail
     command << 'xcodebuild'
     command << parameters << environmentVars << tasks
-    command << " | tee '#{self.logfilePath}' | xcpretty -c -r junit"
+    command << " | tee '#{self.logfilePath}'"
+    command << " | xcpretty -c -r junit" unless HostUtils.which("xcpretty").nil?  # use xcpretty if available
     command << ' && exit ${PIPESTATUS[0]}' unless usePipefail
 
-    puts 'created command:'
-    puts command.green
     command
   end
 
@@ -89,6 +89,7 @@ class XcodeBuilder
 
 
   def _executeBuildCommand command
+    puts command.green
     process = IO.popen(command) do |io|
       io.each {|line| puts line}
       io.close
