@@ -536,7 +536,7 @@ function getChildElementFromEval(selector, element) {
         if (e instanceof SyntaxError) {
             throw new IlluminatorSetupException("Couldn't evaluate string selector '" + selector + "': " + e);
         } else if (e instanceof TypeError) {
-            throw new IlluminatorSetupException("Evaluating string selector triggered " + e);
+            throw new IlluminatorSetupException("Evaluating string selector on element " + element + " triggered " + e);
         } else {
             throw e;
         }
@@ -642,14 +642,21 @@ var typeString = function (text, clear) {
 
             // handle clearing
             if (clear) {
-                db = kb.buttons()["Delete"];
-                if (!db.isNotNil()) db = kb.keys()["Delete"]; // compatibilty hack
+                // find many types of keyboard delete buttons, then just use the first one we get
+                delButtons = kb.waitForChildSelect(5, {
+                    "key": function (keyboard) { return keyboard.keys()["Delete"]; },
+                    "button": function (keyboard) { return keyboard.buttons()["Delete"]; },
+                    "element": function (keyboard) { return keyboard.elements()["Delete"]; },
+                });
+                for (var k in delButtons) {
+                    db = delButtons[k];
+                    break;
+                }
 
-                // touchAndHold doesn't work without this next line... not sure why :(
+                // tapWithOptions / touchAndHold doesn't work without this next line... not sure why :(
                 db.tap();
+                db.tapWithOptions({duration: 3.7});
                 clear = false; // prevent clear on next iteration
-                db.touchAndHold(3.7);
-
             }
 
             if (text.length !== 0) {
@@ -1391,12 +1398,14 @@ extendPrototype(UIAElement, {
      */
     svtap: function (timeout) {
         timeout = timeout === undefined ? 5 : timeout;
-        try {
-            this.scrollToVisible();
-        } catch (e) {
-            // iOS 6 hack when no scrolling is needed
-            if (e.toString() != "scrollToVisible cannot be used on the element because it does not have a scrollable ancestor.") {
-                throw e;
+        if (this.isVisible()) {
+            try {
+                this.scrollToVisible();
+            } catch (e) {
+                // iOS 6 hack when no scrolling is needed
+                if (e.toString() != "scrollToVisible cannot be used on the element because it does not have a scrollable ancestor.") {
+                    throw e;
+                }
             }
         }
         this.vtap(timeout);
