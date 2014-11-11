@@ -5,6 +5,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
 
 class XcodeBuilder
+  attr_accessor :project
   attr_accessor :configuration
   attr_accessor :sdk
   attr_accessor :arch
@@ -20,14 +21,14 @@ class XcodeBuilder
   attr_reader :exitCode
 
   def initialize
-    @parameters = Hash.new
+    @parameters      = Hash.new
     @environmentVars = Hash.new
-    @workspace = nil
-    @doClean = FALSE
-    @doTest = FALSE
-    @doBuild = TRUE
-    @doArchive = FALSE
-    @exitCode = nil
+    @workspace       = nil
+    @doClean         = FALSE
+    @doTest          = FALSE
+    @doBuild         = TRUE
+    @doArchive       = FALSE
+    @exitCode        = nil
   end
 
   def addParameter(parameterName = '',parameterValue = '')
@@ -41,12 +42,13 @@ class XcodeBuilder
   def _assembleConfig
     # put standard parameters into parameters
     keyDefs = {
+      'project'       => @project,
       'configuration' => @configuration,
-      'sdk' => @sdk,
-      'arch' => @arch,
-      'scheme' => @scheme,
-      'destination' => @destination,
-      'xcconfig' => @xcconfig,
+      'sdk'           => @sdk,
+      'arch'          => @arch,
+      'scheme'        => @scheme,
+      'destination'   => @destination,
+      'xcconfig'      => @xcconfig,
     }
 
     keyDefs.each do |key, value|
