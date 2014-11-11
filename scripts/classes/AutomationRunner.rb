@@ -6,6 +6,7 @@ require 'json'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'JavascriptRunner.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'TestSuite.rb')
@@ -260,8 +261,13 @@ class AutomationRunner
       f = File.open(BuildArtifacts.instance.junitReportFile, 'w')
       f.write(@testSuite.to_xml)
       f.close
-
-      self.generateCoverage gcovrWorkspace if options.illuminator.task.coverage #TODO: only if there are no crashes?
+      if options.illuminator.task.coverage #TODO: only if there are no crashes?
+        if HostUtils.which("gcovr").nil?
+          puts "Skipping requested coverage generation because gcovr does not appear to be in the PATH".yellow
+        else
+          self.generateCoverage gcovrWorkspace
+        end
+      end
       self.saveFailedTestsConfig(options, @testSuite.failedTests)
     end
 
