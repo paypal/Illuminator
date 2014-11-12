@@ -4,6 +4,7 @@ require 'json'
 require 'socket'
 require 'digest/sha1'
 require File.join(File.expand_path(File.dirname(__FILE__)), '/BuildArtifacts.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '/HostUtils.rb')
 
 # Class to handle all configuration relating to the javascript environment
 # "runner" is a bit of a misnomer (this runs as part of instruments) but without this code, nothing runs
@@ -17,6 +18,7 @@ class JavascriptRunner
   attr_accessor :simVersion
   attr_accessor :hardwareID
   attr_accessor :randomSeed
+  attr_accessor :customJSConfig
   attr_accessor :customJSConfigPath
   attr_accessor :tagsAny
   attr_accessor :tagsAll
@@ -24,10 +26,10 @@ class JavascriptRunner
   attr_accessor :scenarioList
 
   def initialize
-    @tagsAny      = Array.new(0)
-    @tagsAll      = Array.new(0)
-    @tagsNone     = Array.new(0)
-    @scenarioList = nil
+    @tagsAny        = Array.new(0)
+    @tagsAll        = Array.new(0)
+    @tagsNone       = Array.new(0)
+    @scenarioList   = nil
   end
 
 
@@ -60,20 +62,25 @@ class JavascriptRunner
   def writeConfiguration()
     # instance variables required for renderTemplate
     @saltinel                   = Digest::SHA1.hexdigest (Time.now.to_i.to_s + Socket.gethostname)
-    @illuminatorRoot            = Pathname.new(File.dirname(__FILE__) + '/../..').realpath.to_s
+    @illuminatorRoot            = HostUtils.realpath(File.join(File.dirname(__FILE__), "../.."))
     @artifactsRoot              = BuildArtifacts.instance.root
     @illuminatorInstrumentsRoot = BuildArtifacts.instance.instruments
     @environmentFile            = BuildArtifacts.instance.illuminatorJsEnvironment
 
+    # prepare @fullConfig
+    self.assembleConfig
+
     self.renderTemplate '/../resources/IlluminatorGeneratedRunnerForInstruments.erb', BuildArtifacts.instance.illuminatorJsRunner
     self.renderTemplate '/../resources/IlluminatorGeneratedEnvironment.erb', BuildArtifacts.instance.illuminatorJsEnvironment
 
-    self.assembleConfig
+    if @customJSConfig.nil?
+      @fullConfig["customJSConfigPath"] = nil
+    else
+      HostUtils.saveJSON(@customJSConfig, @customJSConfigPath)
+    end
 
-    f = File.open(BuildArtifacts.instance.illuminatorConfigFile, 'w')
-    f << JSON.pretty_generate(@fullConfig)
-    f.close
 
+    HostUtils.saveJSON(@fullConfig, BuildArtifacts.instance.illuminatorConfigFile)
   end
 
 

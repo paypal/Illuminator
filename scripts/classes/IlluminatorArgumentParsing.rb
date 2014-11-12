@@ -2,6 +2,7 @@ require 'optparse'
 require 'ostruct'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'IlluminatorOptions.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
 
 
 class IlluminatorParser < OptionParser
@@ -57,9 +58,9 @@ class IlluminatorParser < OptionParser
     illuminatorOptions.instruments.doVerbose = @_options["verbose"] unless @_options["verbose"].nil?
     illuminatorOptions.instruments.timeout   = @_options["timeout"] unless @_options["timeout"].nil?
 
-    illuminatorOptions.javascript.testPath         = @_options["testPath"] unless @_options["testPath"].nil?
-    illuminatorOptions.javascript.customConfigPath = @_options["customSettingsJSONPath"] unless @_options["customSettingsJSONPath"].nil?
-    illuminatorOptions.javascript.implementation   = @_options["implementation"] unless @_options["implementation"].nil?
+    illuminatorOptions.javascript.testPath       = @_options["testPath"] unless @_options["testPath"].nil?
+    illuminatorOptions.javascript.implementation = @_options["implementation"] unless @_options["implementation"].nil?
+    illuminatorOptions.javascript.customConfig   = JSON.parse(IO.read(@_options["customSettingsJSONPath"])) unless @_options["customSettingsJSONPath"].nil?
 
     knownKeys = IlluminatorParserFactory.new.letterMap.values # get option keynames from a plain vanilla factory
 
@@ -114,12 +115,12 @@ class IlluminatorParserFactory
     }
 
     @letterProcessing = {
-      'j' => lambda {|p| (Pathname.new p).realpath().to_s },     # get real path to settings file
-      'p' => lambda {|p| (Pathname.new p).realPath().to_s },     # get real path to tests file
-      'y' => lambda {|p| p.split(',')},                          # split comma-separated string into array
-      't' => lambda {|p| p.split(',')},                          # split comma-separated string into array
-      'o' => lambda {|p| p.split(',')},                          # split comma-separated string into array
-      'n' => lambda {|p| p.split(',')},                          # split comma-separated string into array
+      'j' => lambda {|p| HostUtils.realpath(p) },     # get real path to settings file
+      'p' => lambda {|p| HostUtils.realpath(p) },     # get real path to tests file
+      'y' => lambda {|p| p.split(',')},               # split comma-separated string into array
+      't' => lambda {|p| p.split(',')},               # split comma-separated string into array
+      'o' => lambda {|p| p.split(',')},               # split comma-separated string into array
+      'n' => lambda {|p| p.split(',')},               # split comma-separated string into array
     }
 
     @defaultValues = {

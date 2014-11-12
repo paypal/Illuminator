@@ -7,8 +7,8 @@ workspace = Dir.pwd
 # TODO: helpful message if file isn't supplied
 
 overrideOptions = lambda {|opts| opts}
-overrideCustomOptions = lambda {|opts| opts}
+overrideJavascriptCustomConfig = lambda {|opts| opts}
 
-success = IlluminatorFramework.reRun(ARGV[0], workspace, overrideOptions, overrideCustomOptions)
+success = IlluminatorFramework.reRun(ARGV[0], workspace, overrideOptions, overrideJavascriptCustomConfig)
 
 exit 1 unless success

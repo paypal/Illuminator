@@ -1,6 +1,5 @@
 require 'singleton'
 require 'fileutils'
-require 'pathname'
 
 # Convenience functions for command-line actions done in Xcode
 class XcodeUtils
@@ -18,7 +17,7 @@ class XcodeUtils
   end
 
   def getXcodeAppPath
-    Pathname.new(File.join(@xcodePath, "../../")).realpath.to_s
+    HostUtils.realpath(File.join(@xcodePath, "../../"))
   end
 
   def getXcodeVersion
@@ -74,7 +73,7 @@ class XcodeUtils
     if match
       puts "Found device match: #{match}".green
       return match.captures[0]
-    elsif 
+    elsif
       puts "Did not find UDID of device '#{simDevice}' for version '#{simVersion}'".green
       if XcodeUtils.instance.isXcodeMajorVersion 5
         fallbackName = "#{simDevice} - Simulator - iOS #{simVersion}"
@@ -129,7 +128,7 @@ class XcodeUtils
   end
 
   def self.killAllSimulatorProcesses
-    command = (Pathname.new (File.join(File.dirname(__FILE__), "../kill_all_sim_processes.sh"))).realpath.to_s
+    command = HostUtils.realpath(File.join(File.dirname(__FILE__), "../kill_all_sim_processes.sh"))
     puts "Running #{command}"
     puts `'#{command}'`
   end

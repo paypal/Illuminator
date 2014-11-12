@@ -1,15 +1,15 @@
-require 'pathname'
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorFramework.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorOptions.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/XcodeUtils.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/HostUtils.rb')
 
 Dir.chdir 'SampleApp/AutomatorSampleApp'
 workspace = Dir.pwd
 
 #ruby ../../scripts/automationTests.rb -s AutomatorSampleApp -t smoke -p ../../SampleApp/SampleTests/tests/AllTests.js
 allTestPath = '../../SampleApp/SampleTests/tests/AllTests.js'
-allTestPath = (Pathname.new (allTestPath)).realpath.to_s
+allTestPath = HostUtils.realpath(allTestPath)
 
 ####################################################################################################
 # Storing custom parameters
