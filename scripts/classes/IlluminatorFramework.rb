@@ -4,6 +4,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.r
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'DeviceInstaller.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
 
 
 class IlluminatorFramework
@@ -34,8 +35,8 @@ class IlluminatorFramework
     appName    = options.xcode.appName
 
     cleanDirs = {
-      "~/Library/Developer/Xcode/DerivedData" => options.illuminator.clean.derived,
-      BuildArtifacts.instance.root(true)     => options.illuminator.clean.artifacts,
+      HostUtils.realpath("~/Library/Developer/Xcode/DerivedData") => options.illuminator.clean.derived,
+      BuildArtifacts.instance.root(true)                          => options.illuminator.clean.artifacts,
     }
 
     # do any initial cleaning
