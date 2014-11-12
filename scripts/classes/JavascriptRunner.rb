@@ -4,6 +4,7 @@ require 'json'
 require 'socket'
 require 'digest/sha1'
 require File.join(File.expand_path(File.dirname(__FILE__)), '/BuildArtifacts.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '/HostUtils.rb')
 
 # Class to handle all configuration relating to the javascript environment
 # "runner" is a bit of a misnomer (this runs as part of instruments) but without this code, nothing runs
@@ -70,10 +71,7 @@ class JavascriptRunner
 
     self.assembleConfig
 
-    f = File.open(BuildArtifacts.instance.illuminatorConfigFile, 'w')
-    f << JSON.pretty_generate(@fullConfig)
-    f.close
-
+    HostUtils.saveJSON(@fullConfig, BuildArtifacts.instance.illuminatorConfigFile)
   end
 
 

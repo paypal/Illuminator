@@ -16,4 +16,10 @@ class HostUtils
     return nil
   end
 
+  def self.saveJSON(hashObject, path)
+    f = File.open(path, 'w')
+    f << JSON.pretty_generate(hashObject)
+    f.close
+  end
+
 end
