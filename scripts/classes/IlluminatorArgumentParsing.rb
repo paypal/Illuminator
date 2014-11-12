@@ -57,9 +57,9 @@ class IlluminatorParser < OptionParser
     illuminatorOptions.instruments.doVerbose = @_options["verbose"] unless @_options["verbose"].nil?
     illuminatorOptions.instruments.timeout   = @_options["timeout"] unless @_options["timeout"].nil?
 
-    illuminatorOptions.javascript.testPath         = @_options["testPath"] unless @_options["testPath"].nil?
-    illuminatorOptions.javascript.customConfigPath = @_options["customSettingsJSONPath"] unless @_options["customSettingsJSONPath"].nil?
-    illuminatorOptions.javascript.implementation   = @_options["implementation"] unless @_options["implementation"].nil?
+    illuminatorOptions.javascript.testPath       = @_options["testPath"] unless @_options["testPath"].nil?
+    illuminatorOptions.javascript.implementation = @_options["implementation"] unless @_options["implementation"].nil?
+    illuminatorOptions.javascript.customConfig   = JSON.parse(IO.read(@_options["customSettingsJSONPath"])) unless @_options["customSettingsJSONPath"].nil?
 
     knownKeys = IlluminatorParserFactory.new.letterMap.values # get option keynames from a plain vanilla factory
 

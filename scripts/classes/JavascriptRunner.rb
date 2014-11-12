@@ -18,6 +18,7 @@ class JavascriptRunner
   attr_accessor :simVersion
   attr_accessor :hardwareID
   attr_accessor :randomSeed
+  attr_accessor :customJSConfig
   attr_accessor :customJSConfigPath
   attr_accessor :tagsAny
   attr_accessor :tagsAll
@@ -25,10 +26,11 @@ class JavascriptRunner
   attr_accessor :scenarioList
 
   def initialize
-    @tagsAny      = Array.new(0)
-    @tagsAll      = Array.new(0)
-    @tagsNone     = Array.new(0)
-    @scenarioList = nil
+    @tagsAny        = Array.new(0)
+    @tagsAll        = Array.new(0)
+    @tagsNone       = Array.new(0)
+    @scenarioList   = nil
+    @customJSConfig = {}
   end
 
 
@@ -68,6 +70,7 @@ class JavascriptRunner
 
     self.renderTemplate '/../resources/IlluminatorGeneratedRunnerForInstruments.erb', BuildArtifacts.instance.illuminatorJsRunner
     self.renderTemplate '/../resources/IlluminatorGeneratedEnvironment.erb', BuildArtifacts.instance.illuminatorJsEnvironment
+    HostUtils.saveJSON(@customJSConfig, @customJSConfigPath)
 
     self.assembleConfig
 

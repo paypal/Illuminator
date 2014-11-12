@@ -79,7 +79,7 @@ class IlluminatorOptions < RecursiveOpenStruct
     self.instruments.appLocation = nil  # normally, this is where we build to
 
     self.javascript.testPath = nil
-    self.javascript.customConfigPath = nil
+    self.javascript.customConfig = nil
     self.javascript.implementation = nil
 
   end

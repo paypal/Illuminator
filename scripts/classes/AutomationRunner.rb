@@ -157,7 +157,6 @@ class AutomationRunner
 
     jsConfig.implementation      = options.javascript.implementation
     jsConfig.testPath            = options.javascript.testPath
-    jsConfig.customJSConfigPath  = options.javascript.customConfigPath
 
     jsConfig.entryPoint          = options.illuminator.entryPoint
     jsConfig.scenarioList        = options.illuminator.test.names
@@ -170,14 +169,18 @@ class AutomationRunner
     jsConfig.simDevice           = options.simulator.device
     jsConfig.simVersion          = options.simulator.version
 
+    jsConfig.customJSConfig      = options.javascript.customConfig
+    jsConfig.customJSConfigPath  = BuildArtifacts.instance.illuminatorCustomConfigFile
+
+    # write main config
     jsConfig.writeConfiguration()
   end
 
-  def configureJavascriptReRunner scenarioList
-    jsConfig = @javascriptRunner
 
-    jsConfig.randomSeed = nil
-    jsConfig.entryPoint = "runTestsByName"
+  def configureJavascriptReRunner scenarioList
+    jsConfig              = @javascriptRunner
+    jsConfig.randomSeed   = nil
+    jsConfig.entryPoint   = "runTestsByName"
     jsConfig.scenarioList = scenarioList
 
     jsConfig.writeConfiguration()
@@ -325,22 +328,10 @@ class AutomationRunner
     # save options to re-run failed tests
     newOptions = options.dup
     newOptions.illuminator.test.randomSeed = nil
-    newOptions.illuminator.entryPoint = "runTestsByName"
-    newOptions.illuminator.test.names = failedTests.map { |t| t.name }
-    customOptions = nil
+    newOptions.illuminator.entryPoint      = "runTestsByName"
+    newOptions.illuminator.test.names      = failedTests.map { |t| t.name }
 
-    unless newOptions.javascript.customConfigPath.nil?
-      customOptions = JSON.parse( IO.read(newOptions.javascript.customConfigPath) )
-      newOptions.javascript.customConfigPath = nil
-    end
-
-    f = File.open(BuildArtifacts.instance.illuminatorRerunFailedTestsSettings, 'w')
-    f << JSON.pretty_generate({
-                                "options" => newOptions.to_h,
-                                "customConfig" => customOptions,
-                              })
-    f.close
-
+    HostUtils.saveJSON(newOptions.to_h, BuildArtifacts.instance.illuminatorRerunFailedTestsSettings)
   end
 
   def removeAnyAppCrashes()
