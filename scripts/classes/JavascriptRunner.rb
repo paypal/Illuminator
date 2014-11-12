@@ -30,7 +30,6 @@ class JavascriptRunner
     @tagsAll        = Array.new(0)
     @tagsNone       = Array.new(0)
     @scenarioList   = nil
-    @customJSConfig = {}
   end
 
 
@@ -68,11 +67,18 @@ class JavascriptRunner
     @illuminatorInstrumentsRoot = BuildArtifacts.instance.instruments
     @environmentFile            = BuildArtifacts.instance.illuminatorJsEnvironment
 
+    # prepare @fullConfig
+    self.assembleConfig
+
     self.renderTemplate '/../resources/IlluminatorGeneratedRunnerForInstruments.erb', BuildArtifacts.instance.illuminatorJsRunner
     self.renderTemplate '/../resources/IlluminatorGeneratedEnvironment.erb', BuildArtifacts.instance.illuminatorJsEnvironment
-    HostUtils.saveJSON(@customJSConfig, @customJSConfigPath)
 
-    self.assembleConfig
+    if @customJSConfig.nil?
+      @fullConfig["customJSConfigPath"] = nil
+    else
+      HostUtils.saveJSON(@customJSConfig, @customJSConfigPath)
+    end
+
 
     HostUtils.saveJSON(@fullConfig, BuildArtifacts.instance.illuminatorConfigFile)
   end

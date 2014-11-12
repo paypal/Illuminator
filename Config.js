@@ -27,6 +27,7 @@
             config.automatorSequenceRandomSeed = parseInt(value);
             break;
         case "customJSConfigPath":
+            if (null === value) break;
             try {
                 config.customConfig = getJSONData(value)
             } catch (e) {
