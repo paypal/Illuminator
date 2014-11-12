@@ -35,8 +35,7 @@ class IlluminatorFramework
 
     cleanDirs = {
       "~/Library/Developer/Xcode/DerivedData" => options.illuminator.clean.derived,
-      BuildArtifacts.instance.xcode(true)     => options.illuminator.clean.artifacts,
-      # can't delete build artifacts root, because important files might already be there
+      BuildArtifacts.instance.root(true)     => options.illuminator.clean.artifacts,
     }
 
     # do any initial cleaning
