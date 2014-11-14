@@ -29,6 +29,7 @@ class IlluminatorParser < OptionParser
     self.checkCleanArgs
 
     # load up known illuminatorOptions
+    # we only load non-nil options, just in case there was already something in the illuminatorOptions obj
     illuminatorOptions.xcode.appName = @_options["appName"] unless @_options["appName"].nil?
     illuminatorOptions.xcode.sdk     = @_options["sdk"] unless @_options["sdk"].nil?
     illuminatorOptions.xcode.scheme  = @_options["scheme"] unless @_options["scheme"].nil?
@@ -45,6 +46,7 @@ class IlluminatorParser < OptionParser
     illuminatorOptions.illuminator.clean.noDelay   = @_options["clean"].include? "noDelay"
 
     illuminatorOptions.illuminator.task.build    = (not @_options["skipBuild"]) unless @_options["skipBuild"].nil?
+    illuminatorOptions.illuminator.task.automate = (not @_options["skipAutomate"]) unless @_options["skipAutomate"].nil?
     illuminatorOptions.illuminator.task.setSim   = (not @_options["skipSetSim"]) unless @_options["skipSetSim"].nil?
     illuminatorOptions.illuminator.task.coverage = @_options["coverage"] unless @_options["coverage"].nil?
     illuminatorOptions.illuminator.task.report   = @_options["report"] unless @_options["report"].nil?
@@ -55,8 +57,9 @@ class IlluminatorParser < OptionParser
     illuminatorOptions.simulator.language  = @_options["simLanguage"] unless @_options["simLanguage"].nil?
     illuminatorOptions.simulator.killAfter = (not @_options["skipKillAfter"]) unless @_options["skipKillAfter"].nil?
 
-    illuminatorOptions.instruments.doVerbose = @_options["verbose"] unless @_options["verbose"].nil?
-    illuminatorOptions.instruments.timeout   = @_options["timeout"] unless @_options["timeout"].nil?
+    illuminatorOptions.instruments.appLocation = @_options["appLocation"] unless @_options["appLocation"].nil?
+    illuminatorOptions.instruments.doVerbose   = @_options["verbose"] unless @_options["verbose"].nil?
+    illuminatorOptions.instruments.timeout     = @_options["timeout"] unless @_options["timeout"].nil?
 
     illuminatorOptions.javascript.testPath       = @_options["testPath"] unless @_options["testPath"].nil?
     illuminatorOptions.javascript.implementation = @_options["implementation"] unless @_options["implementation"].nil?
@@ -100,10 +103,12 @@ class IlluminatorParserFactory
       'j' => 'customSettingsJSONPath',
       'd' => 'hardwareID',
       'i' => 'implementation',
+      'E' => 'appLocation',
       'b' => 'simDevice',
       'z' => 'simVersion',
       'l' => 'simLanguage',
       'f' => 'skipBuild',
+      'B' => 'skipAutomate',
       'e' => 'skipSetSim',
       'k' => 'skipKillAfter',
       'c' => 'coverage',
@@ -117,6 +122,7 @@ class IlluminatorParserFactory
     @letterProcessing = {
       'j' => lambda {|p| HostUtils.realpath(p) },     # get real path to settings file
       'p' => lambda {|p| HostUtils.realpath(p) },     # get real path to tests file
+      'E' => lambda {|p| HostUtils.realpath(p) },     # get real path to app
       'y' => lambda {|p| p.split(',')},               # split comma-separated string into array
       't' => lambda {|p| p.split(',')},               # split comma-separated string into array
       'o' => lambda {|p| p.split(',')},               # split comma-separated string into array
@@ -131,6 +137,7 @@ class IlluminatorParserFactory
       'x' => 'runTestsByTag',
       'm' => 30,
       'f' => false,
+      'B' => false,
       'e' => false,
       'k' => false,
       'r' => false,
@@ -156,10 +163,12 @@ class IlluminatorParserFactory
     self.addSwitch('j', ['-j', '--jsonSettingsPath PATH', 'path to JSON file containing custom configuration parameters'])
     self.addSwitch('d', ['-d', '--hardwareID ID', 'hardware id of device you run on'])
     self.addSwitch('i', ['-i', '--implementation IMPL', 'Device tests implementation (iPhone|iPad)'])
+    self.addSwitch('E', ['-E', '--appLocation LOCATION', 'Location of app executable, if pre-built'])
     self.addSwitch('b', ['-b', '--simDevice DEVICE', 'Run on given simulated device'])
     self.addSwitch('z', ['-z', '--simVersion VERSION', 'Run on given simulated iOS version'])
     self.addSwitch('l', ['-l', '--simLanguage LANGUAGE', 'Run on given simulated iOS language'])
     self.addSwitch('f', ['-f', '--skip-build', 'Just automate; assume already built'])
+    self.addSwitch('B', ['-B', '--skip-automate', "Don't automate; build only"])
     self.addSwitch('e', ['-e', '--skip-set-sim', 'Assume that simulator has already been chosen and properly reset'])
     self.addSwitch('k', ['-k', '--skip-kill-after', 'Do not kill the simulator after the run'])
     self.addSwitch('y', ['-y', '--clean PLACES', 'Comma-separated list of places to clean {xcode, buildArtifacts, derivedData}'])

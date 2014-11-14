@@ -63,6 +63,7 @@ class IlluminatorOptions < RecursiveOpenStruct
     self.illuminator.clean.artifacts = nil
     self.illuminator.clean.noDelay = nil
     self.illuminator.task.build = nil
+    self.illuminator.task.automate = nil
     self.illuminator.task.setSim = nil
     self.illuminator.task.coverage = nil
     self.illuminator.task.report = nil
