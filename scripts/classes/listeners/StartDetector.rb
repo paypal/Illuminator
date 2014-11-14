@@ -32,7 +32,7 @@ class StartDetector < SaltinelListener
 
     # error cases that indicate successful start but involve errors that won't be fixed by a restart
     self.trigger if :error == message.status and /Script threw an uncaught JavaScript error:/ =~ message.message
-    self.trigger if :error == message.status and /Instruments Usage Error :/ =~ message.message
+    self.trigger if /^Instruments Usage Error :/ =~ message.fullLine
   end
 
   def onSaltinel innerMessage
