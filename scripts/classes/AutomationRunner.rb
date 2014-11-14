@@ -67,7 +67,8 @@ class AutomationRunner
     end
 
     # remove directories in the list
-    dirsToRemove.each do |dir|
+    dirsToRemove.each do |d|
+      dir = HostUtils.realpath d
       puts "AutomationRunner cleanup: removing #{dir}"
       FileUtils.rmtree dir
     end

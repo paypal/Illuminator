@@ -41,7 +41,8 @@ class IlluminatorFramework
 
     # do any initial cleaning
     self.cleanCountdown if self.willClean(options) and (not options.illuminator.clean.noDelay)
-    cleanDirs.each do |dir, doClean|
+    cleanDirs.each do |d, doClean|
+      dir = HostUtils.realpath d
       if doClean
         puts "Illuminator cleanup: removing #{dir}"
         FileUtils.rmtree dir
