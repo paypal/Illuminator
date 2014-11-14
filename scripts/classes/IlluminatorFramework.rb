@@ -41,7 +41,8 @@ class IlluminatorFramework
 
     # do any initial cleaning
     self.cleanCountdown if self.willClean(options) and (not options.illuminator.clean.noDelay)
-    cleanDirs.each do |dir, doClean|
+    cleanDirs.each do |d, doClean|
+      dir = HostUtils.realpath d
       if doClean
         puts "Illuminator cleanup: removing #{dir}"
         FileUtils.rmtree dir
@@ -50,26 +51,32 @@ class IlluminatorFramework
 
     # Initialize builder and build
     if options.illuminator.task.build
-      builder = AutomationBuilder.new
-      builder.workspace = workspace
-      builder.project   = options.xcode.project
-      builder.scheme    = options.xcode.scheme
-      builder.doClean   = options.illuminator.clean.xcode
-
-      # if app name is not specified, make sure that we will only have one to run
-      XcodeUtils.removeExistingApps(BuildArtifacts.instance.xcode) if appName.nil?
-      if builder.buildForAutomation(options.xcode.sdk, hardwareID)
-        puts 'Build succeded'.green
+      unless options.instruments.appLocation.nil?
+        puts "Skipping build because appLocation was provided".yellow
       else
-        puts 'Build failed, check logs for results'.red
-        exit builder.exitCode
+        builder = AutomationBuilder.new
+        builder.workspace = workspace
+        builder.project   = options.xcode.project
+        builder.scheme    = options.xcode.scheme
+        builder.doClean   = options.illuminator.clean.xcode
+
+        # if app name is not specified, make sure that we will only have one to run
+        XcodeUtils.removeExistingApps(BuildArtifacts.instance.xcode) if appName.nil?
+        if builder.buildForAutomation(options.xcode.sdk, hardwareID)
+          puts 'Build succeded'.green
+          options.instruments.appLocation = BuildArtifacts.instance.appLocation(appName)
+        else
+          puts 'Build failed, check logs for results'.red
+          exit builder.exitCode
+        end
       end
     end
 
+    return true unless options.illuminator.task.automate
+
     # Install on real device
     unless hardwareID.nil?
-      appLocation = BuildArtifacts.instance.appLocation(appName)
-      DeviceInstaller.instance.installOnDevice(appLocation, hardwareID)
+      DeviceInstaller.instance.installOnDevice(options.instruments.appLocation, hardwareID)
     end
 
     # Initialize automation

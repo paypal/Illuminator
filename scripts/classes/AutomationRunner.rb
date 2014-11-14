@@ -34,6 +34,7 @@ class AutomationRunner
 
   attr_accessor :appName
   attr_accessor :workspace
+  attr_accessor :appLocation
 
   attr_reader :instrumentsRunner
   attr_reader :javascriptRunner
@@ -67,7 +68,8 @@ class AutomationRunner
     end
 
     # remove directories in the list
-    dirsToRemove.each do |dir|
+    dirsToRemove.each do |d|
+      dir = HostUtils.realpath d
       puts "AutomationRunner cleanup: removing #{dir}"
       FileUtils.rmtree dir
     end
@@ -196,9 +198,8 @@ class AutomationRunner
     raise ArgumentError, 'Path to all tests was not supplied' if options.javascript.testPath.nil?
     raise ArgumentError, 'Implementation was not supplied'    if options.javascript.implementation.nil?
 
-    @appName = options.xcode.appName
-    @appLocation = BuildArtifacts.instance.appLocation(@appName)
-
+    @appName     = options.xcode.appName
+    @appLocation = options.instruments.appLocation
 
     # set up instruments
     @instrumentsRunner.startupTimeout = options.instruments.timeout

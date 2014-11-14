@@ -26,6 +26,7 @@ options.illuminator.clean.xcode = false
 options.illuminator.clean.artifacts = true
 options.illuminator.clean.noDelay = true
 options.illuminator.task.build = true
+options.illuminator.task.automate = true
 options.illuminator.task.setSim = true
 options.illuminator.task.report = true
 options.simulator.device = 'iPhone 5'
