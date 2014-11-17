@@ -231,6 +231,13 @@ var debugAutomator = false;
     automator.lastScenario = null; // state variable for building scenarios of steps
     automator.allScenarioNames = {}; // for ensuring name uniqueness
 
+    // make a lookup array of characters that aren't allowed in tags
+    var disallowedTagChars = "!@#$%^&*()[]{}<>`~,'\"/\\+=;:";
+    automator.disallowedTagChars = {};
+    for (var i = 0; i < disallowedTagChars.length; ++i) {
+        automator.disallowedTagChars[disallowedTagChars[i]] = true;
+    }
+
     /**
      * Create an empty scenario with the given name and tags
      *
@@ -246,6 +253,17 @@ var debugAutomator = false;
             throw new automator.ScenarioSetupException("Can't create Scenario '" + scenarioName + "', because that name already exists");
         }
         automator.allScenarioNames[scenarioName] = true;
+
+        // check for disallowed characters in tag names
+        for (var i = 0; i < tags.length; ++i) {
+            var tag = tags[i];
+            for (var j = 0; j < tag.length; ++j) {
+                c = tag[j];
+                if (automator.disallowedTagChars[c]) {
+                    throw new automator.ScenarioSetupException("Disallowed character '" + c + "' in tag '" + tag + "' in scenario '" + scenarioName + "'");
+                }
+            }
+        }
 
         // create base object
         automator.lastScenario = {
