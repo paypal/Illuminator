@@ -50,25 +50,25 @@ class IlluminatorFramework
     end
 
     # Initialize builder and build
-    if options.illuminator.task.build
-      unless options.instruments.appLocation.nil?
-        puts "Skipping build because appLocation was provided".yellow
-      else
-        builder = AutomationBuilder.new
-        builder.workspace = workspace
-        builder.project   = options.xcode.project
-        builder.scheme    = options.xcode.scheme
-        builder.doClean   = options.illuminator.clean.xcode
+    if (not options.instruments.appLocation.nil?)
+      puts "Skipping build because appLocation was provided".yellow if options.illuminator.task.build
+    elsif (not options.illuminator.task.build)
+      options.instruments.appLocation = BuildArtifacts.instance.appLocation(appName) # assume app is here
+    else
+      builder = AutomationBuilder.new
+      builder.workspace = workspace
+      builder.project   = options.xcode.project
+      builder.scheme    = options.xcode.scheme
+      builder.doClean   = options.illuminator.clean.xcode
 
-        # if app name is not specified, make sure that we will only have one to run
-        XcodeUtils.removeExistingApps(BuildArtifacts.instance.xcode) if appName.nil?
-        if builder.buildForAutomation(options.xcode.sdk, hardwareID)
-          puts 'Build succeded'.green
-          options.instruments.appLocation = BuildArtifacts.instance.appLocation(appName)
-        else
-          puts 'Build failed, check logs for results'.red
-          exit builder.exitCode
-        end
+      # if app name is not specified, make sure that we will only have one to run
+      XcodeUtils.removeExistingApps(BuildArtifacts.instance.xcode) if appName.nil?
+      if builder.buildForAutomation(options.xcode.sdk, hardwareID)
+        puts 'Build succeded'.green
+        options.instruments.appLocation = BuildArtifacts.instance.appLocation(appName)
+      else
+        puts 'Build failed, check logs for results'.red
+        exit builder.exitCode
       end
     end
 
