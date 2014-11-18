@@ -25,7 +25,7 @@ function writeToFile(path, data) {
             UIALogger.logDebug("SDOUT: " + result.stdout);
             UIALogger.logDebug("STDERR: " + result.stderr);
             UIALogger.logDebug("I tried this command: ");
-            UIALogger.logDebug("/bin/sh -c \"echo \\\"$0\\\" | base64 -D -o \\\$1\\\" " + b64stuff + " " + outputPath);
+            UIALogger.logDebug("/bin/sh -c \"echo \\\"\\$0\\\" | base64 -D -o \\\"\\$1\\\" " + b64stuff + " " + outputPath);
             return false;
         }
         return true;

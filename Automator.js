@@ -519,7 +519,7 @@ var debugAutomator = false;
 
         var intendedListPath = config.buildArtifacts.intendedTestList;
         if (!writeToFile(intendedListPath, JSON.stringify({scenarioNames: names}, null, "    "))) {
-            throw new IlluminatorRuntimeException("Could not save intended test list to " + intendedListPath);
+            throw new IlluminatorRuntimeFailureException("Could not save intended test list to " + intendedListPath);
         }
 
         notifyIlluminatorFramework("Saved intended test list to: " + intendedListPath);
