@@ -26,6 +26,15 @@ Create a scenario with the given `scenarioName` and `tags` array.  The `scenario
 #### `.withStep(screenAction, desiredParameters)`
 Add a step to the most recently-created scenario, which will execute the `screenAction` as defined in the AppMap, with an associative array of `desiredParameters` that will be passed to that action.  Returns a reference to the Automator.
 
+#### `.withConditionalStep(condition, screenAction, desiredParameters)`
+Same as `.withStep`, but the step is only added if the `condition` is true.
+
+#### `.withRepeatedStep(screenAction, quantity, desiredParameters)`
+Add the same `screenAction` as a step, `quanitity` times.  The `desiredParameters` can be either an associative array or a function.  If a function, it should accept a 0-indexed integer (`0 <= i < quanitity`) and return an associative array.
+
+#### `.withGeneratedSteps(stepGeneratorFn, desiredParameters)`
+Call `stepGeneratorFn(desiredParameters)` to add steps to the most recently created scenario.
+
 Saving State Information in Automator
 ------------------------------------
 
