@@ -489,7 +489,7 @@ var debugAutomator = false;
             automator.runScenario(scenarioList[i], message);
         }
         dt = getTime() - t0;
-        UIALogger.logMessage("Automation completed in " + secondsToHMS(dt));
+        UIALogger.logMessage("Completed running scenario list (" + scenarioList.length + " scenarios) in " + secondsToHMS(dt));
 
         // create a CSV report for the amount of time spent evaluating selectors
         automator.saveSelectorReportCSV("selectorTimeCostReport");
