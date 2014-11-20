@@ -121,7 +121,9 @@ class TestCase
     attrs.each { |key, value| output << " #{key}=#{value.to_s.encode(:xml => :attr)}" }
     output << ">\n"
 
-    unless @failTag.nil?
+    if not self.ran?
+      output << "    <skipped />\n"
+    elsif (not @failTag.nil?)
       fattrs = {
         "message" => @failMessage,
       }

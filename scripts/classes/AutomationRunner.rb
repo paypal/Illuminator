@@ -100,6 +100,7 @@ class AutomationRunner
       className    = testFileName.sub(".", "_") + "." + testFnName
       @testSuite.addTestCase(className, n)
     end
+    self.saveJunitTestReport
   end
 
 
@@ -120,6 +121,7 @@ class AutomationRunner
     puts "ILLUMINATOR FAILURE TO SORT TESTS".red unless name == @currentTest
     @testSuite[name].pass!
     @currentTest = nil
+    self.saveJunitTestReport
   end
 
   def testListenerGotTestFail message
@@ -134,7 +136,17 @@ class AutomationRunner
       @testSuite[@currentTest].fail message
       @testSuite[@currentTest].stacktrace = @stackTraceLines.join("\n")
       @currentTest = nil
+      self.saveJunitTestReport
     end
+  end
+
+  def weGotTestCrash stacktraceText
+    # tell the current test suite about any failures
+    return if @currentTest.nil?
+    @testSuite[@currentTest].error "The target application appears to have died."
+    @testSuite[@currentTest].stacktrace = stacktraceText
+    @currentTest = nil
+    self.saveJunitTestReport
   end
 
   def testListenerGotLine(status, message)
@@ -145,6 +157,11 @@ class AutomationRunner
     @stackTraceLines         << line if @stackTraceRecord
   end
 
+  def saveJunitTestReport
+    f = File.open(BuildArtifacts.instance.junitReportFile, 'w')
+    f.write(@testSuite.to_xml)
+    f.close
+  end
 
   def runAnnotatedCommand(command)
     puts "\n"
@@ -262,9 +279,6 @@ class AutomationRunner
 
     # DONE LOOPING
     unless @testSuite.nil?
-      f = File.open(BuildArtifacts.instance.junitReportFile, 'w')
-      f.write(@testSuite.to_xml)
-      f.close
       if options.illuminator.task.coverage #TODO: only if there are no crashes?
         if HostUtils.which("gcovr").nil?
           puts "Skipping requested coverage generation because gcovr does not appear to be in the PATH".yellow
@@ -375,11 +389,8 @@ class AutomationRunner
       crashes += 1
 
       # tell the current test suite about any failures
-      unless @currentTest.nil?
-        @testSuite[@currentTest].error "The target application appears to have died."
-        @testSuite[@currentTest].stacktrace = crashText.join("")
-        @currentTest = nil
-      end
+      self.weGotTestCrash crashText.join("")
+
     end
     crashes
   end
