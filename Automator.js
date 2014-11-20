@@ -393,6 +393,58 @@ var debugAutomator = false;
     };
 
 
+    /**
+     * Add steps to the most recently created scenario by running a function that creates them
+     *
+     * @param stepGeneratorFn the function that will generate the steps
+     * @param desiredParameters associative array of parameters
+     * @return this
+     */
+    automator.withGeneratedSteps = function(stepGeneratorFn, desiredParameters) {
+        stepGeneratorFn(desiredParameters);
+        return this;
+    };
+
+    /**
+     * Add a step to the most recently created scenario if the given condition is true at scenario creation time
+     *
+     * @param screenAction an AppMap screen action
+     * @param desiredParameters associative array of parameters
+     * @return this
+     */
+    automator.withConditionalStep = function(condition, screenAction, desiredParameters) {
+        if(condition){
+            automator.withStep(screenAction, desiredParameters)
+        }
+        return this;
+    };
+
+    /**
+     * Add a repeated step to the most recently created scenario
+     *
+     * @param screenAction an AppMap screen action
+     * @param quantity the number of times that the step should be executed
+     * @param desiredParameters associative array of parameters, or a function taking 0-indexed run number that returns parameters
+     * @return this
+     */
+    automator.withRepeatedStep = function(screenAction, quantity, desiredParameters) {
+        var mkParm;
+
+        // use the function they made, or make a function that returns the params they supplied
+        if ((typeof desiredParameters) == "function") {
+            mkParm = desiredParameters;
+        } else {
+            mkParm = function (_) {
+                return desiredParameters;
+            };
+        }
+
+        for (var i = 0; i < quantity; ++i) {
+            automator.withStep(screenAction, mkParm(i));
+        }
+        return this;
+    };
+
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////
