@@ -326,7 +326,7 @@
 				GCC_PREFIX_HEADER = "AutomatorSampleApp/AutomatorSampleApp-Prefix.pch";
 				INFOPLIST_FILE = "AutomatorSampleApp/AutomatorSampleApp-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "3D3DC5F3-EE75-405A-A0D8-C71FACACBDD3";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -341,7 +341,7 @@
 				GCC_PREFIX_HEADER = "AutomatorSampleApp/AutomatorSampleApp-Prefix.pch";
 				INFOPLIST_FILE = "AutomatorSampleApp/AutomatorSampleApp-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "9B64A4E1-CAD8-4D43-AE12-7095AB3949D3";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
