@@ -21,9 +21,7 @@ class IntermittentFailureDetector < SaltinelListener
   end
 
   def trigger
-    # assume developer has set eventSink already
-    @eventSink.startDetectorTriggered unless @alreadyStarted
-    @alreadyStarted = true
+    @eventSink.intermittentFailureDetectorTriggered
   end
 
   def receive message

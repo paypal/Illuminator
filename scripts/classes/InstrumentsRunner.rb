@@ -97,15 +97,19 @@ class InstrumentsRunner
     end
   end
 
-
   def startDetectorTriggered
     @fullyStarted = true
   end
 
-  def intermittentFailureDetectorTriggered
-    @shouldAbort = true
+  def intermittentFailureDetectorTriggered message
+    @fullyStarted = true
+    self.forceStop("Detected an intermittent failure condition - " + message)
   end
 
+  def forceStop why
+    puts "\n #{why}".red
+    @shouldAbort = true
+  end
 
   def runOnce saltinel
     reportPath = BuildArtifacts.instance.instruments
@@ -172,7 +176,6 @@ class InstrumentsRunner
             if @shouldAbort
               successfulRun = false
               doneReadingOutput = true
-              puts "\n Detected an intermittent failure condition - ".red
               self.killInstruments(r, w, pid)
 
             elsif IO.select([r], nil, nil, @startupTimeout) then
