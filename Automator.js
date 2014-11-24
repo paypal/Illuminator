@@ -35,7 +35,7 @@ var debugAutomator = false;
     automator.callback = {
         onInit: function () { UIALogger.logDebug("Running default automator 'onInit' callback"); },
         prepare: function () { UIALogger.logDebug("Running default automator 'prepare' callback"); },
-        preScenario: function (parm) { UIALogger.logDebug("Running default automator 'preScenario' callback " + JSON.stringify(parm)); },
+        preScenario: function (parm) { return UIALogger.logDebug("Returning true from default automator 'preScenario' callback " + JSON.stringify(parm)) || true; },
         onScenarioPass: function (parm) { UIALogger.logDebug("Running default automator 'onScenarioPass' callback " + JSON.stringify(parm)); },
         onScenarioFail: function (parm) { UIALogger.logDebug("Running default automator 'onScenarioFail' callback " + JSON.stringify(parm)); },
         complete: function (parm) { UIALogger.logDebug("Running default automator 'complete' callback " + JSON.stringify(parm)); }
@@ -67,7 +67,11 @@ var debugAutomator = false;
     /**
      * set the callback function for pre-scenario initialization -- called before each scenario run
      *
-     * @param fn the callback function, taking no arguments and whose return value is ignored
+     * This callback function may return boolean false, indicating that the pre-scenario setup has failed.
+     * If the return value is false, Illuminator will restart Instruments (up to once per scenario) under
+     * the assumption that the application has reached a dead-end state and must be started fresh.
+     *
+     * @param fn the callback function, taking no arguments and returning false if setup was unsuccessful
      */
     automator.setCallbackPreScenario = function (fn) {
         automator.callback["preScenario"] = fn;
@@ -127,11 +131,18 @@ var debugAutomator = false;
     automator._executeCallback = function (callbackName, parameters, doLogFail, doLogScreen) {
         try {
             // call with parameters if supplied and return normally
+            var ret;
             if (parameters === undefined) {
-                automator.callback[callbackName]();
+                ret = automator.callback[callbackName]();
             } else {
-                automator.callback[callbackName](parameters);
+                ret = automator.callback[callbackName](parameters);
             }
+
+            // special case for preScenario callback.  TODO: make this less special-casey
+            if ("preScenario" == callbackName && false === ret) {
+                notifyIlluminatorFramework("Request instruments restart");
+            }
+
             return true;
         } catch (e) {
             var failMessage = "Callback '" + callbackName + "' failed: " + e;

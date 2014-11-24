@@ -79,7 +79,7 @@ Store `callbackFn`, running it only once -- after the initialization of all auto
 Store `callbackFn`, running it only once -- before any test scenarios run -- if test scenarios are going to be run.  `callbackFn` will be called with no arguments, and its return value will be ignored.
 
 #### `.setCallbackPreScenario(callbackFn)`
-Store `callbackFn`, running it before each test scenario.  `callbackFn` will be called with a single argument (an associative array described below), and its return value will be ignored.
+Store `callbackFn`, running it before each test scenario.  `callbackFn` will be called with a single argument (an associative array described below), and its return value (if `false`) will determine whether the currently-running instruments instance should be closed (and a new one opened).  In other words, the return value of the callback indicates whether it was able to successfully prepare the environment for the scenario to run.
 
 * `scenarioName` - the name of the scenario about to run
 

@@ -56,16 +56,20 @@ class TestCase
   def initialize(className, name)
     @className    = className
     @name         = name
+    self.reset!
+  end
+
+  def <<(stdoutLine)
+    @stdout << stdoutLine
+  end
+
+  def reset!
     @stdout       = []
     @stacktrace   = ""
     @failMessage  = ""
     @failTag      = nil
     @timeStart    = nil
     @timeFinish   = nil
-  end
-
-  def <<(stdoutLine)
-    @stdout << stdoutLine
   end
 
   def start!

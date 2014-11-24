@@ -15,6 +15,10 @@ module SaltinelAgentEventSink
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
+  def saltinelAgentGotRestartRequest
+    puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
+  end
+
 end
 
 # Saltinel Agent handles all known saltinel messages and runs callbacks
@@ -24,9 +28,10 @@ class SaltinelAgent < SaltinelListener
 
   def onInit
     @recognizers = {
-      "recognizeTestList"   => /Saved intended test list to: (.*)/,
-      "recognizeTestDefs"   => /Saved scenario definitions to: (.*)/,
-      "recognizeStacktrace" => /Stack trace follows:/,
+      "recognizeTestList"       => /Saved intended test list to: (.*)/,
+      "recognizeTestDefs"       => /Saved scenario definitions to: (.*)/,
+      "recognizeStacktrace"     => /Stack trace follows:/,
+      "recognizeRestartRequest" => /Request instruments restart/,
     }
   end
 
@@ -42,6 +47,10 @@ class SaltinelAgent < SaltinelListener
 
   def recognizeStacktrace _
     @eventSink.saltinelAgentGotStacktraceHint
+  end
+
+  def recognizeRestartRequest _
+    @eventSink.saltinelAgentGotRestartRequest
   end
 
   def onSaltinel innerMessage

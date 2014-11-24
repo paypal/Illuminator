@@ -44,6 +44,7 @@ class AutomationRunner
     @testDefs          = nil
     @testSuite         = nil
     @currentTest       = nil
+    @restartedTests    = nil
     @stackTraceLines   = nil
     @stackTraceRecord  = false
     @javascriptRunner  = JavascriptRunner.new
@@ -89,6 +90,7 @@ class AutomationRunner
 
   def saltinelAgentGotScenarioList jsonPath
     return unless @testSuite.nil?
+    @restartedTests = {}
     rawList = JSON.parse( IO.read(jsonPath) )
 
     # create a test suite, and add test cases to it.  look up class names from test defs
@@ -103,6 +105,19 @@ class AutomationRunner
     self.saveJunitTestReport
   end
 
+  def saltinelAgentGotRestartRequest
+    # foobar
+    puts "ILLUMINATOR FAILURE TO ORGANIZE".red if @testSuite.nil?
+    puts "ILLUMINATOR FAILURE TO ORGANIZE 2".red if @currentTest.nil?
+    if @restartedTests[@currentTest]
+      puts "Denying restart request for previously-restarted scenario '#{@currentTest}'".yellow
+    else
+      @testSuite[@currentTest].reset!
+      @restartedTests[@currentTest] = true
+      @currentTest = nil
+      @instrumentsRunner.forceStop "Got restart request"
+    end
+  end
 
   def saltinelAgentGotStacktraceHint
     @stackTraceRecord = true
@@ -258,7 +273,7 @@ class AutomationRunner
     begin
       self.removeAnyAppCrashes
 
-      # Setup javascript
+      # Setup javascript to run the appropriate list of tests (initial or leftover)
       if @testSuite.nil?
         self.configureJavascriptRunner options
       else

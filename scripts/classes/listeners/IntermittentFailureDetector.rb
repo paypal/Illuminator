@@ -3,7 +3,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'SaltinelListener.rb
 
 module IntermittentFailureDetectorEventSink
 
-  def intermittentFailureDetectorTriggered
+  def intermittentFailureDetectorTriggered message
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
@@ -28,7 +28,9 @@ class IntermittentFailureDetector < SaltinelListener
     super # run the SaltinelListener processor
 
     # error cases that should trigger a restart
-    self.trigger if /Automation Instrument ran into an exception while trying to run the script.  UIATargetHasGoneAWOLException/ =~ message.fullLine
+    if /Automation Instrument ran into an exception while trying to run the script.  UIATargetHasGoneAWOLException/ =~ message.fullLine
+      self.trigger "UIATargetHasGoneAWOLException"
+    end
   end
 
   def onSaltinel innerMessage
