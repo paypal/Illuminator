@@ -79,31 +79,13 @@ var debugBridge = false;
             jsonOutput = null;
         }
 
-        var ruby_check   = jsonOutput["ruby_check"];
-        var status_check = jsonOutput["status_check"];
-        var response     = jsonOutput["response"];
-
-        // this sanity check verifies that the ruby script was able to execute properly
-        if (ruby_check === undefined) {
-            throw new bridge.SetupException("Bridge failed ruby check for '" + UID + "'.  "
-                                            + "Check ruby errors by running bridge script manually.");
-        }
+        var success       = jsonOutput["success"];
+        var bridgeFailMsg = jsonOutput["message"];
+        var response      = jsonOutput["response"];
 
         // this status check tries to figure out whether the connection to the sim was successful
-        if (response === undefined) {
-            if (status_check === undefined)    throw new IlluminatorRuntimeFailureException("Bridge status check missing for '" + UID + "'.");
-            if (status_check == "initialized") throw new IlluminatorRuntimeFailureException("Bridge appears not to have connected to app");
-            if (status_check == "errbacked")   throw new IlluminatorRuntimeFailureException("Bridge errbacked with '" + jsonOutput["error_message"] + "'.");
-            if (status_check == "streamed")    throw new IlluminatorRuntimeFailureException("Bridge received data but did not understand the response");
-        }
-
-
-        // this checks whether we got the response we were supposed to
-        if (response["callUID"] == UID) {
-            UIALogger.logDebug ("Bridge got expected return value: '" + response["callUID"] + "'");
-        } else {
-            UIALogger.logDebug ("Bridge got UNEXPECTED return value: '" + response["callUID"] + "'"
-                                + " instead of: '" + UID + "'");
+        if (!success) {
+            throw new IlluminatorRuntimeFailureException("Bridge call failed: " + bridgeFailMsg);
         }
 
         return response["result"];
