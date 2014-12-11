@@ -9,7 +9,7 @@ Top 3 features
 
 #### 1. Ease of accessing and interacting with UI elements
 
-Illuminator is inspired by [tuneup.js](https://github.com/alexvollmer/tuneup_js) and [mechanic.js](https://github.com/jaykz52/mechanic), combining and improving [the best features of both](docs/Extensions.md).  Accessing UI elements can be done relative to a root element, by a fuzzy search of the element tree (easily extensible for app-specific capabilities), or by some combination of the two -- even if the element has not yet appeared on the screen.
+Illuminator is inspired by [tuneup.js](https://github.com/alexvollmer/tuneup_js) and [mechanic.js](https://github.com/jaykz52/mechanic), combining and improving [the best features of both](docs/Extensions.md).  [Accessing UI elements](docs/Selectors.md) can be done relative to a root element, by a fuzzy search of the element tree (easily extensible for app-specific capabilities), or by some combination of the two -- even if the element has not yet appeared on the screen.
 
 #### 2. Ease of scripting and executing test scenarios across different target devices
 
@@ -37,6 +37,7 @@ Installation
 Further Documentation
 ---------------------
 * [Quick start guide](docs/README.md)
+* [Selecting elements](docs/Selectors.md)
 * [Working with elements](docs/Extensions.md)
 * [Defining screens](docs/AppMap.md)
 * [Writing tests](docs/Automator.md)

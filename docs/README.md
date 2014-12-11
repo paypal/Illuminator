@@ -87,7 +87,7 @@ A script is available to run integration test files from the command line: `auto
 
 Example usage of the `Example.js` file above:
 ```
-$ ruby ./scripts/automationTests.rb -x /Applications/Xcode.app -p /path/to/Example.js -a MyTinyApp -s MyTinyApp -i MyIphone -t myTestTag
+$ ruby ./scripts/automationTests.rb -p /path/to/Example.js -a MyTinyApp -s MyTinyApp -i MyIphone -t myTestTag
 ```
 
 
@@ -96,6 +96,7 @@ then run the test script, outputting the log to the terminal.
 
 Further Documentation
 ---------------------
+* [Selecting elements](Selectors.md)
 * [Working with elements](Extensions.md)
 * [Defining screens](AppMap.md)
 * [Writing tests](Automator.md)

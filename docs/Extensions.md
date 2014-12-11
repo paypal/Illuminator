@@ -4,76 +4,6 @@ Extensions.js Reference
 Illuminator extends many of the UIAElement types provided by [Apple's UIAutomation system](https://developer.apple.com/library/ios/documentation/DeveloperTools/Reference/UIAutomationRef/_index.html).
 
 
-Element Selectors in Illuminator
---------------------------------
-
-One of the main innovations in Illuminator is the way that elements can be accessed: **selector**s.  Assume you have a root element `mainWindow`:
-
-```javascript
-var mainWindow = UIATarget.localTarget().frontMostApp().mainWindow();
-```
-
-Normally in UIAutomation, to access a screen element you must access it by direct reference:
-
-```javascript
-mainWindow.tableViews()["My table"].cells()["My cell"]buttons()["My button"];
-```
-
-A common problem in UIAutomation is that referring to an element in this way can leave you with a `UIAElementNil` if your desired element has not yet been placed on the screen.  To allow for this, Illuminator uses a **selector** to indirectly refer to a given screen element; selectors can be passed as data, and evaluated repeatedly until the element to which they refer becomes available.
-
-There are 4 types of selectors in Illuminator, all working relative to a parent element, e.g.:
-
-```javascript
-mainWindow.getChildElement(mySelector);
-```
-
-
-#### 1. Lookup functions
-
-A lookup function takes the parent element as an argument and returns a child element.  In the `"My button"` example, it would look like the following:
-
-```javascript
-var mySelector = function (myMainWindow) {
-    return myMainWindow.tableViews()["My table"].cells()["My cell"]buttons()["My button"];
-};
-```
-
-Lookup functions are the fastest type of selector, and will return one and only one element (`UIAElementNil` or otherwise).
-
-
-#### 2. Strings
-
-A string selector provides comparable speed to a lookup function, but without the extra syntax required to write a function.  The string is `eval`'d, with the parent element in the scope as `element`.
-
-```javascript
-var mySelector = 'element.tableViews()["My table"].cells()["My cell"]buttons()["My button"]';
-```
-
-Whether the use of `eval` is good programming practice is beyond the scope of this document.
-
-
-#### 3. Criteria
-
-A criteria selector is a javascript object containing values that will be matched against each element in the tree beneath the parent element.  These criteria fields are the same as those in the `.find()` function described elsewhere in this document.
-
-```javascript
-var mySelector = {name: "My button", UIAType: "UIAButton"};
-```
-
-Criteria selectors can be much slower than lookup functions or string selectors (0.2-0.7 seconds is typical, depending on how many elements are in the tree), but have the advantage of being resilient to any changes in the app's element hierarchy.
-
-Unlike lookup functions or strings, selectors can return multiple elements, or none.   Because of the relatively costly access time, Illuminator logs to the console the direct references to any elements found by evaluating a selector.
-
-
-#### 4. Criteria Array
-
-To help constrain the number of elements returned by a critera selector (in cases where there may be several matches), criteria can be chained together in array form.  This can be an expensive operation, as all elements returned by the first selector in the array will be used as parent elements for the second selector in the array, and so on.
-
-```javascript
-var mySelector = [{name: "My table", UIAType: "UIATableView"},
-                  {name: "My cell", UIAType: "UIATableCell"},
-                  {name: "My button", UIAType: "UIAButton"}];
-```
 
 General Purpose Functions Reference
 -----------------------------------
@@ -237,19 +167,7 @@ Logs the output of `.getChildElementReferences` to the console.
 Returns `true` if this element equals `element` -- they (and all ancestors) have the same `name()`, type, `isVisible()`, and `rect()`.  Note that this function is not necessarily immune to false positives, although they are highly unlikely to exist.
 
 #### `.find(criteria, varName)` - UIAElement
-Finds any element in the tree beneath this element that matches the `criteria`.  Returns an associative array of elements, keyed off their string selectors (which will begin with `varName`).  The following criteria fields are accepted:
-
-* `UIAType`, matching the class name of the UIAElement
-* `nameRegex`, a regular expression that will be applied to the name() method
-* One of the following property names matching the actual value of that property:
-    * `rect`
-    * `hasKeyboardFocus`
-    * `isEnabled`
-    * `isValid`
-    * `isVisible`
-    * `label`
-    * `name`
-    * `value`
+Finds any element in the tree beneath this element that matches the `criteria`.  Returns an associative array of elements, keyed off their (stringified) accessors (which will begin with `varName`).  The criteria must be an object -- the fields are as defined by [criteria selectors](Selectors.md).
 
 For example, a valid criteria object might look like the following:
 
@@ -264,19 +182,19 @@ Same as `.firstWithName(name)` for UIAElementArray objects, but does a regular e
 Given a valid `cellPredicate` (identical to UIAutomation's `.firstWithPredicate`), scroll through the UIATableView until a matching cell is found.  This is necessary in cases where content is dynamically loaded, because the `.name()` property is not always available for cells in table views.
 
 #### `.getChildElement(selector)` - UIAElement
-Returns the element retrieved by the given `selector`, relative to this element.
+Returns the element retrieved by the given [`selector`](Selectors.md), relative to this element.
 
 #### `.getChildElementByScrolling(elementDescription, selector)` - UIATableView
-Given a valid selector (relative to `this`), scroll through the UIATableView until the `selector` returns a non-nil element.  This is necessary in cases where UIAutomation does not think that an item in a table (like a button) has a scrollable ancestor.  `elementDescription` is used for logging purposes if the selector is unable to return a valid element.
+Given a valid selector (relative to `this`), scroll through the UIATableView until the [`selector`](Selectors.md) returns a non-nil element.  This is necessary in cases where UIAutomation does not think that an item in a table (like a button) has a scrollable ancestor.  `elementDescription` is used for logging purposes if the selector is unable to return a valid element.
 
 #### `.getChildElementReferences(varName, visibleOnly)` - UIAElement
 Returns an array of strings (relative to `varName` indicating the string selector of child elements.  Optionally, `visibleOnly` controls whether to traverse hidden elements.
 
 #### `.getChildElements(criteria)` - UIAElement
-Returns an associative array of UIAElements matching the `criteria` selector, keyed on the string version of that element's selector.
+Returns an associative array of UIAElements matching the `criteria` [selector](Selectors.md), keyed on the string version of that element's selector.
 
 #### `.getOneChildElement(selector)` - UIAElement
-Returns one non-nil UIAElement specified by the `selector`; throws an exception if 0 or multiple elements are returned.
+Returns one non-nil UIAElement specified by the [`selector`](Selectors.md); throws an exception if 0 or multiple elements are returned.
 
 #### `.isNotNil()` - UIAElement, UIAElementNil
 Returns true if the element is not `UIAElementNil`.
@@ -285,7 +203,7 @@ Returns true if the element is not `UIAElementNil`.
 Similar to `.isVisible()` for ordinary UIAElement objects but always returns false.  Provided for compatibility.
 
 #### `.preProcessSelector(selector)` - UIAElement
-This is a prototype function that can be overridden by an app-specific preprocessing function.  Any `selector` that can be passed to any selector evaluation function must pass through this function first, so by overriding this function in your application you can allow new functionality or criteria to be understood.  See below for an example of this.
+This is a prototype function that can be overridden by an app-specific preprocessing function.  Any [`selector`](Selectors.md) that can be passed to any selector evaluation function must pass through this function first, so by overriding this function in your application you can allow new functionality or criteria to be understood.  See the [Selectors appendix](Selectors.md) for an example of this.
 
 #### `.reduce(callback, initialValue)` - UIAElement
 Applies a `callback` function to every element in the tree.  The callback must accept the following arguments:
@@ -309,10 +227,10 @@ If the keyboard is not visible, taps the element.  If `clear` is `true`, deletes
 Wait `timeout` seconds for the element to become visible.  If it does, tap it; if not, throw an exception.
 
 #### `.waitForChildExistence(timeout, existenceState, description, selector)` - UIAElement
-Wait for a `selector` called `description` from this element to return an element (or not, as defined in `existenceState`) in the given `timeout`.  If `existenceState` is `true`, a non-nil element will be returned (or an exception thrown).  If `false`, a `UIAElementNil` will be returned for success and an exception will be thrown for failure.
+Wait for a [`selector`](Selectors.md) called `description` from this element to return an element (or not, as defined in `existenceState`) in the given `timeout`.  If `existenceState` is `true`, a non-nil element will be returned (or an exception thrown).  If `false`, a `UIAElementNil` will be returned for success and an exception will be thrown for failure.
 
 #### `.waitForChildSelect(timeout, selectors)` - UIAElement
-Wait `timeout` seconds for any members of an associative array of `selectors` (keyed by an arbitrary label) to return a valid element.  Elements are returned in an associative array keyed by the same arbitrary labels, or else an exception is thrown.
+Wait `timeout` seconds for any members of an associative array of [`selectors`](Selectors.md) (keyed by an arbitrary label) to return a valid element.  Elements are returned in an associative array keyed by the same arbitrary labels, or else an exception is thrown.
 
 #### `.waitForDeviceOrientation(timeout, orientation)` - UIATarget
 Wait `timeout` seconds for the orientation to equal `orientation` (e.g. `UIA_DEVICE_ORIENTATION_PORTRAIT`)
@@ -339,42 +257,3 @@ Wait `timeout` seconds for `.isVisible()` on this element to be equal to `visibi
 Same as `.withName(name)` for UIAElementArray objects, but does a regular expression match on the given `pattern`.
 
 
-
-Preprocessing Selectors - an Example
-------------------------------------
-
-This trivial preprocessor example intercepts a custom field -- a currency `amount` specified as a float -- and converts it to a condition on the `name` field.
-
-```javascript
-function preProcessSelectorWithCurrency(originalSelector) {
-    if (isHardSelector(originalSelector)) return originalSelector;
-
-    // simplify case by making everything an array
-    var selector;
-    if (originalSelector instanceof Array) {
-        selector = originalSelector;
-    } else {
-        selector = [originalSelector];
-    }
-
-    var outputSelector = [];
-    // iterate over the selectors in the chain
-    for (var i = 0; i < selector.length; ++i) {
-        // iterate over the fields in one criteria selector and build the modified criteria
-        var criteria = {};
-        for (var k in selector[i]) {
-            // keep all fields the same, but if we encounter "amount" then convert it
-            var v = selector[i][k];
-            if (key == "amount") {
-                criteria["name"] = "$" + v.toFixed(2);
-            } else {
-                criteria[k] = v;
-            }
-        }
-        outputSelector.push(criteria);
-    }
-    return outputSelector;
-}
-// immediately place this function inside prototype
-UIAElement.prototype["preProcessSelector"] = preProcessSelectorWithCurrency;
-```
