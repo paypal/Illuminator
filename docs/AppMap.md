@@ -123,7 +123,7 @@ One further note on implementation of actions:
 Define a parameter on the current action, named `paramName` and having the description `desc`.  If `required`, the Automator will throw an exception if this parameter is not provided to the action.  `useInSummary` controls whether the Automator should log the value of this parameter to the console (e.g. the user might prefer to set this to `false` in cases where the value of the parameter will be a large amount of text or a function definition).  `useInSummary` is optional and defaults to `false`.  Returns a reference to the AppMap.
 
 #### `.createInputMethod(inputMethodName, isActiveFn, selector)`
-Define an input method called `inputMethodName` with a function `isActiveFn` that returns `true` when this input method is accessible and visible.  Also, a `selector` to be used in `target().getChildElement(selector)` to retrieve the root element of this input method.
+Define an input method called `inputMethodName` with a function `isActiveFn` that returns `true` when this input method is accessible and visible.  Also, a [`selector`](Selectors.md) to be used in `target().getChildElement(selector)` to retrieve the root element of this input method.
 
 #### `.hasinputMethod(inputMethodName)`
 Return `true` if `inputMethodName` is defined in the AppMap.
@@ -162,36 +162,36 @@ The ActionBuilder is located at `appmap.actionBuilder.makeAction`.  It has the f
 * `screenIsActive`: containing functions to build functions to indicate whether a screen is active
 * `.verifyElement`: containing functions to build actions for verifying element properties
 * `.element`: containing functions to build actions for interactions with elements
-* `.selector`: containing functions that perform actions in response to a selector
+* `.selector`: containing functions that perform actions in response to a [selector](Selectors.md)
 
 The following functions are defined relative to the ActionBuilder.
 
 #### `.screenIsActive.byElement(screenName, elementName, selector, timeout)`
-Return a function (taking no arguments) that waits up to `timeout` seconds for `selector` to become valid.  If the `selector` becomes valid, the function returns true.  Otherwise, it logs a message about `screenName` not being active because the selector referring to `elementName` did not become valid, and returns false.
+Return a function (taking no arguments) that waits up to `timeout` seconds for [`selector`](Selectors.md) to become valid.  If the `selector` becomes valid, the function returns true.  Otherwise, it logs a message about `screenName` not being active because the selector referring to `elementName` did not become valid, and returns false.
 
 #### `.verifyElement.editability(selector, elementName, retryDelay)`
-Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the element returned by the `selector` called `elementName` matches the editability state `expected`.
+Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the element returned by the [`selector`](Selectors.md) called `elementName` matches the editability state `expected`.
 
 #### `.verifyElement.enabled(selector, elementName, retryDelay)`
-Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the element returned by the `selector` called `elementName` matches the `.enabled()` state `expected`.
+Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the element returned by the [`selector`](Selectors.md) called `elementName` matches the `.enabled()` state `expected`.
 
 #### `.verifyElement.existence(selector, elementName, retryDelay)`
-Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the `selector` called `elementName` produces an element (or not) according to `expected`.
+Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the [`selector`](Selectors.md) called `elementName` produces an element (or not) according to `expected`.
 
 #### `.verifyElement.visibility(selector, elementName, retryDelay)`
-Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the element returned by the `selector` called `elementName` matches the `.isVisible()` state `expected`.
+Return a function (taking an object with fields {`expected`: boolean} as its only argument) that verifies whether the element returned by the [`selector`](Selectors.md) called `elementName` matches the `.isVisible()` state `expected`.
 
 #### `.element.svtap(selector, elementName, retryDelay)`
-Return a function (taking no arguments) that `.svtap(4)`s the element returned by the `selector` called `elementName`.
+Return a function (taking no arguments) that `.svtap(4)`s the element returned by the [`selector`](Selectors.md) called `elementName`.
 
 #### `.element.tap(selector, elementName, retryDelay)`
-Return a function (taking no arguments) that `.tap()`s the element returned by the `selector` called `elementName`.
+Return a function (taking no arguments) that `.tap()`s the element returned by the [`selector`](Selectors.md) called `elementName`.
 
 #### `.element.typeString(selector, elementName, retryDelay)`
-Return a function (taking an object with fields {`text`: string, `clear`: boolean} as its only argument) that types the `text` into the element returned by the `selector` called `elementName` (`clear`ing it first if desired).
+Return a function (taking an object with fields {`text`: string, `clear`: boolean} as its only argument) that types the `text` into the element returned by the [`selector`](Selectors.md) called `elementName` (`clear`ing it first if desired).
 
 #### `.element.vtap(selector, elementName, retryDelay)`
-Return a function (taking no arguments) that `.vtap(4)`s the element returned by the `selector` called `elementName`.
+Return a function (taking no arguments) that `.vtap(4)`s the element returned by the [`selector`](Selectors.md) called `elementName`.
 
 #### `.selector.verifyExists(retryDelay, parentSelector)`
-Return a function (taking an object with fields {`selector`: selector} as its only argument) that asserts the existence of the element returned by the `selector` from the element returned by the `parentSelector`.
+Return a function (taking an object with fields {`selector`: [selector](Selectors.md)} as its only argument) that asserts the existence of the element returned by the [selector](Selectors.md) relative to the element returned by the `parentSelector`.
