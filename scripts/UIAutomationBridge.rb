@@ -163,7 +163,7 @@ end
 
 # build the request that will go the server
 requestHash = {}
-requestHash['argument'] = options["jsonArgument"]
+requestHash['argument'] = options["jsonArgument"] unless options["jsonArgument"].nil?
 requestHash["selector"] = options["selector"]
 requestHash["callUID"] = options["callUID"]
 request = requestHash.to_json
