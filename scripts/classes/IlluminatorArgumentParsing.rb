@@ -35,7 +35,7 @@ class IlluminatorParser < OptionParser
     illuminatorOptions.xcode.scheme  = @_options["scheme"] unless @_options["scheme"].nil?
 
     illuminatorOptions.illuminator.entryPoint      = @_options["entryPoint"] unless @_options["entryPoint"].nil?
-    illuminatorOptions.illuminator.test.randomSeed = @_options["randomSeed"] unless @_options["randomSeed"].nil?
+    illuminatorOptions.illuminator.test.randomSeed = @_options["randomSeed"].to_i unless @_options["randomSeed"].nil?
     illuminatorOptions.illuminator.test.tags.any   = @_options["tagsAny"] unless @_options["tagsAny"].nil?
     illuminatorOptions.illuminator.test.tags.all   = @_options["tagsAll"] unless @_options["tagsAll"].nil?
     illuminatorOptions.illuminator.test.tags.none  = @_options["tagsNone"] unless @_options["tagsNone"].nil?
@@ -59,7 +59,7 @@ class IlluminatorParser < OptionParser
 
     illuminatorOptions.instruments.appLocation = @_options["appLocation"] unless @_options["appLocation"].nil?
     illuminatorOptions.instruments.doVerbose   = @_options["verbose"] unless @_options["verbose"].nil?
-    illuminatorOptions.instruments.timeout     = @_options["timeout"] unless @_options["timeout"].nil?
+    illuminatorOptions.instruments.timeout     = @_options["timeout"].to_i unless @_options["timeout"].nil?
 
     illuminatorOptions.javascript.testPath       = @_options["testPath"] unless @_options["testPath"].nil?
     illuminatorOptions.javascript.implementation = @_options["implementation"] unless @_options["implementation"].nil?
