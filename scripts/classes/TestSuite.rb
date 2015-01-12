@@ -3,14 +3,16 @@ require 'date'
 class TestSuite
 
   attr_reader :testCases
+  attr_reader :implementation
 
-  def initialize
-    @testCases = []
-    @caseLookup = {}
+  def initialize(implementation)
+    @implementation = implementation
+    @testCases      = []
+    @caseLookup     = {}
   end
 
   def addTestCase(className, name)
-    test = TestCase.new(className, name)
+    test = TestCase.new(@implementation, className, name)
     @testCases << test
     @caseLookup[name] = test
   end
@@ -50,12 +52,14 @@ end
 class TestCase
   attr_reader :name
   attr_reader :className
+  attr_reader :implementation
 
   attr_accessor :stacktrace
 
-  def initialize(className, name)
-    @className    = className
-    @name         = name
+  def initialize(implementation, className, name)
+    @implementation = implementation
+    @className      = className
+    @name           = name
     self.reset!
   end
 
@@ -117,7 +121,7 @@ class TestCase
   def to_xml
     attrs = {
       "name"      => @name,
-      "classname" => @className,
+      "classname" => "#{@implementation}.#{@className}",
       "time"      => self.time,
     }
 
