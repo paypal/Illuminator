@@ -94,7 +94,7 @@ class AutomationRunner
     rawList = JSON.parse( IO.read(jsonPath) )
 
     # create a test suite, and add test cases to it.  look up class names from test defs
-    @testSuite = TestSuite.new
+    @testSuite = TestSuite.new(@implementation)
     rawList["scenarioNames"].each do |n|
       test = @testDefs.byName(n)
       testFileName = test["inFile"]
@@ -230,8 +230,9 @@ class AutomationRunner
     raise ArgumentError, 'Path to all tests was not supplied' if options.javascript.testPath.nil?
     raise ArgumentError, 'Implementation was not supplied'    if options.javascript.implementation.nil?
 
-    @appName     = options.xcode.appName
-    @appLocation = options.instruments.appLocation
+    @appName        = options.xcode.appName
+    @appLocation    = options.instruments.appLocation
+    @implementation = options.javascript.implementation
 
     # set up instruments
     @instrumentsRunner.startupTimeout = options.instruments.timeout
