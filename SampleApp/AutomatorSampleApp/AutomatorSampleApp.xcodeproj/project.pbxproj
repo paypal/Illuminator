@@ -13,8 +13,7 @@
 		88945DDF18F5AC4E00F02E4A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 88945DDD18F5AC4E00F02E4A /* InfoPlist.strings */; };
 		88945DE118F5AC4E00F02E4A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945DE018F5AC4E00F02E4A /* main.m */; };
 		88945DE518F5AC4E00F02E4A /* PPHAAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945DE418F5AC4E00F02E4A /* PPHAAppDelegate.m */; };
-		88945DE818F5AC4E00F02E4A /* Main_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 88945DE618F5AC4E00F02E4A /* Main_iPhone.storyboard */; };
-		88945DEB18F5AC4E00F02E4A /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 88945DE918F5AC4E00F02E4A /* Main_iPad.storyboard */; };
+		88945DE818F5AC4E00F02E4A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 88945DE618F5AC4E00F02E4A /* Main.storyboard */; };
 		88945DEE18F5AC4E00F02E4A /* PPHAViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945DED18F5AC4E00F02E4A /* PPHAViewController.m */; };
 		88945DF018F5AC4E00F02E4A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 88945DEF18F5AC4E00F02E4A /* Images.xcassets */; };
 		88945E1218F5ADC800F02E4A /* PPAutomationBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E0E18F5ADC800F02E4A /* PPAutomationBridge.m */; };
@@ -33,8 +32,7 @@
 		88945DE218F5AC4E00F02E4A /* AutomatorSampleApp-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AutomatorSampleApp-Prefix.pch"; sourceTree = "<group>"; };
 		88945DE318F5AC4E00F02E4A /* PPHAAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PPHAAppDelegate.h; sourceTree = "<group>"; };
 		88945DE418F5AC4E00F02E4A /* PPHAAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PPHAAppDelegate.m; sourceTree = "<group>"; };
-		88945DE718F5AC4E00F02E4A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPhone.storyboard; sourceTree = "<group>"; };
-		88945DEA18F5AC4E00F02E4A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPad.storyboard; sourceTree = "<group>"; };
+		88945DE718F5AC4E00F02E4A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		88945DEC18F5AC4E00F02E4A /* PPHAViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PPHAViewController.h; sourceTree = "<group>"; };
 		88945DED18F5AC4E00F02E4A /* PPHAViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PPHAViewController.m; sourceTree = "<group>"; };
 		88945DEF18F5AC4E00F02E4A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
@@ -95,8 +93,7 @@
 				88945E0C18F5ADC800F02E4A /* PPAutomationBridge */,
 				88945DE318F5AC4E00F02E4A /* PPHAAppDelegate.h */,
 				88945DE418F5AC4E00F02E4A /* PPHAAppDelegate.m */,
-				88945DE618F5AC4E00F02E4A /* Main_iPhone.storyboard */,
-				88945DE918F5AC4E00F02E4A /* Main_iPad.storyboard */,
+				88945DE618F5AC4E00F02E4A /* Main.storyboard */,
 				88945DEC18F5AC4E00F02E4A /* PPHAViewController.h */,
 				88945DED18F5AC4E00F02E4A /* PPHAViewController.m */,
 				88945DEF18F5AC4E00F02E4A /* Images.xcassets */,
@@ -191,9 +188,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				88945DEB18F5AC4E00F02E4A /* Main_iPad.storyboard in Resources */,
 				88945DF018F5AC4E00F02E4A /* Images.xcassets in Resources */,
-				88945DE818F5AC4E00F02E4A /* Main_iPhone.storyboard in Resources */,
+				88945DE818F5AC4E00F02E4A /* Main.storyboard in Resources */,
 				88945DDF18F5AC4E00F02E4A /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -225,20 +221,12 @@
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
-		88945DE618F5AC4E00F02E4A /* Main_iPhone.storyboard */ = {
+		88945DE618F5AC4E00F02E4A /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
 				88945DE718F5AC4E00F02E4A /* Base */,
 			);
-			name = Main_iPhone.storyboard;
-			sourceTree = "<group>";
-		};
-		88945DE918F5AC4E00F02E4A /* Main_iPad.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				88945DEA18F5AC4E00F02E4A /* Base */,
-			);
-			name = Main_iPad.storyboard;
+			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -327,6 +315,7 @@
 				INFOPLIST_FILE = "AutomatorSampleApp/AutomatorSampleApp-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -342,6 +331,7 @@
 				INFOPLIST_FILE = "AutomatorSampleApp/AutomatorSampleApp-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
