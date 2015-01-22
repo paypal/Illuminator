@@ -17,7 +17,6 @@
 		88945DEE18F5AC4E00F02E4A /* PPHAViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945DED18F5AC4E00F02E4A /* PPHAViewController.m */; };
 		88945DF018F5AC4E00F02E4A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 88945DEF18F5AC4E00F02E4A /* Images.xcassets */; };
 		88945E1218F5ADC800F02E4A /* PPAutomationBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E0E18F5ADC800F02E4A /* PPAutomationBridge.m */; };
-		88945E1318F5ADC800F02E4A /* QServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E1118F5ADC800F02E4A /* QServer.m */; };
 		88945E1618F5AE3200F02E4A /* PPHABridgeDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E1518F5AE3200F02E4A /* PPHABridgeDelegate.m */; };
 /* End PBXBuildFile section */
 
@@ -39,8 +38,6 @@
 		88945DF618F5AC4E00F02E4A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		88945E0D18F5ADC800F02E4A /* PPAutomationBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPAutomationBridge.h; sourceTree = "<group>"; };
 		88945E0E18F5ADC800F02E4A /* PPAutomationBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PPAutomationBridge.m; sourceTree = "<group>"; };
-		88945E1018F5ADC800F02E4A /* QServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QServer.h; sourceTree = "<group>"; };
-		88945E1118F5ADC800F02E4A /* QServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QServer.m; sourceTree = "<group>"; };
 		88945E1418F5AE3200F02E4A /* PPHABridgeDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPHABridgeDelegate.h; sourceTree = "<group>"; };
 		88945E1518F5AE3200F02E4A /* PPHABridgeDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PPHABridgeDelegate.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -120,19 +117,9 @@
 			children = (
 				88945E0D18F5ADC800F02E4A /* PPAutomationBridge.h */,
 				88945E0E18F5ADC800F02E4A /* PPAutomationBridge.m */,
-				88945E0F18F5ADC800F02E4A /* QServer */,
 			);
 			name = PPAutomationBridge;
 			path = ../../../PPAutomationBridge;
-			sourceTree = "<group>";
-		};
-		88945E0F18F5ADC800F02E4A /* QServer */ = {
-			isa = PBXGroup;
-			children = (
-				88945E1018F5ADC800F02E4A /* QServer.h */,
-				88945E1118F5ADC800F02E4A /* QServer.m */,
-			);
-			path = QServer;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -201,7 +188,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				88945E1318F5ADC800F02E4A /* QServer.m in Sources */,
 				88945DE118F5AC4E00F02E4A /* main.m in Sources */,
 				88945E1218F5ADC800F02E4A /* PPAutomationBridge.m in Sources */,
 				88945DEE18F5AC4E00F02E4A /* PPHAViewController.m in Sources */,

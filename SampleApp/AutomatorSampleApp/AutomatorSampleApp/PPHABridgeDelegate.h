@@ -11,7 +11,4 @@
 
 @interface PPHABridgeDelegate : NSObject <PPAutomationBridgeDelegate>
 
-
-
-
 @end
