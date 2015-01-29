@@ -9,7 +9,7 @@
         <scene sceneID="StX-0R-73r">
             <objects>
                 <navigationController id="YIs-gf-H2A" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="kuU-vj-V8f">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="kuU-vj-V8f">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -21,7 +21,7 @@
             </objects>
             <point key="canvasLocation" x="-337" y="249"/>
         </scene>
-        <!--View Controller-->
+        <!--Illiminator Sample-->
         <scene sceneID="ufC-wZ-h7g">
             <objects>
                 <viewController id="vXZ-lx-hvc" customClass="PPHAViewController" sceneMemberID="viewController">
@@ -30,11 +30,11 @@
                         <viewControllerLayoutGuide type="bottom" id="9fO-TJ-Q8q"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="kh9-bI-dsS">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="B5s-Wg-5gL">
-                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <sections/>
                                 <connections>
@@ -51,7 +51,7 @@
                             <constraint firstItem="B5s-Wg-5gL" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" id="dR4-ri-yYQ"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="ixk-hG-ECJ"/>
+                    <navigationItem key="navigationItem" title="Illiminator Sample" id="YHt-pi-ruT"/>
                     <connections>
                         <outlet property="tableView" destination="B5s-Wg-5gL" id="13i-nh-VeB"/>
                         <segue destination="sGp-V0-LlO" kind="show" identifier="CustomKeyboard" id="rLS-dq-VZt"/>
@@ -73,9 +73,21 @@
                         <viewControllerLayoutGuide type="bottom" id="CoR-x9-wbV"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="eLR-aj-mVK">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="CB5-IB-rF3">
+                                <rect key="frame" x="10" y="30" width="580" height="30"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="CB5-IB-rF3" firstAttribute="leading" secondItem="eLR-aj-mVK" secondAttribute="leading" constant="10" id="BA0-iu-vhj"/>
+                            <constraint firstItem="CB5-IB-rF3" firstAttribute="top" secondItem="eLR-aj-mVK" secondAttribute="top" constant="30" id="BGI-CN-awl"/>
+                            <constraint firstAttribute="trailing" secondItem="CB5-IB-rF3" secondAttribute="trailing" constant="10" id="f2s-nE-duV"/>
+                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Custom Keyboard" id="EFC-MJ-xdi"/>
                 </viewController>
@@ -92,7 +104,7 @@
                         <viewControllerLayoutGuide type="bottom" id="qvx-WR-Plb"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="zUi-ls-yR9">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -111,7 +123,7 @@
                         <viewControllerLayoutGuide type="bottom" id="hjF-RX-vUq"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="EZm-A0-ocG">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -130,7 +142,7 @@
                         <viewControllerLayoutGuide type="bottom" id="rt2-Ng-NDF"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="N3T-gS-au5">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
