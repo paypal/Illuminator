@@ -9,6 +9,10 @@
 #import "PPHAViewController.h"
 #import "PPHATableDataObject.h"
 
+#define kCustomKeyboardSegue @"CustomKeyboard"
+#define kScreenshotSegue @"Screenshot"
+#define kSearchingElementsSegue @"SearchingElements"
+#define kWaitForMeSegue @"WaitForMe"
 
 static NSString *cellIdentifier = @"automatorRules";
 
@@ -41,11 +45,23 @@ static NSString *cellIdentifier = @"automatorRules";
 #pragma mark helpers
 
 - (void)buildDatasource {
+    __weak typeof(self) weakSelf = self;
     NSMutableArray *tableDatasource = [NSMutableArray array];
-    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"test" selectionBlock:^{
+    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Custom Keyboard" selectionBlock:^{
+        [weakSelf performSegueWithIdentifier:kCustomKeyboardSegue sender:weakSelf];
+    }]];
+    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Screenshot" selectionBlock:^{
+        [weakSelf performSegueWithIdentifier:kScreenshotSegue sender:weakSelf];
+    }]];
+    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Searching Elements" selectionBlock:^{
+        [weakSelf performSegueWithIdentifier:kSearchingElementsSegue sender:weakSelf];
+    }]];
+    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Crash The App" selectionBlock:^{
         
     }]];
-    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"test" selectionBlock:nil]];
+    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Wait For Me" selectionBlock:^{
+        [weakSelf performSegueWithIdentifier:kWaitForMeSegue sender:weakSelf];
+    }]];
     
     self.datasource = tableDatasource;
     [self.tableView reloadData];
