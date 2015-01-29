@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		885ED8981A7A8CCB00E75280 /* PPHATableDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */; };
 		88945DD518F5AC4E00F02E4A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88945DD418F5AC4E00F02E4A /* Foundation.framework */; };
 		88945DD718F5AC4E00F02E4A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88945DD618F5AC4E00F02E4A /* CoreGraphics.framework */; };
 		88945DD918F5AC4E00F02E4A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88945DD818F5AC4E00F02E4A /* UIKit.framework */; };
@@ -21,6 +22,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		885ED8961A7A8CCB00E75280 /* PPHATableDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPHATableDataObject.h; sourceTree = "<group>"; };
+		885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PPHATableDataObject.m; sourceTree = "<group>"; };
 		88945DD118F5AC4E00F02E4A /* AutomatorSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AutomatorSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		88945DD418F5AC4E00F02E4A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		88945DD618F5AC4E00F02E4A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -97,6 +100,8 @@
 				88945DDB18F5AC4E00F02E4A /* Supporting Files */,
 				88945E1418F5AE3200F02E4A /* PPHABridgeDelegate.h */,
 				88945E1518F5AE3200F02E4A /* PPHABridgeDelegate.m */,
+				885ED8961A7A8CCB00E75280 /* PPHATableDataObject.h */,
+				885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */,
 			);
 			path = AutomatorSampleApp;
 			sourceTree = "<group>";
@@ -188,6 +193,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				885ED8981A7A8CCB00E75280 /* PPHATableDataObject.m in Sources */,
 				88945DE118F5AC4E00F02E4A /* main.m in Sources */,
 				88945E1218F5ADC800F02E4A /* PPAutomationBridge.m in Sources */,
 				88945DEE18F5AC4E00F02E4A /* PPHAViewController.m in Sources */,
