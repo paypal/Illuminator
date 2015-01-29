@@ -22,8 +22,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		885ED8961A7A8CCB00E75280 /* PPHATableDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPHATableDataObject.h; sourceTree = "<group>"; };
-		885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PPHATableDataObject.m; sourceTree = "<group>"; };
+		885ED8961A7A8CCB00E75280 /* PPHATableDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PPHATableDataObject.h; path = Misc/PPHATableDataObject.h; sourceTree = "<group>"; };
+		885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PPHATableDataObject.m; path = Misc/PPHATableDataObject.m; sourceTree = "<group>"; };
 		88945DD118F5AC4E00F02E4A /* AutomatorSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AutomatorSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		88945DD418F5AC4E00F02E4A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		88945DD618F5AC4E00F02E4A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -35,8 +35,8 @@
 		88945DE318F5AC4E00F02E4A /* PPHAAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PPHAAppDelegate.h; sourceTree = "<group>"; };
 		88945DE418F5AC4E00F02E4A /* PPHAAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PPHAAppDelegate.m; sourceTree = "<group>"; };
 		88945DE718F5AC4E00F02E4A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		88945DEC18F5AC4E00F02E4A /* PPHAViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PPHAViewController.h; sourceTree = "<group>"; };
-		88945DED18F5AC4E00F02E4A /* PPHAViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PPHAViewController.m; sourceTree = "<group>"; };
+		88945DEC18F5AC4E00F02E4A /* PPHAViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PPHAViewController.h; path = ViewControllers/PPHAViewController.h; sourceTree = "<group>"; };
+		88945DED18F5AC4E00F02E4A /* PPHAViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = PPHAViewController.m; path = ViewControllers/PPHAViewController.m; sourceTree = "<group>"; };
 		88945DEF18F5AC4E00F02E4A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		88945DF618F5AC4E00F02E4A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		88945E0D18F5ADC800F02E4A /* PPAutomationBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPAutomationBridge.h; sourceTree = "<group>"; };
@@ -59,6 +59,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		885ED89F1A7ACF2D00E75280 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				88945DEC18F5AC4E00F02E4A /* PPHAViewController.h */,
+				88945DED18F5AC4E00F02E4A /* PPHAViewController.m */,
+			);
+			name = ViewControllers;
+			sourceTree = "<group>";
+		};
+		885ED8A01A7ACFE600E75280 /* Misc */ = {
+			isa = PBXGroup;
+			children = (
+				885ED8961A7A8CCB00E75280 /* PPHATableDataObject.h */,
+				885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */,
+			);
+			name = Misc;
+			sourceTree = "<group>";
+		};
 		88945DC818F5AC4E00F02E4A = {
 			isa = PBXGroup;
 			children = (
@@ -90,18 +108,16 @@
 		88945DDA18F5AC4E00F02E4A /* AutomatorSampleApp */ = {
 			isa = PBXGroup;
 			children = (
+				885ED8A01A7ACFE600E75280 /* Misc */,
+				885ED89F1A7ACF2D00E75280 /* ViewControllers */,
 				88945E0C18F5ADC800F02E4A /* PPAutomationBridge */,
 				88945DE318F5AC4E00F02E4A /* PPHAAppDelegate.h */,
 				88945DE418F5AC4E00F02E4A /* PPHAAppDelegate.m */,
 				88945DE618F5AC4E00F02E4A /* Main.storyboard */,
-				88945DEC18F5AC4E00F02E4A /* PPHAViewController.h */,
-				88945DED18F5AC4E00F02E4A /* PPHAViewController.m */,
 				88945DEF18F5AC4E00F02E4A /* Images.xcassets */,
 				88945DDB18F5AC4E00F02E4A /* Supporting Files */,
 				88945E1418F5AE3200F02E4A /* PPHABridgeDelegate.h */,
 				88945E1518F5AE3200F02E4A /* PPHABridgeDelegate.m */,
-				885ED8961A7A8CCB00E75280 /* PPHATableDataObject.h */,
-				885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */,
 			);
 			path = AutomatorSampleApp;
 			sourceTree = "<group>";
