@@ -8,14 +8,16 @@
 
 #import "PPHABridgeDelegate.h"
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation PPHABridgeDelegate
+
 - (NSDictionary *)automationBridge:(PPAutomationBridge *)bridge receivedAction:(PPAutomationBridgeAction *)action {
     return [action resultFromTarget:self];
 }
 
 - (NSDictionary *)setDefaultLabelText:(NSDictionary *)parameters {
     //just pass with notification center as example
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"bridgeNotification" object:nil userInfo:parameters];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kPPHABridgeNotification object:nil userInfo:parameters];
     return nil;
 }
 

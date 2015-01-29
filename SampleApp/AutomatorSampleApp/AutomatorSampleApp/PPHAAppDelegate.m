@@ -10,15 +10,19 @@
 #import "PPAutomationBridge.h"
 #import "PPHABridgeDelegate.h"
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 @interface PPHAAppDelegate ()
 @property (nonatomic, strong) PPHABridgeDelegate *bridgeDelegate;
 @end
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation PPHAAppDelegate
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    //Creating bridge delegate object
     self.bridgeDelegate = [PPHABridgeDelegate new];
+    //Starting bridge and assigning delegate
     [[PPAutomationBridge bridge] startAutomationBridgeWithDelegate:self.bridgeDelegate];
     // Override point for customization after application launch.
     return YES;
