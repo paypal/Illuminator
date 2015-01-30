@@ -85,7 +85,7 @@ NSStreamDelegate>
 - (void)startAutomationBridgeWithDelegate:(id<PPAutomationBridgeDelegate>)delegate {
     self.delegate = delegate;
     if (self.server) {
-        [self.server publish];
+        [self.server publishWithOptions:NSNetServiceListenForConnections];
     }
 
 }

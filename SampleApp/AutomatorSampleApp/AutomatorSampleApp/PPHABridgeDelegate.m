@@ -21,4 +21,10 @@
     return nil;
 }
 
+
+- (NSDictionary *)exampleWithReturnValue:(NSDictionary *)parameters {
+    //just return whatever you get
+    return parameters;
+}
+
 @end

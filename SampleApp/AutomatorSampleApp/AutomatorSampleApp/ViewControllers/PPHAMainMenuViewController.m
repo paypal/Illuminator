@@ -50,10 +50,11 @@ static NSString *cellIdentifier = @"automatorRules";
 #pragma mark -
 #pragma mark bridge
 
-- (void)bridgeCallReceived:(NSDictionary *)parameters {
+- (void)bridgeCallReceived:(NSNotification *)parameters {
     NSString *title = @"Row Added via Bridge";
-    if (parameters && parameters[@"title"]) {
-        title = parameters[@"title"];
+    NSDictionary *payload = parameters.userInfo;
+    if (payload && payload[@"title"]) {
+        title = payload[@"title"];
     }
     [self.datasource addObject:[PPHATableDataObject tableObjectWithTitle:title selectionBlock:nil]];
     [self.tableView reloadData];
