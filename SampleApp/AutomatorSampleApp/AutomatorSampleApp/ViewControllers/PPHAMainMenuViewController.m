@@ -35,10 +35,6 @@ static NSString *cellIdentifier = @"automatorRules";
     [self buildDatasource];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    
-}
 
 #pragma mark -
 #pragma mark helpers

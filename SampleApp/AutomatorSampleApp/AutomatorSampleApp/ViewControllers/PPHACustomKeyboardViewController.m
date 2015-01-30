@@ -21,12 +21,6 @@
     [super viewDidLoad];
     [self.textField setInputView:self.inputView];
     [self.inputView setInput:self.textField];
-    // Do any additional setup after loading the view.
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end

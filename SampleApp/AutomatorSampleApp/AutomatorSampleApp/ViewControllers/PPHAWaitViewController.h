@@ -1,15 +1,14 @@
 //
-//  PPHAInputView.h
+//  PPHAWaitViewController.h
 //  AutomatorSampleApp
 //
-//  Created by Erceg,Boris on 29/01/15.
+//  Created by Erceg,Boris on 30/01/15.
 //  Copyright (c) 2015 PayPal. All rights reserved.
 //
 
 @import UIKit;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@interface PPHAInputView : UIView
+@interface PPHAWaitViewController : UIViewController
 
-@property (nonatomic, weak) id<UITextInput> input;
 @end

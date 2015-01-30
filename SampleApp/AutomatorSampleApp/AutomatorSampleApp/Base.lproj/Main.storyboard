@@ -129,12 +129,12 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Cqp-Lt-YVV" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1260" y="441"/>
+            <point key="canvasLocation" x="1230" y="100"/>
         </scene>
         <!--Wait For Elements-->
         <scene sceneID="C70-Ih-Uvo">
             <objects>
-                <viewController id="aBy-1Q-gIC" sceneMemberID="viewController">
+                <viewController id="aBy-1Q-gIC" customClass="PPHAWaitViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="UsQ-iF-laP"/>
                         <viewControllerLayoutGuide type="bottom" id="rt2-Ng-NDF"/>
@@ -142,13 +142,29 @@
                     <view key="view" contentMode="scaleToFill" id="N3T-gS-au5">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Subview will appear in 5 seconds" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sSV-zX-6S8">
+                                <rect key="frame" x="279" y="27" width="256" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="sSV-zX-6S8" firstAttribute="leading" secondItem="N3T-gS-au5" secondAttribute="leading" constant="20" id="Rc9-yN-pdy"/>
+                            <constraint firstAttribute="trailing" secondItem="sSV-zX-6S8" secondAttribute="trailing" constant="20" id="vle-Ib-HDg"/>
+                            <constraint firstItem="sSV-zX-6S8" firstAttribute="top" secondItem="N3T-gS-au5" secondAttribute="top" constant="20" id="zQ0-bV-49Z"/>
+                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Wait For Elements" id="I2P-Ab-cgL"/>
+                    <connections>
+                        <outlet property="messageLabel" destination="sSV-zX-6S8" id="tER-Uk-Yc4"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fgF-L8-QeF" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="585" y="974"/>
+            <point key="canvasLocation" x="1260" y="855"/>
         </scene>
     </scenes>
 </document>

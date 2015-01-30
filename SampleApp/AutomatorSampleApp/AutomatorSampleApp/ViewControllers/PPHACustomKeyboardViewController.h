@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 PayPal. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+@import UIKit;
 
 @interface PPHACustomKeyboardViewController : UIViewController
 

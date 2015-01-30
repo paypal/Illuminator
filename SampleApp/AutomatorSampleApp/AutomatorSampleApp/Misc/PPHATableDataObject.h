@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 PayPal. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 @interface PPHATableDataObject : NSObject
