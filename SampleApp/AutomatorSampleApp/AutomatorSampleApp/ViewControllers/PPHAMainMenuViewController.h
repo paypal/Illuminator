@@ -9,6 +9,6 @@
 #import <UIKit/UIKit.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@interface PPHAViewController : UIViewController
+@interface PPHAMainMenuViewController : UIViewController
 @property (nonatomic, strong) NSString *labelText;
 @end

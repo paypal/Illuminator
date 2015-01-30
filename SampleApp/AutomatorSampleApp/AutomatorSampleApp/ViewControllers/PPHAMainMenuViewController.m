@@ -6,18 +6,17 @@
 //  Copyright (c) 2014 PayPal. All rights reserved.
 //
 
-#import "PPHAViewController.h"
+#import "PPHAMainMenuViewController.h"
 #import "PPHATableDataObject.h"
 
 #define kCustomKeyboardSegue @"CustomKeyboard"
-#define kScreenshotSegue @"Screenshot"
 #define kSearchingElementsSegue @"SearchingElements"
 #define kWaitForMeSegue @"WaitForMe"
 
 static NSString *cellIdentifier = @"automatorRules";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@interface PPHAViewController () <UITableViewDelegate, UITableViewDataSource>
+@interface PPHAMainMenuViewController () <UITableViewDelegate, UITableViewDataSource>
 @property (weak, nonatomic) IBOutlet UILabel *label;
 @property (weak, nonatomic) IBOutlet UIButton *button;
 @property (nonatomic, strong) NSMutableArray *datasource;
@@ -26,7 +25,7 @@ static NSString *cellIdentifier = @"automatorRules";
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@implementation PPHAViewController
+@implementation PPHAMainMenuViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -47,20 +46,20 @@ static NSString *cellIdentifier = @"automatorRules";
 - (void)buildDatasource {
     __weak typeof(self) weakSelf = self;
     NSMutableArray *tableDatasource = [NSMutableArray array];
-    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Custom Keyboard" selectionBlock:^{
-        [weakSelf performSegueWithIdentifier:kCustomKeyboardSegue sender:weakSelf];
-    }]];
-    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Screenshot" selectionBlock:^{
-        [weakSelf performSegueWithIdentifier:kScreenshotSegue sender:weakSelf];
-    }]];
     [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Searching Elements" selectionBlock:^{
         [weakSelf performSegueWithIdentifier:kSearchingElementsSegue sender:weakSelf];
     }]];
-    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Crash The App" selectionBlock:^{
-        
-    }]];
     [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Wait For Me" selectionBlock:^{
         [weakSelf performSegueWithIdentifier:kWaitForMeSegue sender:weakSelf];
+    }]];
+    
+    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Crash The App" selectionBlock:^{
+        NSString *crashMe = nil;
+        NSArray __unused *crashArray = @[crashMe];
+    }]];
+    
+    [tableDatasource addObject:[PPHATableDataObject tableObjectWithTitle:@"Custom Keyboard" selectionBlock:^{
+        [weakSelf performSegueWithIdentifier:kCustomKeyboardSegue sender:weakSelf];
     }]];
     
     self.datasource = tableDatasource;

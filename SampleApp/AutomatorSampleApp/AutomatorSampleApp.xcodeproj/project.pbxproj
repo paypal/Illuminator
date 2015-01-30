@@ -18,7 +18,7 @@
 		88945DE118F5AC4E00F02E4A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945DE018F5AC4E00F02E4A /* main.m */; };
 		88945DE518F5AC4E00F02E4A /* PPHAAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945DE418F5AC4E00F02E4A /* PPHAAppDelegate.m */; };
 		88945DE818F5AC4E00F02E4A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 88945DE618F5AC4E00F02E4A /* Main.storyboard */; };
-		88945DEE18F5AC4E00F02E4A /* PPHAViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945DED18F5AC4E00F02E4A /* PPHAViewController.m */; };
+		88945DEE18F5AC4E00F02E4A /* PPHAMainMenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945DED18F5AC4E00F02E4A /* PPHAMainMenuViewController.m */; };
 		88945DF018F5AC4E00F02E4A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 88945DEF18F5AC4E00F02E4A /* Images.xcassets */; };
 		88945E1218F5ADC800F02E4A /* PPAutomationBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E0E18F5ADC800F02E4A /* PPAutomationBridge.m */; };
 		88945E1618F5AE3200F02E4A /* PPHABridgeDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E1518F5AE3200F02E4A /* PPHABridgeDelegate.m */; };
@@ -43,8 +43,8 @@
 		88945DE318F5AC4E00F02E4A /* PPHAAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PPHAAppDelegate.h; sourceTree = "<group>"; };
 		88945DE418F5AC4E00F02E4A /* PPHAAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PPHAAppDelegate.m; sourceTree = "<group>"; };
 		88945DE718F5AC4E00F02E4A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		88945DEC18F5AC4E00F02E4A /* PPHAViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PPHAViewController.h; path = ViewControllers/PPHAViewController.h; sourceTree = "<group>"; };
-		88945DED18F5AC4E00F02E4A /* PPHAViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = PPHAViewController.m; path = ViewControllers/PPHAViewController.m; sourceTree = "<group>"; };
+		88945DEC18F5AC4E00F02E4A /* PPHAMainMenuViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PPHAMainMenuViewController.h; path = ViewControllers/PPHAMainMenuViewController.h; sourceTree = "<group>"; };
+		88945DED18F5AC4E00F02E4A /* PPHAMainMenuViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = PPHAMainMenuViewController.m; path = ViewControllers/PPHAMainMenuViewController.m; sourceTree = "<group>"; };
 		88945DEF18F5AC4E00F02E4A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		88945DF618F5AC4E00F02E4A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		88945E0D18F5ADC800F02E4A /* PPAutomationBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPAutomationBridge.h; sourceTree = "<group>"; };
@@ -70,8 +70,8 @@
 		885ED89F1A7ACF2D00E75280 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				88945DEC18F5AC4E00F02E4A /* PPHAViewController.h */,
-				88945DED18F5AC4E00F02E4A /* PPHAViewController.m */,
+				88945DEC18F5AC4E00F02E4A /* PPHAMainMenuViewController.h */,
+				88945DED18F5AC4E00F02E4A /* PPHAMainMenuViewController.m */,
 				885ED8A91A7AD3DF00E75280 /* PPHACustomKeyboardViewController.h */,
 				885ED8AA1A7AD3DF00E75280 /* PPHACustomKeyboardViewController.m */,
 			);
@@ -227,7 +227,7 @@
 				88945DE118F5AC4E00F02E4A /* main.m in Sources */,
 				88945E1218F5ADC800F02E4A /* PPAutomationBridge.m in Sources */,
 				885ED8A61A7AD0C300E75280 /* PPHAInputView.m in Sources */,
-				88945DEE18F5AC4E00F02E4A /* PPHAViewController.m in Sources */,
+				88945DEE18F5AC4E00F02E4A /* PPHAMainMenuViewController.m in Sources */,
 				885ED8AB1A7AD3DF00E75280 /* PPHACustomKeyboardViewController.m in Sources */,
 				88945E1618F5AE3200F02E4A /* PPHABridgeDelegate.m in Sources */,
 				88945DE518F5AC4E00F02E4A /* PPHAAppDelegate.m in Sources */,

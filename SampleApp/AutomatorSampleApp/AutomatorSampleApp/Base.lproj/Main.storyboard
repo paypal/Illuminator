@@ -24,7 +24,7 @@
         <!--Illiminator Sample-->
         <scene sceneID="ufC-wZ-h7g">
             <objects>
-                <viewController id="vXZ-lx-hvc" customClass="PPHAViewController" sceneMemberID="viewController">
+                <viewController id="vXZ-lx-hvc" customClass="PPHAMainMenuViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="zaZ-FW-reu"/>
                         <viewControllerLayoutGuide type="bottom" id="9fO-TJ-Q8q"/>
@@ -55,7 +55,6 @@
                     <connections>
                         <outlet property="tableView" destination="B5s-Wg-5gL" id="13i-nh-VeB"/>
                         <segue destination="sGp-V0-LlO" kind="show" identifier="CustomKeyboard" id="rLS-dq-VZt"/>
-                        <segue destination="Kmw-GH-bff" kind="show" identifier="Screenshot" id="Ao3-Sd-GZX"/>
                         <segue destination="aBy-1Q-gIC" kind="show" identifier="WaitForMe" id="VmC-lh-y2Z"/>
                         <segue destination="Fjr-7s-50e" kind="show" identifier="SearchingElements" id="wem-m6-rSC"/>
                     </connections>
@@ -81,11 +80,20 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Custom Keyboard example" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sjV-Xa-opO">
+                                <rect key="frame" x="20" y="70" width="560" height="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstAttribute="trailing" secondItem="sjV-Xa-opO" secondAttribute="trailing" constant="20" id="6hj-tT-1kg"/>
                             <constraint firstItem="CB5-IB-rF3" firstAttribute="leading" secondItem="eLR-aj-mVK" secondAttribute="leading" constant="10" id="BA0-iu-vhj"/>
                             <constraint firstItem="CB5-IB-rF3" firstAttribute="top" secondItem="eLR-aj-mVK" secondAttribute="top" constant="30" id="BGI-CN-awl"/>
+                            <constraint firstItem="sjV-Xa-opO" firstAttribute="leading" secondItem="eLR-aj-mVK" secondAttribute="leading" constant="20" id="Ept-t6-Eqz"/>
+                            <constraint firstItem="sjV-Xa-opO" firstAttribute="top" secondItem="CB5-IB-rF3" secondAttribute="bottom" constant="10" id="eQj-8P-TdR"/>
                             <constraint firstAttribute="trailing" secondItem="CB5-IB-rF3" secondAttribute="trailing" constant="10" id="f2s-nE-duV"/>
                         </constraints>
                     </view>
@@ -103,25 +111,6 @@
                 </view>
             </objects>
             <point key="canvasLocation" x="1260" y="-983"/>
-        </scene>
-        <!--Screenshot-->
-        <scene sceneID="T2Q-dO-qac">
-            <objects>
-                <viewController id="Kmw-GH-bff" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="EiO-gG-2jC"/>
-                        <viewControllerLayoutGuide type="bottom" id="qvx-WR-Plb"/>
-                    </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="zUi-ls-yR9">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                    </view>
-                    <navigationItem key="navigationItem" title="Screenshot" id="o3n-t2-SW2"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="9LV-oP-6jj" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="1260" y="-221"/>
         </scene>
         <!--Searching For Elements-->
         <scene sceneID="sEo-tf-ePD">
