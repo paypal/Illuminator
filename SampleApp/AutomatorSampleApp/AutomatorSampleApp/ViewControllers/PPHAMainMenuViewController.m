@@ -8,6 +8,7 @@
 
 #import "PPHAMainMenuViewController.h"
 #import "PPHATableDataObject.h"
+#import "PPHABridgeDelegate.h"
 
 #define kCustomKeyboardSegue @"CustomKeyboard"
 #define kSearchingElementsSegue @"SearchingElements"
@@ -31,8 +32,31 @@ static NSString *cellIdentifier = @"automatorRules";
     [super viewDidLoad];
     
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:cellIdentifier];
-    
     [self buildDatasource];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(bridgeCallReceived:) name:kPPHABridgeNotification object:nil];
+}
+
+-(void)viewDidDisappear:(BOOL)animated {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kPPHABridgeNotification object:nil];
+    [super viewDidDisappear:animated];
+}
+
+
+
+#pragma mark -
+#pragma mark bridge
+
+- (void)bridgeCallReceived:(NSDictionary *)parameters {
+    NSString *title = @"Row Added via Bridge";
+    if (parameters && parameters[@"title"]) {
+        title = parameters[@"title"];
+    }
+    [self.datasource addObject:[PPHATableDataObject tableObjectWithTitle:title selectionBlock:nil]];
+    [self.tableView reloadData];
 }
 
 

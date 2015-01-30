@@ -23,9 +23,9 @@
     self.timer = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(showLabel) userInfo:nil repeats:NO];
 }
 -(void)viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
     [self.timer invalidate];
     self.timer = nil;
+    [super viewDidDisappear:animated];
 }
 
 - (void)showLabel {
