@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		885ED8981A7A8CCB00E75280 /* PPHATableDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */; };
+		885ED8A61A7AD0C300E75280 /* PPHAInputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 885ED8A51A7AD0C300E75280 /* PPHAInputView.m */; };
+		885ED8A81A7AD33900E75280 /* PPHAInputView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 885ED8A71A7AD33900E75280 /* PPHAInputView.xib */; };
+		885ED8AB1A7AD3DF00E75280 /* PPHACustomKeyboardViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 885ED8AA1A7AD3DF00E75280 /* PPHACustomKeyboardViewController.m */; };
 		88945DD518F5AC4E00F02E4A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88945DD418F5AC4E00F02E4A /* Foundation.framework */; };
 		88945DD718F5AC4E00F02E4A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88945DD618F5AC4E00F02E4A /* CoreGraphics.framework */; };
 		88945DD918F5AC4E00F02E4A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88945DD818F5AC4E00F02E4A /* UIKit.framework */; };
@@ -24,6 +27,11 @@
 /* Begin PBXFileReference section */
 		885ED8961A7A8CCB00E75280 /* PPHATableDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PPHATableDataObject.h; path = Misc/PPHATableDataObject.h; sourceTree = "<group>"; };
 		885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PPHATableDataObject.m; path = Misc/PPHATableDataObject.m; sourceTree = "<group>"; };
+		885ED8A41A7AD0C300E75280 /* PPHAInputView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PPHAInputView.h; path = Misc/PPHAInputView.h; sourceTree = "<group>"; };
+		885ED8A51A7AD0C300E75280 /* PPHAInputView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PPHAInputView.m; path = Misc/PPHAInputView.m; sourceTree = "<group>"; };
+		885ED8A71A7AD33900E75280 /* PPHAInputView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = PPHAInputView.xib; path = Misc/PPHAInputView.xib; sourceTree = "<group>"; };
+		885ED8A91A7AD3DF00E75280 /* PPHACustomKeyboardViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PPHACustomKeyboardViewController.h; path = ViewControllers/PPHACustomKeyboardViewController.h; sourceTree = "<group>"; };
+		885ED8AA1A7AD3DF00E75280 /* PPHACustomKeyboardViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PPHACustomKeyboardViewController.m; path = ViewControllers/PPHACustomKeyboardViewController.m; sourceTree = "<group>"; };
 		88945DD118F5AC4E00F02E4A /* AutomatorSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AutomatorSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		88945DD418F5AC4E00F02E4A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		88945DD618F5AC4E00F02E4A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -64,6 +72,8 @@
 			children = (
 				88945DEC18F5AC4E00F02E4A /* PPHAViewController.h */,
 				88945DED18F5AC4E00F02E4A /* PPHAViewController.m */,
+				885ED8A91A7AD3DF00E75280 /* PPHACustomKeyboardViewController.h */,
+				885ED8AA1A7AD3DF00E75280 /* PPHACustomKeyboardViewController.m */,
 			);
 			name = ViewControllers;
 			sourceTree = "<group>";
@@ -73,6 +83,9 @@
 			children = (
 				885ED8961A7A8CCB00E75280 /* PPHATableDataObject.h */,
 				885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */,
+				885ED8A41A7AD0C300E75280 /* PPHAInputView.h */,
+				885ED8A51A7AD0C300E75280 /* PPHAInputView.m */,
+				885ED8A71A7AD33900E75280 /* PPHAInputView.xib */,
 			);
 			name = Misc;
 			sourceTree = "<group>";
@@ -198,6 +211,7 @@
 			files = (
 				88945DF018F5AC4E00F02E4A /* Images.xcassets in Resources */,
 				88945DE818F5AC4E00F02E4A /* Main.storyboard in Resources */,
+				885ED8A81A7AD33900E75280 /* PPHAInputView.xib in Resources */,
 				88945DDF18F5AC4E00F02E4A /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -212,7 +226,9 @@
 				885ED8981A7A8CCB00E75280 /* PPHATableDataObject.m in Sources */,
 				88945DE118F5AC4E00F02E4A /* main.m in Sources */,
 				88945E1218F5ADC800F02E4A /* PPAutomationBridge.m in Sources */,
+				885ED8A61A7AD0C300E75280 /* PPHAInputView.m in Sources */,
 				88945DEE18F5AC4E00F02E4A /* PPHAViewController.m in Sources */,
+				885ED8AB1A7AD3DF00E75280 /* PPHACustomKeyboardViewController.m in Sources */,
 				88945E1618F5AE3200F02E4A /* PPHABridgeDelegate.m in Sources */,
 				88945DE518F5AC4E00F02E4A /* PPHAAppDelegate.m in Sources */,
 			);

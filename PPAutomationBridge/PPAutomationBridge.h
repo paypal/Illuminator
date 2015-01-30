@@ -29,9 +29,8 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-@interface PPAutomationBridge : NSObject {
+@interface PPAutomationBridge : NSObject
 
-}
 + (instancetype)bridge;
 
 - (void)startAutomationBridgeWithDelegate:(id <PPAutomationBridgeDelegate>)delegate;

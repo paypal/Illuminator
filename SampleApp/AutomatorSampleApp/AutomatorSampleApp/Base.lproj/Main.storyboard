@@ -67,7 +67,7 @@
         <!--Custom Keyboard-->
         <scene sceneID="eZd-S0-Y7E">
             <objects>
-                <viewController id="sGp-V0-LlO" sceneMemberID="viewController">
+                <viewController id="sGp-V0-LlO" customClass="PPHACustomKeyboardViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="LKM-3D-yNz"/>
                         <viewControllerLayoutGuide type="bottom" id="CoR-x9-wbV"/>
@@ -90,8 +90,17 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Custom Keyboard" id="EFC-MJ-xdi"/>
+                    <connections>
+                        <outlet property="inputView" destination="xx2-Jd-N98" id="y3z-tm-oFE"/>
+                        <outlet property="textField" destination="CB5-IB-rF3" id="5xK-1N-PRl"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hy2-Sm-Uw2" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <view contentMode="scaleToFill" id="xx2-Jd-N98" customClass="PPHAInputView">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="300"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                </view>
             </objects>
             <point key="canvasLocation" x="1260" y="-983"/>
         </scene>
