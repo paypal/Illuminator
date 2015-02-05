@@ -622,6 +622,7 @@ var debugAutomator = false;
         var dt = getTime() - t1;
         var info = {
             scenarioName: scenario.title,
+            scenarioTags: Object.keys(scenario.tags_obj),
             timeStarted: t1,
             duration: dt
         };
@@ -729,7 +730,11 @@ var debugAutomator = false;
         UIALogger.logDebug("----------------------------------------------------------------");
         UIALogger.logMessage("STEP 0: Reset automator for new scenario");
         automator._resetState();
-        if (!automator._executeCallback("preScenario", {scenarioName: scenario.title}, true, true)) return false;
+        if (!automator._executeCallback("preScenario",
+                                        {scenarioName: scenario.title, scenarioTags: Object.keys(scenario.tags_obj)},
+                                        true, true)) {
+            return false;
+        }
 
         // wrap the iteration of the test steps in try/catch
         var step = null;
