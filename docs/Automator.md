@@ -82,12 +82,14 @@ Store `callbackFn`, running it only once -- before any test scenarios run -- if 
 Store `callbackFn`, running it before each test scenario.  `callbackFn` will be called with a single argument (an associative array described below), and its return value (if `false`) will determine whether the currently-running instruments instance should be closed (and a new one opened).  In other words, the return value of the callback indicates whether it was able to successfully prepare the environment for the scenario to run.
 
 * `scenarioName` - the name of the scenario about to run
+* `scenarioTags` - an array of tags of the scenario about to run
 
 
 #### `.setCallbackOnScenarioPass(callbackFn)`
 Store `callbackFn`, running it upon each successful completion of a test scenario.  `callbackFn` will be called with a single argument (an associative array described below), and its return value will be ignored.
 
 * `scenarioName` - the name of the scenario that has completed
+* `scenarioTags` - an array of tags of the scenario about to run
 * `timeStarted` - epochal time that the scenario began
 * `duration` - the number of seconds requried to run the scenario to successful completion
 
@@ -96,6 +98,7 @@ Store `callbackFn`, running it upon each successful completion of a test scenari
 Store `callbackFn`, running it upon each failure of a test scenario.  `callbackFn` will be called with a single argument (an associative array described below), and its return value will be ignored.
 
 * `scenarioName` - the name of the scenario that has completed
+* `scenarioTags` - an array of tags of the scenario about to run
 * `timeStarted` - epochal time that the scenario began
 * `duration` - the number of seconds requried to run the scenario until its failure
 
