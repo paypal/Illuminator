@@ -27,6 +27,12 @@ class TestSuite
     ret
   end
 
+  def finishedTests
+    ret = Array.new
+    @testCases.each { |t| ret << t.name if t.ran? }
+    ret
+  end
+
   def allTests
     @testCases.dup
   end

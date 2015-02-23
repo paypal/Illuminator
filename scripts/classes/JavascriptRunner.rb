@@ -24,6 +24,7 @@ class JavascriptRunner
   attr_accessor :tagsAll
   attr_accessor :tagsNone
   attr_accessor :scenarioList
+  attr_accessor :scenarioNumberOffset # for consistent numbering after restarts
 
   def initialize
     @tagsAny        = Array.new(0)
@@ -50,6 +51,7 @@ class JavascriptRunner
       'automatorTagsAll'             => @tagsAll,
       'automatorTagsNone'            => @tagsNone,
       'automatorScenarioNames'       => @scenarioList,
+      'automatorScenarioOffset'      => @scenarioNumberOffset,
     }
 
     keyDefs.each do |key, value|

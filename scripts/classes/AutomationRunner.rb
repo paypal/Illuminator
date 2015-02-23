@@ -206,16 +206,20 @@ class AutomationRunner
     jsConfig.customJSConfig      = options.javascript.customConfig
     jsConfig.customJSConfigPath  = BuildArtifacts.instance.illuminatorCustomConfigFile
 
+    # don't offset the numbers this time
+    jsConfig.scenarioNumberOffset = 0
+
     # write main config
     jsConfig.writeConfiguration()
   end
 
 
-  def configureJavascriptReRunner scenarioList
-    jsConfig              = @javascriptRunner
-    jsConfig.randomSeed   = nil
-    jsConfig.entryPoint   = "runTestsByName"
-    jsConfig.scenarioList = scenarioList
+  def configureJavascriptReRunner(scenariosFinished, scenariosUnstarted)
+    jsConfig                      = @javascriptRunner
+    jsConfig.randomSeed           = nil
+    jsConfig.entryPoint           = "runTestsByName"
+    jsConfig.scenarioList         = scenariosUnstarted
+    jsConfig.scenarioNumberOffset = scenariosFinished.length
 
     jsConfig.writeConfiguration()
   end
@@ -278,7 +282,7 @@ class AutomationRunner
       if @testSuite.nil?
         self.configureJavascriptRunner options
       else
-        self.configureJavascriptReRunner(@testSuite.unStartedTests)
+        self.configureJavascriptReRunner(@testSuite.finishedTests, @testSuite.unStartedTests)
       end
 
       # Setup new saltinel listener

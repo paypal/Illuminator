@@ -53,6 +53,7 @@
         "automatorTagsNone": false,
         "automatorScenarioNames": false,
         "automatorSequenceRandomSeed": false,
+        "automatorScenarioOffset": true,
         "customJSConfigPath": false,
     };
 
