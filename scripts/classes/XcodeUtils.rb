@@ -85,6 +85,10 @@ class XcodeUtils
     return nil
   end
 
+  def getCrashDirectory
+    return "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
+  end
+
   # Create a crash report
   def createCrashReport (appPath, crashPath, crashReportPath)
     # find symbolicatecrash file, which is different depending on the Xcode version (we assume either 5 or 6)

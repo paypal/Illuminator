@@ -40,7 +40,6 @@ class AutomationRunner
   attr_reader :javascriptRunner
 
   def initialize
-    @crashPath         = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
     @testDefs          = nil
     @testSuite         = nil
     @currentTest       = nil
@@ -56,7 +55,7 @@ class AutomationRunner
 
   def cleanup
     # start a list of what to remove
-    dirsToRemove = [@crashPath]
+    dirsToRemove = []
 
     # FIXME: this should probably get moved to instrument runner
     # keys to the methods of the BuildArtifacts singleton that we want to remove
@@ -370,7 +369,7 @@ class AutomationRunner
   end
 
   def removeAnyAppCrashes()
-    Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |crashPath|
+    Dir.glob("#{XcodeUtils.instance.getCrashDirectory}/#{@appName}*.crash").each do |crashPath|
       FileUtils.rmtree crashPath
     end
   end
@@ -382,7 +381,7 @@ class AutomationRunner
 
     crashes = 0
     # TODO: glob if @appName is nil
-    Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |crashPath|
+    Dir.glob("#{XcodeUtils.instance.getCrashDirectory}/#{@appName}*.crash").each do |crashPath|
       # TODO: extract process name and ignore ["launchd_sim", ...]
 
       puts "Found a crash report from this test run at #{crashPath}"
