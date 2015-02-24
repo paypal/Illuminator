@@ -388,8 +388,8 @@ class AutomationRunner
       crashName = File.basename(crashPath, ".crash")
       crashReportPath = "#{crashReportsPath}/#{crashName}.txt"
       crashText = []
-      unless XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
-        puts "Failed to save crash report.".red
+      if XcodeUtils.instance.createSymbolicatedCrashReport(@appLocation, crashPath, crashReportPath)
+        puts "Created a symbolicated version of the crash report at #{crashReportPath}".red
       else
         # get the first few lines for the log
         file = File.open(crashReportPath, 'rb')
