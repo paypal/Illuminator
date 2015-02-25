@@ -41,7 +41,7 @@ class TestSuite
     @testCases.select { |t| t.passed? }
   end
 
-  def failedTests
+  def unPassedTests
     @testCases.select { |t| not t.passed? }
   end
 

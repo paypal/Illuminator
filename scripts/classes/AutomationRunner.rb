@@ -303,7 +303,7 @@ class AutomationRunner
           self.generateCoverage gcovrWorkspace
         end
       end
-      self.saveFailedTestsConfig(options, @testSuite.failedTests)
+      self.saveFailedTestsConfig(options, @testSuite.unPassedTests)
     end
 
     XcodeUtils.killAllSimulatorProcesses if options.simulator.killAfter
@@ -316,7 +316,7 @@ class AutomationRunner
 
     return false if @testSuite.nil?                         # no tests were received
     return false if 0 == @testSuite.passedTests.length      # no tests passed, or none ran
-    return false if 0 < @testSuite.failedTests.length       # 1 or more tests failed
+    return false if 0 < @testSuite.unPassedTests.length     # 1 or more tests failed
     return true
   end
 
@@ -328,12 +328,12 @@ class AutomationRunner
       return
     end
 
-    allTests    = testSuite.allTests
-    failedTests = testSuite.failedTests
+    allTests      = testSuite.allTests
+    unPassedTests = testSuite.unPassedTests
 
     if 0 == allTests.length
       puts "No tests ran".yellow
-    elsif 0 < failedTests.length
+    elsif 0 < unPassedTests.length
       result = "Result: "
       allTests.each do |t|
         if not t.ran?
