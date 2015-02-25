@@ -106,7 +106,6 @@ class AutomationRunner
   end
 
   def saltinelAgentGotRestartRequest
-    # foobar
     puts "ILLUMINATOR FAILURE TO ORGANIZE".red if @testSuite.nil?
     puts "ILLUMINATOR FAILURE TO ORGANIZE 2".red if @currentTest.nil?
     if @restartedTests[@currentTest]
@@ -179,6 +178,7 @@ class AutomationRunner
     end
   end
 
+  # translate input options into javascript config
   def configureJavascriptRunner(options)
     jsConfig = @javascriptRunner
 
@@ -207,12 +207,12 @@ class AutomationRunner
   end
 
 
-  def configureJavascriptReRunner(scenariosFinished, scenariosUnstarted)
+  def configureJavascriptReRunner(scenariosToRun, numberOffset)
     jsConfig                      = @javascriptRunner
     jsConfig.randomSeed           = nil
     jsConfig.entryPoint           = "runTestsByName"
-    jsConfig.scenarioList         = scenariosUnstarted
-    jsConfig.scenarioNumberOffset = scenariosFinished.length
+    jsConfig.scenarioList         = scenariosToRun
+    jsConfig.scenarioNumberOffset = numberOffset
 
     jsConfig.writeConfiguration()
   end
@@ -263,33 +263,35 @@ class AutomationRunner
     XcodeUtils.killAllSimulatorProcesses
     XcodeUtils.resetSimulator if options.illuminator.hardwareID.nil? and options.illuminator.task.setSim
 
+    startTime = Time.now
+
     @testSuite = nil
 
-    # loop until all test cases are covered.
-    # we won't get the actual test list until partway through -- from a listener callback
-    startTime = Time.now
-    begin
-      self.removeAnyAppCrashes
-      @appCrashed = false
+    # run the first time
+    self.executeEntireTestSuite(options, nil)
 
-      # Setup javascript to run the appropriate list of tests (initial or leftover)
-      if @testSuite.nil?
-        self.configureJavascriptRunner options
-      else
-        self.configureJavascriptReRunner(@testSuite.finishedTests, @testSuite.unStartedTests)
+    unless options.illuminator.test.retest.attempts.nil?
+      # retry any failed tests
+      for i in 0..(options.illuminator.test.retest.attempts - 1)
+        att = i + 1
+        unPassedTests = @testSuite.unPassedTests.map { |t| t.name }
+
+        # run them in batch mode if desired
+        unless options.illuminator.test.retest.solo
+          puts "Retrying failed tests in batch, attempt #{att} of #{options.illuminator.test.retest.attempts}"
+          self.executeEntireTestSuite(options, unPassedTests)
+        else
+          puts "Retrying failed tests individually, attempt #{att} of #{options.illuminator.test.retest.attempts}"
+
+          unPassedTests.each_with_index do |t, index|
+            testNum = index + 1
+            puts "Solo attempt for test #{testNum} of #{unPassedTests.length}"
+            self.executeEntireTestSuite(options, [t])
+          end
+        end
       end
+    end
 
-      # Setup new saltinel listener
-      agentListener = SaltinelAgent.new(@javascriptRunner.saltinel)
-      agentListener.eventSink = self
-      @instrumentsRunner.addListener("saltinelAgent", agentListener)
-
-      @instrumentsRunner.runOnce @javascriptRunner.saltinel
-      if @appCrashed
-        self.handleAppCrash
-      end
-
-    end while not (@testSuite.nil? or @testSuite.unStartedTests.empty?)
     totalTime = Time.at(Time.now - startTime).gmtime.strftime("%H:%M:%S")
     puts "Automation completed in #{totalTime}".green
 
@@ -314,11 +316,48 @@ class AutomationRunner
       self.summarizeTestResults @testSuite
     end
 
+    # TODO: exit code should be an integer, and each of these should be cases
     return false if @testSuite.nil?                         # no tests were received
     return false if 0 == @testSuite.passedTests.length      # no tests passed, or none ran
     return false if 0 < @testSuite.unPassedTests.length     # 1 or more tests failed
     return true
   end
+
+  # run a test suite, restarting if necessary
+  def executeEntireTestSuite(options, specificTests)
+
+    # loop until all test cases are covered.
+    # we won't get the actual test list until partway through -- from a listener callback
+    begin
+      self.removeAnyAppCrashes
+      @appCrashed = false
+
+      # Setup javascript to run the appropriate list of tests (initial or leftover)
+      if @testSuite.nil?
+        # very first attempt
+        self.configureJavascriptRunner options
+      elsif specificTests.nil?
+        # not first attempt, but we haven't made it all the way through yet
+        self.configureJavascriptReRunner(@testSuite.unStartedTests, @testSuite.finishedTests.length)
+      else
+        # we assume that we've already gone through and have been given specific tests to check out
+        self.configureJavascriptReRunner(specificTests, 0)
+      end
+
+      # Setup new saltinel listener (will overwrite the old one if it exists)
+      agentListener = SaltinelAgent.new(@javascriptRunner.saltinel)
+      agentListener.eventSink = self
+      @instrumentsRunner.addListener("saltinelAgent", agentListener)
+
+      @instrumentsRunner.runOnce @javascriptRunner.saltinel
+      if @appCrashed
+        self.handleAppCrash
+      end
+
+    end while not (@testSuite.nil? or @testSuite.unStartedTests.empty?)
+
+  end
+
 
   # print a summary of the tests that ran, in the form ..........!.!!.!...!..@...@.!
   #  where periods are passing tests, exclamations are fails, and '@' symbols are crashes
@@ -347,7 +386,7 @@ class AutomationRunner
         end
       end
       puts result.red
-      puts "#{failedTests.length} of #{allTests.length} tests FAILED".red
+      puts "#{unPassedTests.length} of #{allTests.length} tests FAILED".red   # failed in the test suite sense
     else
       puts "All #{allTests.length} tests PASSED".green
     end

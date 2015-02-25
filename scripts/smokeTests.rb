@@ -28,7 +28,6 @@ options.illuminator.clean.noDelay = true
 options.illuminator.task.build = true
 options.illuminator.task.automate = true
 options.illuminator.task.setSim = true
-options.illuminator.task.report = true
 options.simulator.device = 'iPhone 5'
 options.simulator.version = '7.1'
 options.simulator.language = 'en'

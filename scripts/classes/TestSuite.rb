@@ -21,6 +21,8 @@ class TestSuite
     @caseLookup[testCaseName]
   end
 
+  # TODO: fix naming, some of these return test cases and some return arrays of names
+
   def unStartedTests
     ret = Array.new
     @testCases.each { |t| ret << t.name unless t.ran? }
