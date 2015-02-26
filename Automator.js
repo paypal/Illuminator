@@ -542,17 +542,21 @@ var debugAutomator = false;
         // At this point, we consider the instruments/app launch to be a success
         // this function will also serve as notification to the framework that we consider instruments to have started
         automator.saveIntendedTestList(scenarioList);
+        var offset = config.automatorScenarioOffset;
 
         var dt;
         var t0 = getTime();
         // iterate through scenarios and run them
         UIALogger.logMessage(scenarioList.length + " scenarios to run");
         for (var i = 0; i < scenarioList.length; i++) {
-            var message = "Running scenario " + (i + 1).toString() + " of " + scenarioList.length;
+            var message = "Running scenario " + (i + 1 + offset).toString() + " of " + (scenarioList.length + offset);
             automator.runScenario(scenarioList[i], message);
         }
         dt = getTime() - t0;
-        UIALogger.logMessage("Completed running scenario list (" + scenarioList.length + " scenarios) in " + secondsToHMS(dt));
+        UIALogger.logMessage("Completed running scenario list ("
+                             + scenarioList.length + " of "
+                             + (scenarioList.length + offset) + " total scenarios) "
+                             + " in " + secondsToHMS(dt));
 
         // create a CSV report for the amount of time spent evaluating selectors
         automator.saveSelectorReportCSV("selectorTimeCostReport");
