@@ -635,6 +635,16 @@ var typeString = function (text, clear) {
     // if keyboard doesn't have a typeString (indicating a custom keyboard) then attempt to load that feature
     if (kb.typeString === undefined) {
         kb.typeString = this._inputMethod.features.typeString;
+        if (kb.typeString === undefined) {
+            throw new IlluminatorSetupException("Attempted to use typeString() on a custom keyboard that did not define a 'typeString' feature");
+        }
+    }
+
+    if (kb.clear === undefined) {
+        kb.clear = this._inputMethod.features.clear;
+        if (clear && kb.clear === undefined) {
+            throw new IlluminatorSetupException("Attempted to use clear() on a custom keyboard that did not define a 'clear' feature");
+        }
     }
 
     // attempt to get a successful keypress several times -- using the first character
