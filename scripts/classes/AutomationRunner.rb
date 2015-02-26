@@ -456,9 +456,8 @@ class AutomationRunner
       if XcodeUtils.instance.createSymbolicatedCrashReport(@appLocation, crashPath, crashReportPath)
         puts "Created a symbolicated version of the crash report at #{crashReportPath}".red
       else
-        puts "Couldn't symbolicate the crash report".yellow
         FileUtils.cp(crashPath, crashReportPath)
-        puts "Copied the crash report to #{crashReportPath}".red
+        puts "Copied the crash report (assumed already symbolicated) to #{crashReportPath}".red
       end
 
       # get the first few lines for the log

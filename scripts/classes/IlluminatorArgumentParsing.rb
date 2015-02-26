@@ -23,7 +23,7 @@ class IlluminatorParser < OptionParser
       elsif /^\d+x$/.match(r)
         # ok (1x, 2x, 3x...)
       else
-        puts "Got unknown retest specifier '#{r}'".yellow
+        puts "Got unknown --retest specifier '#{r}'".yellow
       end
     end
   end
@@ -46,7 +46,7 @@ class IlluminatorParser < OptionParser
 
     @_options["clean"].each do |c|
       unless knownCleans.include? c
-        puts "Got unknown clean specifier '#{c}'".yellow
+        puts "Got unknown --clean specifier '#{c}'".yellow
       end
     end
   end
