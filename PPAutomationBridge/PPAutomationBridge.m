@@ -256,7 +256,11 @@ NSStreamDelegate>
         id result = nil;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        result = [target performSelector:selector withObject:self.arguments];
+        if (self.arguments) {
+            result = [target performSelector:selector withObject:self.arguments];
+        } else {
+            result = [target performSelector:selector];
+        }
 #pragma clang diagnostic pop
         return result;
     } else {
