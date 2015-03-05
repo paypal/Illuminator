@@ -7,6 +7,18 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ How To Use:
+ 
+ - Add PPAutomationBridge class to your project
+ - Make an object that conforms to PPAutomationBridgeDelegate protocol
+ - Implement automationBridge:receivedAction: method (if you want default implementation type @see PPAutomationBridgeDelegate example
+ - Start your bridge with startAutomationBridgeWithDelegate:
+ 
+ For more information look at sample app implementation
+ */
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 @import Foundation;
 
 #ifdef DEBUG
@@ -79,14 +91,15 @@
 /**
  Returns an object representing bridge.
  *
-@return A singleton object that represents the bridge.
+ @return A singleton object that represents the bridge.
  */
 + (instancetype)bridge;
 
 /**
  Starts automation bridge advertising and registers delegate object to recive automation bridge messages
+ Does not retain delegate, you have to do it yourself
  *
-@param delegate <#delegate description#>
+ @param delegate Object conforming to PPAutomationBridgeDelegate that will recive messages when bridge is called from UIAutomation
  */
 - (void)startAutomationBridgeWithDelegate:(id <PPAutomationBridgeDelegate>)delegate;
 
