@@ -61,6 +61,11 @@ NSStreamDelegate>
         NSString *automationUDID = nil;
 #ifdef AUTOMATION_UDID
         automationUDID =  [NSString stringWithUTF8String:PPUIABTOSTRING(AUTOMATION_UDID)];
+#else
+        NSString *deviceName = [UIDevice currentDevice].name;
+        NSCharacterSet *charactersToRemove = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+        deviceName = [[deviceName componentsSeparatedByCharactersInSet:charactersToRemove] componentsJoinedByString:@"_"];
+        automationUDID = deviceName;
 #endif
         if (!automationUDID || [automationUDID isEqualToString:@""]) {
             automationUDID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
