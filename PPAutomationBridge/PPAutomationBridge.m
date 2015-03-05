@@ -62,6 +62,7 @@ NSStreamDelegate>
 #ifdef AUTOMATION_UDID
         automationUDID =  [NSString stringWithUTF8String:PPUIABTOSTRING(AUTOMATION_UDID)];
 #else
+	// If you're not using the AUTOMATION_UDID define, we'll get a name from the device name
         NSString *deviceName = [UIDevice currentDevice].name;
         NSCharacterSet *charactersToRemove = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
         deviceName = [[deviceName componentsSeparatedByCharactersInSet:charactersToRemove] componentsJoinedByString:@"_"];
