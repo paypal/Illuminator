@@ -1,16 +1,15 @@
 #import "../Common.js";
 
+ia = appmap.apps["Illuminator"];
 app = appmap.apps["SampleApp"];
 
+automator.createScenario("Simplest possible test", ["basic", "smoke"])
+    .withStep(app.homeScreen.verifyIsActive);
 
-automator.createScenario("Press button to populate label", ["test", "smoke"])
-	.withStep(app.homeScreen.pressButton)
-	.withStep(app.homeScreen.verifyLabelString, {labelText : "Button Pressed"})
-	.withStep(app.homeScreen.clearLabel);
+automator.createScenario("Crash the app", ["crash"])
+    .withStep(app.homeScreen.crash)
+    .withStep(app.homeScreen.verifyNotActive);
 
-
-automator.createScenario("Press button to populate label with mocked text", ["mocked", "smoke"])
-	.withStep(app.homeScreen.mockLabelText, {labelText : "Mocked Pressed"})
-	.withStep(app.homeScreen.pressButton)
-	.withStep(app.homeScreen.verifyLabelString, {labelText : "Mocked Pressed"})
-	.withStep(app.homeScreen.clearLabel)
+automator.createScenario("Sample scaffold (last 2 steps) for building up automation", ["scaffolding", "smoke"])
+    .withStep(ia.do.delay, {seconds: 1})
+    .withStep(ia.do.logAccessors);
