@@ -7,6 +7,7 @@
 //
 
 #import "PPHABridgeDelegate.h"
+#import "PPHAAppDelegate.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation PPHABridgeDelegate
@@ -25,6 +26,12 @@
 - (NSDictionary *)exampleWithReturnValue:(NSDictionary *)parameters {
     //just return whatever you get
     return parameters;
+}
+
+- (NSDictionary *)resetToMainMenu {
+    PPHAAppDelegate *appDelegate = [[UIApplication sharedApplication] delegate];
+    [appDelegate.mainNavController popToRootViewControllerAnimated:NO];
+    return nil;
 }
 
 @end

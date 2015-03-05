@@ -9,6 +9,7 @@
 #import "PPHAMainMenuViewController.h"
 #import "PPHATableDataObject.h"
 #import "PPHABridgeDelegate.h"
+#import "PPHAAppDelegate.h"
 
 #define kCustomKeyboardSegue @"CustomKeyboard"
 #define kSearchingElementsSegue @"SearchingElements"
@@ -30,7 +31,10 @@ static NSString *cellIdentifier = @"automatorRules";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    //set this so we can return to root view controller from bridge
+    [(PPHAAppDelegate *)[[UIApplication sharedApplication] delegate] setMainNavController:self.navigationController];
+   
+    [self.tableView setAccessibilityIdentifier:@"Main Menu"];
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:cellIdentifier];
     [self buildDatasource];
 }
@@ -59,6 +63,8 @@ static NSString *cellIdentifier = @"automatorRules";
     [self.datasource addObject:[PPHATableDataObject tableObjectWithTitle:title selectionBlock:nil]];
     [self.tableView reloadData];
 }
+
+
 
 
 #pragma mark -
