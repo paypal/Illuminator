@@ -7,17 +7,6 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- How To Use:
- 
- - Add PPAutomationBridge class to your project
- - Make an object that conforms to PPAutomationBridgeDelegate protocol
- - Implement automationBridge:receivedAction: method (if you want default implementation type @see PPAutomationBridgeDelegate example
- - Start your bridge with startAutomationBridgeWithDelegate:
- 
- For more information look at sample app implementation
- */
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @import Foundation;
 
@@ -33,19 +22,24 @@
 @protocol PPAutomationBridgeDelegate <NSObject>
 
 /**
- Enables PPAutomationBridge to send messages to application under test.
- Most general use case scenario is to make this method call [action resultFromTarget:self]; in PPAutomationBridgeDelegate and
- make PPAutomationBridgeDelegate object implement all methods you might get from PPAutomationBridge.
-
- Example:
-    - (NSDictionary *)automationBridge:(PPAutomationBridge *)bridge receivedAction:(PPAutomationBridgeAction *)action {
-        return [action resultFromTarget:self];
-    }
- 
- @param bridge PPAutomationBridge sending a message.
- @param action PPAutomationBridgeAction object describing message bridge wants to send.
-
- @return NSDictionary presenting data app returns to the testing framework trough bridge. nil is allowed value
+ *  Enables PPAutomationBridge to send messages to application under test.
+ *  Most general use case scenario is to make this method call [action resultFromTarget:self]; in PPAutomationBridgeDelegate and
+ *  make PPAutomationBridgeDelegate object implement all methods you might get from PPAutomationBridge.
+ *
+ *  Example:
+ *
+ *   ```
+ *      - (NSDictionary *)automationBridge:(PPAutomationBridge *)bridge receivedAction:(PPAutomationBridgeAction *)action {
+ *
+ *          return [action resultFromTarget:self];
+ *
+ *      }
+ *   ```
+ *   
+ *  @param bridge PPAutomationBridge sending a message.
+ *  @param action PPAutomationBridgeAction object describing message bridge wants to send.
+ *
+ *  @return NSDictionary presenting data app returns to the testing framework trough bridge. nil is allowed value
  */
 - (NSDictionary *)automationBridge:(PPAutomationBridge *)bridge receivedAction:(PPAutomationBridgeAction *)action;
 
@@ -54,7 +48,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
- Represents message bridge wants to send to application under test
+ @discussion Represents message bridge wants to send to application under test
 */
 @interface PPAutomationBridgeAction : NSObject
 
@@ -83,9 +77,19 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
- The PPAutomationBridge class provides a singleton instance representing bridge that comunicates with 
- UIAutomation trough socket interface.
+ *  @discussion The PPAutomationBridge class provides a singleton instance representing a bridge that comunicates with
+ *  UIAutomation through socket interface.
+ *
+ *  How To Use:
+ *
+ *  - Add PPAutomationBridge class to your project
+ *  - Make an object that conforms to PPAutomationBridgeDelegate protocol
+ *  - Implement automationBridge:receivedAction: method (if you want default implementation type @see PPAutomationBridgeDelegate example
+ *  - Start your bridge with startAutomationBridgeWithDelegate:
+ *
+ *  For more information look at sample app implementation
  */
+
 @interface PPAutomationBridge : NSObject
 
 /**
@@ -104,7 +108,7 @@
 - (void)startAutomationBridgeWithDelegate:(id <PPAutomationBridgeDelegate>)delegate;
 
 /**
- Starts automation bridge advertising.
+ Stops automation bridge advertising.
  */
 - (void)stopAutomationBridge;
 
