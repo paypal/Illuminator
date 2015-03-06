@@ -31,8 +31,6 @@ NSStreamDelegate>
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *inputData;
 @property (nonatomic, strong) NSMutableData *outputData;
-@property (nonatomic) NSInteger writtenBytes;
-
 
 @property (nonatomic, weak) id<PPAutomationBridgeDelegate> delegate;
 
@@ -57,6 +55,23 @@ NSStreamDelegate>
 - (id)init {
     self = [super init];
     if (self) {
+    }
+
+    return self;
+}
+
+- (void)dealloc {
+    [self stopAutomationBridge];
+}
+
+- (void)startAutomationBridgeWithDelegate:(id<PPAutomationBridgeDelegate>)delegate {
+    [self startAutomationBridgeWithPrefix:@"UIAutomation" onPort:4200 WithDelegate:delegate];
+}
+
+- (void)startAutomationBridgeWithPrefix:(NSString *)bonjourPrefix onPort:(int)port WithDelegate:(id<PPAutomationBridgeDelegate>)delegate {
+    
+    self.delegate = delegate;
+    if (self.server == nil) {
         NSString *automationUDID = nil;
 #ifdef AUTOMATION_UDID
         automationUDID =  [NSString stringWithUTF8String:PPUIABTOSTRING(AUTOMATION_UDID)];
@@ -70,26 +85,13 @@ NSStreamDelegate>
         if (!automationUDID || [automationUDID isEqualToString:@""]) {
             automationUDID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
         }
-        
         self.server = [[NSNetService alloc] initWithDomain:@"local."
                                                       type:@"_bridge._tcp."
-                                                      name:[NSString stringWithFormat:@"UIAutomationBridge_%@", automationUDID]
-                                                      port:4200];
+                                                      name:[NSString stringWithFormat:@"%@_%@", bonjourPrefix, automationUDID]
+                                                      port:port];
         [self.server setDelegate:self];
 
     }
-
-    return self;
-}
-
-- (void)dealloc {
-    [self stopAutomationBridge];
-}
-
-
-
-- (void)startAutomationBridgeWithDelegate:(id<PPAutomationBridgeDelegate>)delegate {
-    self.delegate = delegate;
     if (self.server) {
         [self.server publishWithOptions:NSNetServiceListenForConnections];
     }
@@ -99,6 +101,16 @@ NSStreamDelegate>
 - (void)stopAutomationBridge {
     if (self.server) {
         [self.server stop];
+        self.server = nil;
+    }
+}
+
+- (BOOL)sendToConnectedClient:(NSDictionary *)args {
+    if (self.outputStream) {
+        [self answerWith:args];
+        return YES;
+    } else {
+        return NO;
     }
 }
 
@@ -130,21 +142,22 @@ NSStreamDelegate>
 #pragma mark -
 #pragma mark helpers
 
-- (void)readData {
-    NSString* string = [[NSString alloc] initWithData:self.inputData encoding:NSASCIIStringEncoding];
-    if (string) {
-        NSDictionary *returnMessage = [self receivedMessage:string];
-        [self answerWith:returnMessage];
+- (void)answerWith:(NSDictionary *)dictionary {
+    NSData *response = [NSJSONSerialization dataWithJSONObject:dictionary
+                                                       options:0
+                                                         error:nil];
+    if (response) {
+        if (!self.outputData) {
+            self.outputData = [[NSMutableData alloc] initWithData:response];
+        } else {
+            [self.outputData appendData:response];
     }
 }
-
-
-- (void)answerWith:(NSDictionary *)dictionary {
-    self.outputData = [[NSJSONSerialization dataWithJSONObject:dictionary
-                                                       options:0
-                                                         error:nil] mutableCopy];
+    if ([_outputStream streamStatus] == NSStreamStatusOpen) {
+        [self outputStream:_outputStream handleEvent:NSStreamEventHasSpaceAvailable];
+    } else {
     [_outputStream open];
-    [self setInputStream:nil];
+}
 }
 
 - (void)setInputStream:(NSInputStream *)inputStream {
@@ -171,7 +184,6 @@ NSStreamDelegate>
         [_outputStream removeFromRunLoop:[NSRunLoop currentRunLoop]
                                 forMode:NSDefaultRunLoopMode];
         _outputStream = nil;
-        _writtenBytes = 0;
     }
     if (outputStream) {
         _outputStream = outputStream;
@@ -188,25 +200,37 @@ NSStreamDelegate>
 
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode {
     if (stream == self.inputStream) {
-        [self inputStream:stream handleEvent:eventCode];
+        [self inputStream:(NSInputStream*)stream handleEvent:eventCode];
     } else if (stream == self.outputStream) {
         [self outputStream:stream handleEvent:eventCode];
     }
 }
 
-- (void)inputStream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode {
+- (void)inputStream:(NSInputStream *)stream handleEvent:(NSStreamEvent)eventCode {
 
     switch(eventCode) {
         case NSStreamEventHasBytesAvailable: {
+            if (!self.inputData) {
             self.inputData = [NSMutableData data];
+            }
 
+            while (stream.hasBytesAvailable) {
             uint8_t buffer[32768];
             NSInteger len = 0;
             len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
             if(len) {
                 [self.inputData appendBytes:(const void *)buffer length:len];
             }
-            [self readData];
+            }
+            NSInteger jsonMessageLength;
+            do {
+                jsonMessageLength = [self findJsonMessage];
+                if (jsonMessageLength > 0) {
+                    NSString* json = [[NSString alloc] initWithBytes:self.inputData.bytes length:jsonMessageLength encoding:NSASCIIStringEncoding];
+                    [self.inputData replaceBytesInRange:NSMakeRange(0, jsonMessageLength) withBytes:nil length:0];
+                    [self answerWith:[self receivedMessage:json]];
+                }
+            } while (jsonMessageLength > 0);
             break;
         }
         default:
@@ -219,15 +243,12 @@ NSStreamDelegate>
     switch(eventCode) {
         case NSStreamEventHasSpaceAvailable: {
             const uint8_t *pData = [self.outputData bytes];
-            while ([self.outputStream hasSpaceAvailable] && self.writtenBytes < self.outputData.length) {
-                NSInteger r = [self.outputStream write:pData+self.writtenBytes maxLength:self.outputData.length-self.writtenBytes];
+            while ([self.outputStream hasSpaceAvailable] && self.outputData.length > 0) {
+                NSInteger r = [self.outputStream write:pData maxLength:self.outputData.length];
                 if (r == -1) {
                     break;
                 }
-                self.writtenBytes += r;
-            }
-            if (self.outputData.length-self.writtenBytes == 0) {
-                self.outputStream = nil;
+                [self.outputData replaceBytesInRange:NSMakeRange(0, r) withBytes:nil length:0];
             }
             break;
         case NSStreamEventEndEncountered:
@@ -240,6 +261,55 @@ NSStreamDelegate>
         }
     }
 
+}
+
+/**
+ Figure out if we have a fully formed JSON message in our buffer. Bad JSON will confuse this, and this is not
+ intended to be a true parser. It just finds out if we have a complete message assuming well formed-ness.
+ */
+- (NSInteger)findJsonMessage {
+    int count = 0;
+    const uint8_t *bytes = [self.inputData bytes];
+    for (long i = 0, len = self.inputData.length; i < len; i++) {
+        char c = bytes[i];
+        switch (c) {
+            case '{': case '[':
+                count++;
+                break;
+            case '}': case ']':
+                if (count == 1) {
+                    // Found the end.
+                    return i+1;
+                }
+                count--;
+                break;
+            case '\"':
+            {
+                NSInteger tokenLength = [self readJsonString: i];
+                if (tokenLength == -1) {
+                    return -1;
+                }
+                i += tokenLength;
+                break;
+            }
+        }
+    }
+    return -1;
+}
+
+- (NSInteger)readJsonString:(NSInteger) start {
+    const uint8_t *bytes = [self.inputData bytes];
+    for (long i = start+1, len = self.inputData.length; i < len; i++) {
+        char c = bytes[i];
+        if (c == '\"') {
+            // Found the end of the string
+            return i-start;
+        }
+        if (c == '\\') {
+            i++;
+        }
+    }
+    return -1;
 }
 
 @end
