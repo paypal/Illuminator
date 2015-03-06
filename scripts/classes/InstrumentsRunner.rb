@@ -192,6 +192,7 @@ class InstrumentsRunner
               self.killInstruments(r, w, pid)
               puts "killing simulator processes...".red
               XcodeUtils.killAllSimulatorProcesses
+              # TODO: might be necessary to delete any app crashes at this point
             else
               # We failed to get output for @startuptTimeout, but that's probably OK since we've successfully started
               # TODO: if we need to enforce a maximum time spent without output, this is where the counter would go

@@ -621,18 +621,30 @@ var typeString = function (text, clear) {
                                                      + this.toString() + " with name '" + this.name() + "'");
     }
 
-    var kb, db; // keyboard, deleteButton
+    var kb; // keyboard
     var seconds = 2;
     var waitTime = 0.25;
     var maxAttempts = seconds / waitTime;
     var noSuccess = true;
     var failMsg = null;
 
+
+    // get whichever keyboard was specified by the user
     kb = target().getOneChildElement(this._inputMethod.selector);
 
     // if keyboard doesn't have a typeString (indicating a custom keyboard) then attempt to load that feature
     if (kb.typeString === undefined) {
         kb.typeString = this._inputMethod.features.typeString;
+        if (kb.typeString === undefined) {
+            throw new IlluminatorSetupException("Attempted to use typeString() on a custom keyboard that did not define a 'typeString' feature");
+        }
+    }
+
+    if (kb.clear === undefined) {
+        kb.clear = this._inputMethod.features.clear;
+        if (clear && kb.clear === undefined) {
+            throw new IlluminatorSetupException("Attempted to use clear() on a custom keyboard that did not define a 'clear' feature");
+        }
     }
 
     // attempt to get a successful keypress several times -- using the first character
@@ -642,20 +654,7 @@ var typeString = function (text, clear) {
 
             // handle clearing
             if (clear) {
-                // find many types of keyboard delete buttons, then just use the first one we get
-                delButtons = kb.waitForChildSelect(5, {
-                    "key": function (keyboard) { return keyboard.keys()["Delete"]; },
-                    "button": function (keyboard) { return keyboard.buttons()["Delete"]; },
-                    "element": function (keyboard) { return keyboard.elements()["Delete"]; },
-                });
-                for (var k in delButtons) {
-                    db = delButtons[k];
-                    break;
-                }
-
-                // tapWithOptions / touchAndHold doesn't work without this next line... not sure why :(
-                db.tap();
-                db.tapWithOptions({duration: 3.7});
+                kb.clear(this);
                 clear = false; // prevent clear on next iteration
             }
 
@@ -1550,6 +1549,78 @@ extendPrototype(UIATarget, {
     }
 
 });
+
+extendPrototype(UIAKeyboard, {
+    clear: function (inputField) {
+
+        var kb = this; // keyboard
+        var db; // deleteButton
+        var blindDelete = false;
+        var preDeleteVal = "";
+        var postDeleteVal = "";
+
+        // find many types of keyboard delete buttons, then just use the first one we get
+        var getDeletionElement = function () {
+            delButtons = kb.waitForChildSelect(5, {
+                // TODO: handle other languages, possibly by programmatically generating this
+                "key": function (keyboard) { return keyboard.keys()["Delete"]; },
+                "button": function (keyboard) { return keyboard.buttons()["Delete"]; },
+                "element": function (keyboard) { return keyboard.elements()["Delete"]; },
+            });
+            for (var k in delButtons) {
+                return delButtons[k]; // first one is fine
+            }
+
+            return newUIAElementNil();
+        }
+
+        // wrapper for tapping the delete button.
+        var tapDeleteButton = function (duration) {
+            // initial condition
+            if (db === undefined) {
+                db = getDeletionElement();
+            }
+
+            // tap the proper way given whether we want to tap for a duration
+            if (duration) {
+                db.tapWithOptions({duration: duration})
+            } else {
+                var t0 = getTime();
+                db.tap();
+                // this hack keeps deletion snappy when it crosses a word boundary (after which tapping can take 2 seconds)
+                if (0.3 < getTime() - t0) {
+                    db = getDeletionElement();
+                }
+            }
+        }
+
+        // calling "this.value()" on an element is a necessary hack to make long-press deletion work on iPad.  Seriously.
+        if (inputField.value) {
+            preDeleteVal = inputField.value();
+        }
+
+        // another necessary hack: without it, tapWithOptions / touchAndHold for blind delete doesn't work
+        tapDeleteButton();
+
+        // find out if we affected the input field
+        if (inputField.value) {
+            postDeleteVal = inputField.value();
+        }
+
+        // don't delete blindly if initial val was non-empty and deleting changed the value in the way we expected
+        blindDelete = !(0 < preDeleteVal.length && (1 == preDeleteVal.length - postDeleteVal.length));
+
+        if (blindDelete) {
+            tapDeleteButton(3.7);
+        } else {
+            for (var i = 0; i < postDeleteVal.length; ++i) {
+                tapDeleteButton();
+            }
+        }
+
+    }
+});
+
 
 extendPrototype(UIATextField, {
     typeString: typeString,

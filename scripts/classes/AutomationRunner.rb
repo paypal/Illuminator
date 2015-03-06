@@ -40,13 +40,13 @@ class AutomationRunner
   attr_reader :javascriptRunner
 
   def initialize
-    @crashPath         = "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
     @testDefs          = nil
     @testSuite         = nil
     @currentTest       = nil
     @restartedTests    = nil
     @stackTraceLines   = nil
     @stackTraceRecord  = false
+    @appCrashed        = false
     @javascriptRunner  = JavascriptRunner.new
     @instrumentsRunner = InstrumentsRunner.new
 
@@ -56,7 +56,7 @@ class AutomationRunner
 
   def cleanup
     # start a list of what to remove
-    dirsToRemove = [@crashPath]
+    dirsToRemove = []
 
     # FIXME: this should probably get moved to instrument runner
     # keys to the methods of the BuildArtifacts singleton that we want to remove
@@ -106,7 +106,6 @@ class AutomationRunner
   end
 
   def saltinelAgentGotRestartRequest
-    # foobar
     puts "ILLUMINATOR FAILURE TO ORGANIZE".red if @testSuite.nil?
     puts "ILLUMINATOR FAILURE TO ORGANIZE 2".red if @currentTest.nil?
     if @restartedTests[@currentTest]
@@ -146,22 +145,15 @@ class AutomationRunner
     elsif @currentTest.nil?
       puts "Failure outside of a test: #{message}".red
     elsif message == "The target application appears to have died"
-      # do nothing; assume a crash report exists and leave it to the crash handler code to clean this up
+      @testSuite[@currentTest].error message
+      @appCrashed = true
+      # The test runner loop will take it from here
     else
       @testSuite[@currentTest].fail message
       @testSuite[@currentTest].stacktrace = @stackTraceLines.join("\n")
       @currentTest = nil
       self.saveJunitTestReport
     end
-  end
-
-  def weGotTestCrash stacktraceText
-    # tell the current test suite about any failures
-    return if @currentTest.nil?
-    @testSuite[@currentTest].error "The target application appears to have died."
-    @testSuite[@currentTest].stacktrace = stacktraceText
-    @currentTest = nil
-    self.saveJunitTestReport
   end
 
   def testListenerGotLine(status, message)
@@ -186,6 +178,7 @@ class AutomationRunner
     end
   end
 
+  # translate input options into javascript config
   def configureJavascriptRunner(options)
     jsConfig = @javascriptRunner
 
@@ -206,16 +199,20 @@ class AutomationRunner
     jsConfig.customJSConfig      = options.javascript.customConfig
     jsConfig.customJSConfigPath  = BuildArtifacts.instance.illuminatorCustomConfigFile
 
+    # don't offset the numbers this time
+    jsConfig.scenarioNumberOffset = 0
+
     # write main config
     jsConfig.writeConfiguration()
   end
 
 
-  def configureJavascriptReRunner scenarioList
-    jsConfig              = @javascriptRunner
-    jsConfig.randomSeed   = nil
-    jsConfig.entryPoint   = "runTestsByName"
-    jsConfig.scenarioList = scenarioList
+  def configureJavascriptReRunner(scenariosToRun, numberOffset)
+    jsConfig                      = @javascriptRunner
+    jsConfig.randomSeed           = nil
+    jsConfig.entryPoint           = "runTestsByName"
+    jsConfig.scenarioList         = scenariosToRun
+    jsConfig.scenarioNumberOffset = numberOffset
 
     jsConfig.writeConfiguration()
   end
@@ -266,29 +263,35 @@ class AutomationRunner
     XcodeUtils.killAllSimulatorProcesses
     XcodeUtils.resetSimulator if options.illuminator.hardwareID.nil? and options.illuminator.task.setSim
 
+    startTime = Time.now
+
     @testSuite = nil
 
-    # loop until all test cases are covered.
-    # we won't get the actual test list until partway through -- from a listener callback
-    startTime = Time.now
-    begin
-      self.removeAnyAppCrashes
+    # run the first time
+    self.executeEntireTestSuite(options, nil)
 
-      # Setup javascript to run the appropriate list of tests (initial or leftover)
-      if @testSuite.nil?
-        self.configureJavascriptRunner options
-      else
-        self.configureJavascriptReRunner(@testSuite.unStartedTests)
+    unless options.illuminator.test.retest.attempts.nil?
+      # retry any failed tests
+      for i in 0..(options.illuminator.test.retest.attempts - 1)
+        att = i + 1
+        unPassedTests = @testSuite.unPassedTests.map { |t| t.name }
+
+        # run them in batch mode if desired
+        unless options.illuminator.test.retest.solo
+          puts "Retrying failed tests in batch, attempt #{att} of #{options.illuminator.test.retest.attempts}"
+          self.executeEntireTestSuite(options, unPassedTests)
+        else
+          puts "Retrying failed tests individually, attempt #{att} of #{options.illuminator.test.retest.attempts}"
+
+          unPassedTests.each_with_index do |t, index|
+            testNum = index + 1
+            puts "Solo attempt for test #{testNum} of #{unPassedTests.length}"
+            self.executeEntireTestSuite(options, [t])
+          end
+        end
       end
+    end
 
-      # Setup new saltinel listener
-      agentListener = SaltinelAgent.new(@javascriptRunner.saltinel)
-      agentListener.eventSink = self
-      @instrumentsRunner.addListener("saltinelAgent", agentListener)
-
-      @instrumentsRunner.runOnce @javascriptRunner.saltinel
-      numCrashes = self.reportAnyAppCrashes
-    end while not (@testSuite.nil? or @testSuite.unStartedTests.empty?)
     totalTime = Time.at(Time.now - startTime).gmtime.strftime("%H:%M:%S")
     puts "Automation completed in #{totalTime}".green
 
@@ -302,7 +305,7 @@ class AutomationRunner
           self.generateCoverage gcovrWorkspace
         end
       end
-      self.saveFailedTestsConfig(options, @testSuite.failedTests)
+      self.saveFailedTestsConfig(options, @testSuite.unPassedTests)
     end
 
     XcodeUtils.killAllSimulatorProcesses if options.simulator.killAfter
@@ -313,11 +316,48 @@ class AutomationRunner
       self.summarizeTestResults @testSuite
     end
 
+    # TODO: exit code should be an integer, and each of these should be cases
     return false if @testSuite.nil?                         # no tests were received
     return false if 0 == @testSuite.passedTests.length      # no tests passed, or none ran
-    return false if 0 < @testSuite.failedTests.length       # 1 or more tests failed
+    return false if 0 < @testSuite.unPassedTests.length     # 1 or more tests failed
     return true
   end
+
+  # run a test suite, restarting if necessary
+  def executeEntireTestSuite(options, specificTests)
+
+    # loop until all test cases are covered.
+    # we won't get the actual test list until partway through -- from a listener callback
+    begin
+      self.removeAnyAppCrashes
+      @appCrashed = false
+
+      # Setup javascript to run the appropriate list of tests (initial or leftover)
+      if @testSuite.nil?
+        # very first attempt
+        self.configureJavascriptRunner options
+      elsif specificTests.nil?
+        # not first attempt, but we haven't made it all the way through yet
+        self.configureJavascriptReRunner(@testSuite.unStartedTests, @testSuite.finishedTests.length)
+      else
+        # we assume that we've already gone through and have been given specific tests to check out
+        self.configureJavascriptReRunner(specificTests, 0)
+      end
+
+      # Setup new saltinel listener (will overwrite the old one if it exists)
+      agentListener = SaltinelAgent.new(@javascriptRunner.saltinel)
+      agentListener.eventSink = self
+      @instrumentsRunner.addListener("saltinelAgent", agentListener)
+
+      @instrumentsRunner.runOnce @javascriptRunner.saltinel
+      if @appCrashed
+        self.handleAppCrash
+      end
+
+    end while not (@testSuite.nil? or @testSuite.unStartedTests.empty?)
+
+  end
+
 
   # print a summary of the tests that ran, in the form ..........!.!!.!...!..@...@.!
   #  where periods are passing tests, exclamations are fails, and '@' symbols are crashes
@@ -327,12 +367,12 @@ class AutomationRunner
       return
     end
 
-    allTests    = testSuite.allTests
-    failedTests = testSuite.failedTests
+    allTests      = testSuite.allTests
+    unPassedTests = testSuite.unPassedTests
 
     if 0 == allTests.length
       puts "No tests ran".yellow
-    elsif 0 < failedTests.length
+    elsif 0 < unPassedTests.length
       result = "Result: "
       allTests.each do |t|
         if not t.ran?
@@ -346,7 +386,7 @@ class AutomationRunner
         end
       end
       puts result.red
-      puts "#{failedTests.length} of #{allTests.length} tests FAILED".red
+      puts "#{unPassedTests.length} of #{allTests.length} tests FAILED".red   # failed in the test suite sense
     else
       puts "All #{allTests.length} tests PASSED".green
     end
@@ -366,47 +406,73 @@ class AutomationRunner
   end
 
   def removeAnyAppCrashes()
-    Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |crashPath|
+    Dir.glob("#{XcodeUtils.instance.getCrashDirectory}/#{@appName}*.crash").each do |crashPath|
       FileUtils.rmtree crashPath
     end
   end
+
+
+  def handleAppCrash
+    # tell the current test suite about any failures
+    if @currentTest.nil?
+      puts "ILLUMINATOR FAILURE TO HANDLE APP CRASH"
+      return
+    end
+
+    # assume a crash report exists, and look for it
+    crashes = self.reportAnyAppCrashes
+
+    # write something useful depending on what crash reports are found
+    case crashes.keys.length
+    when 0
+      stacktraceText = "No crash reports found in #{XcodeUtils.instance.getCrashDirectory}, perhaps the app exited cleanly instead"
+    when 1
+      stacktraceText = crashes[crashes.keys[0]]
+    else
+      stacktraceBody = crashes[crashes.keys[0]]
+      stacktraceText = "Found multiple crashes: #{crashes.keys}  Here is the first one:\n\n #{stacktraceBody}"
+    end
+
+    @testSuite[@currentTest].stacktrace = stacktraceText
+    @currentTest = nil
+    self.saveJunitTestReport
+  end
+
 
 
   def reportAnyAppCrashes()
     crashReportsPath = BuildArtifacts.instance.crashReports
     FileUtils.mkdir_p crashReportsPath unless File.directory?(crashReportsPath)
 
-    crashes = 0
+    crashes = Hash.new
     # TODO: glob if @appName is nil
-    Dir.glob("#{@crashPath}/#{@appName}*.crash").each do |crashPath|
+    Dir.glob("#{XcodeUtils.instance.getCrashDirectory}/#{@appName}*.crash").each do |crashPath|
       # TODO: extract process name and ignore ["launchd_sim", ...]
 
       puts "Found a crash report from this test run at #{crashPath}"
       crashName = File.basename(crashPath, ".crash")
-      crashReportPath = "#{crashReportsPath}/#{crashName}.txt"
+      crashReportPath = "#{crashReportsPath}/#{crashName}.crash"
       crashText = []
-      unless XcodeUtils.instance.createCrashReport(@appLocation, crashPath, crashReportPath)
-        puts "Failed to save crash report.".red
+      if XcodeUtils.instance.createSymbolicatedCrashReport(@appLocation, crashPath, crashReportPath)
+        puts "Created a symbolicated version of the crash report at #{crashReportPath}".red
       else
-        # get the first few lines for the log
-        file = File.open(crashReportPath, 'rb')
-        file.each do |line|
-          break if line.match(/^Binary Images/)
-          crashText << line
-        end
-        file.close
-
-        logLine = "Full crash report saved at #{crashReportPath}"
-        puts logLine.red
-        crashText << "\n"
-        crashText << logLine
+        FileUtils.cp(crashPath, crashReportPath)
+        puts "Copied the crash report (assumed already symbolicated) to #{crashReportPath}".red
       end
 
-      crashes += 1
+      # get the first few lines for the log
+      # TODO: possibly do error handling here just in case the file doesn't exist
+      file = File.open(crashReportPath, 'rb')
+      file.each do |line|
+        break if line.match(/^Binary Images/)
+        crashText << line
+      end
+      file.close
 
-      # tell the current test suite about any failures
-      self.weGotTestCrash crashText.join("")
+      crashText << "\n"
+      crashText << "Full crash report saved at #{crashReportPath}"
 
+      crashes[crashName] = crashText.join("")
     end
     crashes
   end

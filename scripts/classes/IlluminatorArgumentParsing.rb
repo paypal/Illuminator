@@ -12,6 +12,33 @@ class IlluminatorParser < OptionParser
   end
 
 
+  def checkRetestArgs
+    knownRetests = ["solo"]
+
+    @_options["retest"] = [] if @_options["retest"].nil?
+
+    @_options["retest"].each do |r|
+      if knownRetests.include? r
+        # ok
+      elsif /^\d+x$/.match(r)
+        # ok (1x, 2x, 3x...)
+      else
+        puts "Got unknown --retest specifier '#{r}'".yellow
+      end
+    end
+  end
+
+  def getMaxRetests
+    ret = 0
+    @_options["retest"].each do |r|
+      matches = /^(\d+)x$/.match(r)
+      unless matches.nil?
+        ret = [ret, matches[1].to_i].max
+      end
+    end
+    ret
+  end
+
   def checkCleanArgs
     knownCleans = ["xcode", "buildArtifacts", "derivedData", "noDelay"]
 
@@ -19,7 +46,7 @@ class IlluminatorParser < OptionParser
 
     @_options["clean"].each do |c|
       unless knownCleans.include? c
-        puts "Got unknown clean specifier '#{c}'".yellow
+        puts "Got unknown --clean specifier '#{c}'".yellow
       end
     end
   end
@@ -27,6 +54,7 @@ class IlluminatorParser < OptionParser
   # copy internal options storage into a options object
   def copyParsedOptionsInto(illuminatorOptions)
     self.checkCleanArgs
+    self.checkRetestArgs
 
     # load up known illuminatorOptions
     # we only load non-nil options, just in case there was already something in the illuminatorOptions obj
@@ -40,6 +68,9 @@ class IlluminatorParser < OptionParser
     illuminatorOptions.illuminator.test.tags.all   = @_options["tagsAll"] unless @_options["tagsAll"].nil?
     illuminatorOptions.illuminator.test.tags.none  = @_options["tagsNone"] unless @_options["tagsNone"].nil?
 
+    illuminatorOptions.illuminator.test.retest.attempts = getMaxRetests
+    illuminatorOptions.illuminator.test.retest.solo     = @_options["retest"].include? "solo"
+
     illuminatorOptions.illuminator.clean.xcode     = @_options["clean"].include? "xcode"
     illuminatorOptions.illuminator.clean.derived   = @_options["clean"].include? "derivedData"
     illuminatorOptions.illuminator.clean.artifacts = @_options["clean"].include? "buildArtifacts"
@@ -49,7 +80,6 @@ class IlluminatorParser < OptionParser
     illuminatorOptions.illuminator.task.automate = (not @_options["skipAutomate"]) unless @_options["skipAutomate"].nil?
     illuminatorOptions.illuminator.task.setSim   = (not @_options["skipSetSim"]) unless @_options["skipSetSim"].nil?
     illuminatorOptions.illuminator.task.coverage = @_options["coverage"] unless @_options["coverage"].nil?
-    illuminatorOptions.illuminator.task.report   = @_options["report"] unless @_options["report"].nil?
     illuminatorOptions.illuminator.hardwareID    = @_options["hardwareID"] unless @_options["hardwareID"].nil?
 
     illuminatorOptions.simulator.device    = @_options["simDevice"] unless @_options["simDevice"].nil?
@@ -112,7 +142,7 @@ class IlluminatorParserFactory
       'e' => 'skipSetSim',
       'k' => 'skipKillAfter',
       'c' => 'coverage',
-      'r' => 'report',
+      'r' => 'retest',
       'v' => 'verbose',
       'm' => 'timeout',
       'w' => 'randomSeed',
@@ -124,6 +154,7 @@ class IlluminatorParserFactory
       'p' => lambda {|p| HostUtils.realpath(p) },     # get real path to tests file
       'E' => lambda {|p| HostUtils.realpath(p) },     # get real path to app
       'y' => lambda {|p| p.split(',')},               # split comma-separated string into array
+      'r' => lambda {|p| p.split(',')},               # split comma-separated string into array
       't' => lambda {|p| p.split(',')},               # split comma-separated string into array
       'o' => lambda {|p| p.split(',')},               # split comma-separated string into array
       'n' => lambda {|p| p.split(',')},               # split comma-separated string into array
@@ -140,7 +171,6 @@ class IlluminatorParserFactory
       'B' => false,
       'e' => false,
       'k' => false,
-      'r' => false,
       'c' => false,
     }
   end
@@ -173,7 +203,7 @@ class IlluminatorParserFactory
     self.addSwitch('k', ['-k', '--skip-kill-after', 'Do not kill the simulator after the run'])
     self.addSwitch('y', ['-y', '--clean PLACES', 'Comma-separated list of places to clean {xcode, buildArtifacts, derivedData}'])
     self.addSwitch('c', ['-c', '--coverage', 'Generate coverage files'])
-    self.addSwitch('r', ['-r', '--report', 'Generate Xunit reports'])
+    self.addSwitch('r', ['-r', '--retest OPTIONS', 'Immediately retest failed tests with comma-separated options {1x, solo}'])
     self.addSwitch('v', ['-v', '--verbose', 'Show verbose output'])
     self.addSwitch('m', ['-m', '--timeout TIMEOUT', 'startup timeout'])
     self.addSwitch('w', ['-w', '--random-seed SEED', 'Randomize test order based on given integer seed'])

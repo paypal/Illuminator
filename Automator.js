@@ -542,17 +542,21 @@ var debugAutomator = false;
         // At this point, we consider the instruments/app launch to be a success
         // this function will also serve as notification to the framework that we consider instruments to have started
         automator.saveIntendedTestList(scenarioList);
+        var offset = config.automatorScenarioOffset;
 
         var dt;
         var t0 = getTime();
         // iterate through scenarios and run them
         UIALogger.logMessage(scenarioList.length + " scenarios to run");
         for (var i = 0; i < scenarioList.length; i++) {
-            var message = "Running scenario " + (i + 1).toString() + " of " + scenarioList.length;
+            var message = "Running scenario " + (i + 1 + offset).toString() + " of " + (scenarioList.length + offset);
             automator.runScenario(scenarioList[i], message);
         }
         dt = getTime() - t0;
-        UIALogger.logMessage("Completed running scenario list (" + scenarioList.length + " scenarios) in " + secondsToHMS(dt));
+        UIALogger.logMessage("Completed running scenario list ("
+                             + scenarioList.length + " of "
+                             + (scenarioList.length + offset) + " total scenarios) "
+                             + " in " + secondsToHMS(dt));
 
         // create a CSV report for the amount of time spent evaluating selectors
         automator.saveSelectorReportCSV("selectorTimeCostReport");
@@ -622,6 +626,7 @@ var debugAutomator = false;
         var dt = getTime() - t1;
         var info = {
             scenarioName: scenario.title,
+            scenarioTags: Object.keys(scenario.tags_obj),
             timeStarted: t1,
             duration: dt
         };
@@ -729,7 +734,11 @@ var debugAutomator = false;
         UIALogger.logDebug("----------------------------------------------------------------");
         UIALogger.logMessage("STEP 0: Reset automator for new scenario");
         automator._resetState();
-        if (!automator._executeCallback("preScenario", {scenarioName: scenario.title}, true, true)) return false;
+        if (!automator._executeCallback("preScenario",
+                                        {scenarioName: scenario.title, scenarioTags: Object.keys(scenario.tags_obj)},
+                                        true, true)) {
+            return false;
+        }
 
         // wrap the iteration of the test steps in try/catch
         var step = null;

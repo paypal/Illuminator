@@ -40,10 +40,12 @@ class IlluminatorOptions < RecursiveOpenStruct
     self.illuminator = RecursiveOpenStruct.new
     self.appSpecific = nil    # all unknown options will go here
 
-    self.illuminator.clean     = RecursiveOpenStruct.new
-    self.illuminator.task      = RecursiveOpenStruct.new
-    self.illuminator.test      = RecursiveOpenStruct.new
-    self.illuminator.test.tags = RecursiveOpenStruct.new
+    self.illuminator.clean  = RecursiveOpenStruct.new
+    self.illuminator.task   = RecursiveOpenStruct.new
+    self.illuminator.test   = RecursiveOpenStruct.new
+
+    self.illuminator.test.tags   = RecursiveOpenStruct.new
+    self.illuminator.test.retest = RecursiveOpenStruct.new
 
     # name all the keys (just for visibiilty)
     self.xcode.project = nil
@@ -58,6 +60,8 @@ class IlluminatorOptions < RecursiveOpenStruct
     self.illuminator.test.tags.all = nil
     self.illuminator.test.tags.none = nil
     self.illuminator.test.names = nil
+    self.illuminator.test.retest.attempts = nil
+    self.illuminator.test.retest.solo = nil
     self.illuminator.clean.xcode = nil
     self.illuminator.clean.derived = nil
     self.illuminator.clean.artifacts = nil
@@ -66,7 +70,6 @@ class IlluminatorOptions < RecursiveOpenStruct
     self.illuminator.task.automate = nil
     self.illuminator.task.setSim = nil
     self.illuminator.task.coverage = nil
-    self.illuminator.task.report = nil
     self.illuminator.hardwareID = nil
 
     self.simulator.device = nil

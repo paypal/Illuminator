@@ -76,7 +76,7 @@ NSStreamDelegate>
 #ifdef AUTOMATION_UDID
         automationUDID =  [NSString stringWithUTF8String:PPUIABTOSTRING(AUTOMATION_UDID)];
 #else
-        // If you're not using the AUTOMATION_UDID define, we'll get a name from the device name
+	// If you're not using the AUTOMATION_UDID define, we'll get a name from the device name
         NSString *deviceName = [UIDevice currentDevice].name;
         NSCharacterSet *charactersToRemove = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
         deviceName = [[deviceName componentsSeparatedByCharactersInSet:charactersToRemove] componentsJoinedByString:@"_"];
@@ -90,7 +90,7 @@ NSStreamDelegate>
                                                       name:[NSString stringWithFormat:@"%@_%@", bonjourPrefix, automationUDID]
                                                       port:port];
         [self.server setDelegate:self];
-        
+
     }
     if (self.server) {
         [self.server publishWithOptions:NSNetServiceListenForConnections];
@@ -151,13 +151,13 @@ NSStreamDelegate>
             self.outputData = [[NSMutableData alloc] initWithData:response];
         } else {
             [self.outputData appendData:response];
-        }
     }
+}
     if ([_outputStream streamStatus] == NSStreamStatusOpen) {
         [self outputStream:_outputStream handleEvent:NSStreamEventHasSpaceAvailable];
     } else {
-        [_outputStream open];
-    }
+    [_outputStream open];
+}
 }
 
 - (void)setInputStream:(NSInputStream *)inputStream {
@@ -211,16 +211,16 @@ NSStreamDelegate>
     switch(eventCode) {
         case NSStreamEventHasBytesAvailable: {
             if (!self.inputData) {
-                self.inputData = [NSMutableData data];
+            self.inputData = [NSMutableData data];
             }
 
             while (stream.hasBytesAvailable) {
-                uint8_t buffer[32768];
-                NSInteger len = 0;
-                len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
-                if(len) {
-                    [self.inputData appendBytes:(const void *)buffer length:len];
-                }
+            uint8_t buffer[32768];
+            NSInteger len = 0;
+            len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
+            if(len) {
+                [self.inputData appendBytes:(const void *)buffer length:len];
+            }
             }
             NSInteger jsonMessageLength;
             do {
