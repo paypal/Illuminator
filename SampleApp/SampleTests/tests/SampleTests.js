@@ -1,7 +1,7 @@
 #import "../Common.js";
 
-ia = appmap.apps["Illuminator"];
-app = appmap.apps["SampleApp"];
+var ia = appmap.apps["Illuminator"];  // shortcut reference to built-in Illuminator test steps
+var app = appmap.apps["SampleApp"];   // shortcut reference to sample app test steps
 
 automator.createScenario("Simplest possible test", ["basic", "smoke"])
     .withStep(app.homeScreen.verifyIsActive);
