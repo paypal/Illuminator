@@ -6,8 +6,9 @@
 //  Copyright (c) 2014 PayPal. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+@import UIKit;
 
-@interface PPHAViewController : UIViewController
+////////////////////////////////////////////////////////////////////////////////////////////////////
+@interface PPHAMainMenuViewController : UIViewController
 @property (nonatomic, strong) NSString *labelText;
 @end

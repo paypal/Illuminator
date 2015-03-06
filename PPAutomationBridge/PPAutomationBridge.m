@@ -9,7 +9,6 @@
 #ifdef DEBUG
 
 #import "PPAutomationBridge.h"
-#import "QServer.h"
 
 #define PPUIABSTRINGIFY(x) #x
 #define PPUIABTOSTRING(x) PPUIABSTRINGIFY(x)
@@ -22,10 +21,10 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 @interface PPAutomationBridge() <
-QServerDelegate,
+NSNetServiceDelegate,
 NSStreamDelegate>
 
-@property (nonatomic, strong, readwrite) QServer *server;
+@property (nonatomic, strong, readwrite) NSNetService *server;
 
 //streams
 @property (nonatomic, strong) NSInputStream *inputStream;
@@ -72,10 +71,10 @@ NSStreamDelegate>
             automationUDID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
         }
         
-        self.server = [[QServer alloc] initWithDomain:@"local."
-                                                 type:@"_bridge._tcp."
-                                                 name:[NSString stringWithFormat:@"UIAutomationBridge_%@", automationUDID]
-                                        preferredPort:4200];
+        self.server = [[NSNetService alloc] initWithDomain:@"local."
+                                                      type:@"_bridge._tcp."
+                                                      name:[NSString stringWithFormat:@"UIAutomationBridge_%@", automationUDID]
+                                                      port:4200];
         [self.server setDelegate:self];
 
     }
@@ -92,7 +91,7 @@ NSStreamDelegate>
 - (void)startAutomationBridgeWithDelegate:(id<PPAutomationBridgeDelegate>)delegate {
     self.delegate = delegate;
     if (self.server) {
-        [self.server start];
+        [self.server publishWithOptions:NSNetServiceListenForConnections];
     }
 
 }
@@ -121,12 +120,11 @@ NSStreamDelegate>
     return nil;
 }
 #pragma mark -
-#pragma mark QServerDelegate
+#pragma mark NSNetServiceDelegate
 
-- (id)server:(QServer *)server connectionForInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream {
+- (void)netService:(NSNetService *)sender didAcceptConnectionWithInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream {
     [self setInputStream:inputStream];
     [self setOutputStream:outputStream];
-    return self;
 }
 
 #pragma mark -
@@ -264,7 +262,11 @@ NSStreamDelegate>
         id result = nil;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        result = [target performSelector:selector withObject:self.arguments];
+        if (self.arguments) {
+            result = [target performSelector:selector withObject:self.arguments];
+        } else {
+            result = [target performSelector:selector];
+        }
 #pragma clang diagnostic pop
         return result;
     } else {
