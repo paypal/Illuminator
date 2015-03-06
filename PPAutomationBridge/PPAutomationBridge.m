@@ -131,20 +131,17 @@ NSStreamDelegate>
 #pragma mark -
 #pragma mark helpers
 
-- (void)readData {
-    NSString* string = [[NSString alloc] initWithData:self.inputData encoding:NSASCIIStringEncoding];
-    [self.inputData setLength:0];
-    if (string) {
-        NSDictionary *returnMessage = [self receivedMessage:string];
-        [self answerWith:returnMessage];
-    }
-}
-
-
 - (void)answerWith:(NSDictionary *)dictionary {
-    self.outputData = [[NSJSONSerialization dataWithJSONObject:dictionary
+    NSData *response = [NSJSONSerialization dataWithJSONObject:dictionary
                                                        options:0
-                                                         error:nil] mutableCopy];
+                                                         error:nil];
+    if (response) {
+        if (!self.outputData) {
+            self.outputData = [[NSMutableData alloc] initWithData:response];
+        } else {
+            [self.outputData appendData:response];
+        }
+    }
     if ([_outputStream streamStatus] == NSStreamStatusOpen) {
         [self outputStream:_outputStream handleEvent:NSStreamEventHasSpaceAvailable];
     } else {
@@ -214,9 +211,15 @@ NSStreamDelegate>
                     [self.inputData appendBytes:(const void *)buffer length:len];
                 }
             }
-            if ([NSJSONSerialization JSONObjectWithData:self.inputData options:0 error:nil]) {
-                [self readData];
-            }
+            NSInteger jsonMessageLength;
+            do {
+                jsonMessageLength = [self findJsonMessage];
+                if (jsonMessageLength > 0) {
+                    NSString* json = [[NSString alloc] initWithBytes:self.inputData.bytes length:jsonMessageLength encoding:NSASCIIStringEncoding];
+                    [self.inputData replaceBytesInRange:NSMakeRange(0, jsonMessageLength) withBytes:nil length:0];
+                    [self answerWith:[self receivedMessage:json]];
+                }
+            } while (jsonMessageLength > 0);
             break;
         }
         default:
@@ -247,6 +250,55 @@ NSStreamDelegate>
         }
     }
 
+}
+
+/**
+ Figure out if we have a fully formed JSON message in our buffer. Bad JSON will confuse this, and this is not
+ intended to be a true parser. It just finds out if we have a complete message assuming well formed-ness.
+ */
+- (NSInteger)findJsonMessage {
+    int count = 0;
+    const uint8_t *bytes = [self.inputData bytes];
+    for (long i = 0, len = self.inputData.length; i < len; i++) {
+        char c = bytes[i];
+        switch (c) {
+            case '{': case '[':
+                count++;
+                break;
+            case '}': case ']':
+                if (count == 1) {
+                    // Found the end.
+                    return i+1;
+                }
+                count--;
+                break;
+            case '\"':
+            {
+                NSInteger tokenLength = [self readJsonString: i];
+                if (tokenLength == -1) {
+                    return -1;
+                }
+                i += tokenLength;
+                break;
+            }
+        }
+    }
+    return -1;
+}
+
+- (NSInteger)readJsonString:(NSInteger) start {
+    const uint8_t *bytes = [self.inputData bytes];
+    for (long i = start+1, len = self.inputData.length; i < len; i++) {
+        char c = bytes[i];
+        if (c == '\"') {
+            // Found the end of the string
+            return i-start;
+        }
+        if (c == '\\') {
+            i++;
+        }
+    }
+    return -1;
 }
 
 @end
