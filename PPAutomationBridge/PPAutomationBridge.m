@@ -6,7 +6,7 @@
 //  Copyright 2013 PayPal. All rights reserved.
 //
 
-#ifdef DEBUG
+#ifdef UIAUTOMATION_BUILD
 
 #import "PPAutomationBridge.h"
 
@@ -169,8 +169,8 @@ NSStreamDelegate>
         _inputStream = nil;
     }
     if (inputStream) {
-        _inputStream = inputStream;
         [_inputStream setDelegate:self];
+        _inputStream = inputStream;
         [_inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop]
                                 forMode:NSDefaultRunLoopMode];
         [_inputStream open];
@@ -186,8 +186,8 @@ NSStreamDelegate>
         _outputStream = nil;
     }
     if (outputStream) {
-        _outputStream = outputStream;
         [_outputStream setDelegate:self];
+        _outputStream = outputStream;
         [_outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop]
                                  forMode:NSDefaultRunLoopMode];
     }

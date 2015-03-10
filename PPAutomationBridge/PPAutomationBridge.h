@@ -10,7 +10,7 @@
 
 @import Foundation;
 
-#ifdef DEBUG
+#ifdef UIAUTOMATION_BUILD
 
 @class PPAutomationBridge;
 @class PPAutomationBridgeAction;
