@@ -31,6 +31,7 @@ NSStreamDelegate>
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *inputData;
 @property (nonatomic, strong) NSMutableData *outputData;
+@property (nonatomic) NSInteger writtenBytes;
 
 @property (nonatomic, weak) id<PPAutomationBridgeDelegate> delegate;
 
@@ -142,35 +143,28 @@ NSStreamDelegate>
 #pragma mark -
 #pragma mark helpers
 
+
 - (void)answerWith:(NSDictionary *)dictionary {
-    NSData *response = [NSJSONSerialization dataWithJSONObject:dictionary
+    self.outputData = [[NSJSONSerialization dataWithJSONObject:dictionary
                                                        options:0
-                                                         error:nil];
-    if (response) {
-        if (!self.outputData) {
-            self.outputData = [[NSMutableData alloc] initWithData:response];
-        } else {
-            [self.outputData appendData:response];
-    }
-}
-    if ([_outputStream streamStatus] == NSStreamStatusOpen) {
-        [self outputStream:_outputStream handleEvent:NSStreamEventHasSpaceAvailable];
-    } else {
+                                                         error:nil] mutableCopy];
     [_outputStream open];
-}
+    [self setInputStream:nil];
 }
 
 - (void)setInputStream:(NSInputStream *)inputStream {
     _inputData = nil;
     if (_inputStream) {
+        
+        [_inputStream setDelegate:nil];
         [_inputStream close];
         [_inputStream removeFromRunLoop:[NSRunLoop currentRunLoop]
                                 forMode:NSDefaultRunLoopMode];
         _inputStream = nil;
     }
     if (inputStream) {
-        [_inputStream setDelegate:self];
         _inputStream = inputStream;
+        [_inputStream setDelegate:self];
         [_inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop]
                                 forMode:NSDefaultRunLoopMode];
         [_inputStream open];
@@ -180,14 +174,15 @@ NSStreamDelegate>
 - (void)setOutputStream:(NSOutputStream *)outputStream {
     _outputData = nil;
     if (_outputStream) {
+        [_inputStream setDelegate:nil];
         [_outputStream close];
         [_outputStream removeFromRunLoop:[NSRunLoop currentRunLoop]
                                 forMode:NSDefaultRunLoopMode];
         _outputStream = nil;
     }
     if (outputStream) {
-        [_outputStream setDelegate:self];
         _outputStream = outputStream;
+        [_outputStream setDelegate:self];
         [_outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop]
                                  forMode:NSDefaultRunLoopMode];
     }
@@ -202,7 +197,7 @@ NSStreamDelegate>
     if (stream == self.inputStream) {
         [self inputStream:(NSInputStream*)stream handleEvent:eventCode];
     } else if (stream == self.outputStream) {
-        [self outputStream:stream handleEvent:eventCode];
+        [self outputStream:(NSOutputStream *)stream handleEvent:eventCode];
     }
 }
 
@@ -239,16 +234,19 @@ NSStreamDelegate>
 
 }
 
-- (void)outputStream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode {
+- (void)outputStream:(NSOutputStream *)stream handleEvent:(NSStreamEvent)eventCode {
     switch(eventCode) {
         case NSStreamEventHasSpaceAvailable: {
             const uint8_t *pData = [self.outputData bytes];
-            while ([self.outputStream hasSpaceAvailable] && self.outputData.length > 0) {
-                NSInteger r = [self.outputStream write:pData maxLength:self.outputData.length];
+            while ([self.outputStream hasSpaceAvailable] && self.writtenBytes < self.outputData.length) {
+                NSInteger r = [self.outputStream write:pData+self.writtenBytes maxLength:self.outputData.length-self.writtenBytes];
                 if (r == -1) {
                     break;
                 }
-                [self.outputData replaceBytesInRange:NSMakeRange(0, r) withBytes:nil length:0];
+                self.writtenBytes += r;
+            }
+            if (self.outputData.length-self.writtenBytes == 0) {
+                self.outputStream = nil;
             }
             break;
         case NSStreamEventEndEncountered:
