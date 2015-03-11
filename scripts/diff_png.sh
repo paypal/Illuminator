@@ -36,6 +36,9 @@ RESULT=$?
 echo "Re-overlay the mask on the composite" >&2
 composite -gravity center "$imgm" "$diffpng" "$diffpng"
 
+# Convert any scientific notation to integer
+printf -v diffpixels "%.f" "$diffpixels"
+
 # IF DIFFERENT
 if [ "$diffpixels" -ne "0" ]
 then
@@ -46,7 +49,7 @@ else
 fi
 
 # count total pixels
-convert compared.png -print "pixels (total): %[fx:w*h]\n" null:
+convert "$diffpng" -print "pixels (total): %[fx:w*h]\n" null:
 
 # count masked pixels
 convert "$3" -format %c histogram:info: | grep FF00FF | tr -d ' ' | awk -F: '{print "pixels masked: " $1}'
