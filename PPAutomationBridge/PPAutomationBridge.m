@@ -149,7 +149,6 @@ NSStreamDelegate>
                                                        options:0
                                                          error:nil] mutableCopy];
     [_outputStream open];
-    [self setInputStream:nil];
 }
 
 - (void)setInputStream:(NSInputStream *)inputStream {
@@ -179,6 +178,8 @@ NSStreamDelegate>
         [_outputStream removeFromRunLoop:[NSRunLoop currentRunLoop]
                                 forMode:NSDefaultRunLoopMode];
         _outputStream = nil;
+        _writtenBytes = 0;
+        _outputData = nil;
     }
     if (outputStream) {
         _outputStream = outputStream;
