@@ -12,23 +12,29 @@ function actionVerifyDelayedMessage(parameters) {
 
     // note that the following could all be replaced by ab.verifyElement.visibility(messageSelector, "Delayed message")(parameters)
     // it's coded here for illustrative purposes
+    var exp = parameters.expected;
     var message = newUIAElementNil();
     try {
         message = target().waitForChildExistence(0.5, true, "Delayed message", messageSelector);
     } catch (e) {
-        if (parameters.expected) {
-            throw new IlluminatorRuntimeVerificationException("The delayed message didn't match the expected state");
+        if (exp) {
+            throw new IlluminatorRuntimeVerificationException("The delayed message didn't appear as expected");
         }
     }
-    if ((message.isNotNil() && message.isVisible()) != parameters.expected) {
-        throw new IlluminatorRuntimeVerificationException("The delayed message didn't match the expected state");
+    if ((message.isNotNil() && message.isVisible()) != exp) {
+        throw new IlluminatorRuntimeVerificationException("The delayed message didn't match the expected state of " + exp);
     }
 
     // optionally test the text of the message
     if (parameters.text !== undefined && message.name() != parameters.text) {
-        throw new IlluminatorRuntimeVerificationException("The delayed message didn't have the expected text");
+        throw new IlluminatorRuntimeVerificationException("The delayed message didn't have the expected text of " + parameters.text);
     }
 }
+
+var waitForMeSelector = function(targetRef) {
+    return targetRef.frontMostApp().mainWindow().navigationBars()["Wait For Elements"];
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Appmap additions
@@ -36,7 +42,7 @@ function actionVerifyDelayedMessage(parameters) {
 appmap.createOrAugmentApp("SampleApp").withScreen("waitForMe")
     .onTarget("iPhone", ab.screenIsActive.byElement("waitForMe",
                                                     "Wait For Me screen",
-                                                    {name: "Wait For Elements", UIAType: "UIAStaticText"},  // the navbar title indicates we are on this screen
+                                                    waitForMeSelector,
                                                     10))
 
     .withAction("verifyDelayedMessage", "Evaluate whether the delayed message is shown as expected")
