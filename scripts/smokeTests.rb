@@ -29,7 +29,6 @@ options.illuminator.task.build = true
 options.illuminator.task.automate = true
 options.illuminator.task.setSim = true
 options.simulator.device = 'iPhone 5'
-options.simulator.version = '8.1'
 options.simulator.language = 'en'
 options.simulator.killAfter = true
 
@@ -43,5 +42,12 @@ if XcodeUtils.instance.isXcodeMajorVersion 5
   options.simulator.device = 'iPhone Retina (4-inch)'
 end
 
-success = IlluminatorFramework.runWithOptions options, workspace
-exit 1 unless success
+options.simulator.version = '8.1'
+success8 = IlluminatorFramework.runWithOptions options, workspace
+
+options.illuminator.clean.artifacts = false
+options.illuminator.task.build = false
+options.simulator.version = '7.1'
+success7 = IlluminatorFramework.runWithOptions options, workspace
+
+exit 1 unless success7 and success8
