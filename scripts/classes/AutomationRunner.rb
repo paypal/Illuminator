@@ -220,7 +220,6 @@ class AutomationRunner
 
   def runWithOptions(options)
     gcovrWorkspace = Dir.pwd
-    Dir.chdir(File.dirname(__FILE__) + '/../')
 
     # Sanity checks
     raise ArgumentError, 'Entry point was not supplied'       if options.illuminator.entryPoint.nil?

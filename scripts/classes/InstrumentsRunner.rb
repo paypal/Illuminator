@@ -136,9 +136,17 @@ class InstrumentsRunner
     command << " -e UIARESULTSPATH '#{reportPath}'"
 
     command << " #{@simLanguage}" if @simLanguage
-    Dir.chdir(reportPath)
 
-    return self.runInstrumentsCommand command
+    directory = Dir.pwd
+    ret = nil
+    # change directories and successfully change back
+    begin
+      Dir.chdir(reportPath)
+      ret = self.runInstrumentsCommand command
+    ensure
+      Dir.chdir(directory)
+    end
+    return ret
   end
 
 
