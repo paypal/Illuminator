@@ -29,7 +29,7 @@ options.illuminator.task.build = true
 options.illuminator.task.automate = true
 options.illuminator.task.setSim = true
 options.simulator.device = 'iPhone 5'
-options.simulator.version = '8.2'
+options.simulator.version = '8.1'
 options.simulator.language = 'en'
 options.simulator.killAfter = true
 
