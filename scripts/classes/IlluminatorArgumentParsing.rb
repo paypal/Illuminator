@@ -161,7 +161,7 @@ class IlluminatorParserFactory
     }
 
     @defaultValues = {
-      'b' => 'iPhone',
+      'b' => 'iPhone 5',
       'z' => '8.2',
       'q' => 'iphonesimulator',
       'l' => 'en',
@@ -192,7 +192,7 @@ class IlluminatorParserFactory
     self.addSwitch('s', ['-s', '--scheme SCHEME', 'Build and run specific tests on given workspace scheme'])
     self.addSwitch('j', ['-j', '--jsonSettingsPath PATH', 'path to JSON file containing custom configuration parameters'])
     self.addSwitch('d', ['-d', '--hardwareID ID', 'hardware id of device you run on'])
-    self.addSwitch('i', ['-i', '--implementation IMPL', 'Device tests implementation (iPhone|iPad)'])
+    self.addSwitch('i', ['-i', '--implementation IMPL', 'Device tests implementation'])
     self.addSwitch('E', ['-E', '--appLocation LOCATION', 'Location of app executable, if pre-built'])
     self.addSwitch('b', ['-b', '--simDevice DEVICE', 'Run on given simulated device'])
     self.addSwitch('z', ['-z', '--simVersion VERSION', 'Run on given simulated iOS version'])
