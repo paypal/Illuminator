@@ -108,9 +108,13 @@ class XcodeBuilder
 
     # switch to a directory (if desired) and build
     directory = Dir.pwd
-    Dir.chdir(@workspace) unless @workspace.nil?
-    retval = self._executeBuildCommand command
-    Dir.chdir(directory) unless @workspace.nil?
+    retval = nil
+    begin
+      Dir.chdir(@workspace) unless @workspace.nil?
+      retval = self._executeBuildCommand command
+    ensure
+      Dir.chdir(directory) unless @workspace.nil?
+    end
 
     retval
   end

@@ -125,6 +125,7 @@ class AutomationRunner
 
   def testListenerGotTestStart name
     @testSuite[@currentTest].error "ILLUMINATOR FAILURE TO LISTEN" unless @currentTest.nil?
+    @testSuite[name].reset!
     @testSuite[name].start!
     @currentTest = name
     @stackTraceRecord = false
@@ -220,7 +221,6 @@ class AutomationRunner
 
   def runWithOptions(options)
     gcovrWorkspace = Dir.pwd
-    Dir.chdir(File.dirname(__FILE__) + '/../')
 
     # Sanity checks
     raise ArgumentError, 'Entry point was not supplied'       if options.illuminator.entryPoint.nil?
