@@ -103,15 +103,6 @@ NSStreamDelegate>
     }
 }
 
-- (BOOL)sendToConnectedClient:(NSDictionary *)args {
-    if (self.outputStream) {
-        [self answerWith:args];
-        return YES;
-    } else {
-        return NO;
-    }
-}
-
 - (NSDictionary *)receivedMessage:(NSString *)message {
     self.isActivated = YES;
     id jsonObject = [NSJSONSerialization JSONObjectWithData:[message dataUsingEncoding:NSUTF8StringEncoding]

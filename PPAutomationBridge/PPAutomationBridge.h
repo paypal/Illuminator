@@ -113,14 +113,6 @@
 - (void)stopAutomationBridge;
 
 /**
- Send values to a connected client. Returns YES if there was a connected client, NO if there was not
- (and no queuing is done, so your message is not sent in that case).
- *
- @param args The value that will be JSON encoded and sent.
- */
-- (BOOL)sendToConnectedClient:(NSDictionary*)args;
-
-/**
  Perform a check if autoamtion bridge was started or not.
  Bridge is considered activated after it receives first message.
  */
