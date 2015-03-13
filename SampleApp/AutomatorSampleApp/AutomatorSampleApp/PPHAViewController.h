@@ -1,5 +1,5 @@
 //
-//  PPHAAppDelegate.h
+//  PPHAViewController.h
 //  AutomatorSampleApp
 //
 //  Created by Erceg,Boris on 4/9/14.
@@ -8,8 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface PPHAAppDelegate : UIResponder <UIApplicationDelegate>
-
-@property (strong, nonatomic) UIWindow *window;
-
+@interface PPHAViewController : UIViewController
+@property (nonatomic, strong) NSString *labelText;
 @end
