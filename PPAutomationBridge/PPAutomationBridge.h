@@ -118,6 +118,16 @@
  */
 @property (nonatomic, assign) BOOL isActivated;
 
+/**
+ A prefix to be used in Bonjour registration, which can be useful if you have multiple apps
+ using Illuminator. Defaults to UIAutomationBridge
+ */
+@property (nonatomic, strong) NSString *bonjourServicePrefix;
+
+/**
+ Server port for the socket listener. Defaults to 4200.
+ */
+@property (nonatomic, assign) NSInteger port;
 @end
 
 #endif
