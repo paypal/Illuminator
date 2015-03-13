@@ -31,7 +31,6 @@ NSStreamDelegate>
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *inputData;
 @property (nonatomic, strong) NSMutableData *outputData;
-@property (nonatomic) NSInteger writtenBytes;
 
 @property (nonatomic, weak) id<PPAutomationBridgeDelegate> delegate;
 
@@ -91,7 +90,7 @@ NSStreamDelegate>
                                                       name:[NSString stringWithFormat:@"%@_%@", bonjourPrefix, automationUDID]
                                                       port:port];
         [self.server setDelegate:self];
-
+        
     }
     if (self.server) {
         [self.server publishWithOptions:NSNetServiceListenForConnections];
@@ -143,12 +142,22 @@ NSStreamDelegate>
 #pragma mark -
 #pragma mark helpers
 
-
 - (void)answerWith:(NSDictionary *)dictionary {
-    self.outputData = [[NSJSONSerialization dataWithJSONObject:dictionary
+    NSData *response = [NSJSONSerialization dataWithJSONObject:dictionary
                                                        options:0
-                                                         error:nil] mutableCopy];
-    [_outputStream open];
+                                                         error:nil];
+    if (response) {
+        if (!self.outputData) {
+            self.outputData = [[NSMutableData alloc] initWithData:response];
+        } else {
+            [self.outputData appendData:response];
+        }
+    }
+    if ([_outputStream streamStatus] == NSStreamStatusOpen) {
+        [self outputStream:_outputStream handleEvent:NSStreamEventHasSpaceAvailable];
+    } else {
+        [_outputStream open];
+    }
 }
 
 - (void)setInputStream:(NSInputStream *)inputStream {
@@ -178,8 +187,6 @@ NSStreamDelegate>
         [_outputStream removeFromRunLoop:[NSRunLoop currentRunLoop]
                                 forMode:NSDefaultRunLoopMode];
         _outputStream = nil;
-        _writtenBytes = 0;
-        _outputData = nil;
     }
     if (outputStream) {
         _outputStream = outputStream;
@@ -207,16 +214,16 @@ NSStreamDelegate>
     switch(eventCode) {
         case NSStreamEventHasBytesAvailable: {
             if (!self.inputData) {
-            self.inputData = [NSMutableData data];
+                self.inputData = [NSMutableData data];
             }
 
             while (stream.hasBytesAvailable) {
-            uint8_t buffer[32768];
-            NSInteger len = 0;
-            len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
-            if(len) {
-                [self.inputData appendBytes:(const void *)buffer length:len];
-            }
+                uint8_t buffer[32768];
+                NSInteger len = 0;
+                len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
+                if(len) {
+                    [self.inputData appendBytes:(const void *)buffer length:len];
+                }
             }
             NSInteger jsonMessageLength;
             do {
@@ -239,15 +246,12 @@ NSStreamDelegate>
     switch(eventCode) {
         case NSStreamEventHasSpaceAvailable: {
             const uint8_t *pData = [self.outputData bytes];
-            while ([self.outputStream hasSpaceAvailable] && self.writtenBytes < self.outputData.length) {
-                NSInteger r = [self.outputStream write:pData+self.writtenBytes maxLength:self.outputData.length-self.writtenBytes];
+            while ([self.outputStream hasSpaceAvailable] && self.outputData.length > 0) {
+                NSInteger r = [self.outputStream write:pData maxLength:self.outputData.length];
                 if (r == -1) {
                     break;
                 }
-                self.writtenBytes += r;
-            }
-            if (self.outputData.length-self.writtenBytes == 0) {
-                self.outputStream = nil;
+                [self.outputData replaceBytesInRange:NSMakeRange(0, r) withBytes:nil length:0];
             }
             break;
         case NSStreamEventEndEncountered:
