@@ -55,6 +55,8 @@ NSStreamDelegate>
 - (id)init {
     self = [super init];
     if (self) {
+        self.bonjourServicePrefix = @"UIAutomationBridge";
+        self.port = 4200;
     }
 
     return self;
@@ -64,12 +66,9 @@ NSStreamDelegate>
     [self stopAutomationBridge];
 }
 
-- (void)startAutomationBridgeWithDelegate:(id<PPAutomationBridgeDelegate>)delegate {
-    [self startAutomationBridgeWithPrefix:@"UIAutomation" onPort:4200 WithDelegate:delegate];
-}
 
-- (void)startAutomationBridgeWithPrefix:(NSString *)bonjourPrefix onPort:(int)port WithDelegate:(id<PPAutomationBridgeDelegate>)delegate {
-    
+
+- (void)startAutomationBridgeWithDelegate:(id<PPAutomationBridgeDelegate>)delegate {
     self.delegate = delegate;
     if (self.server == nil) {
         NSString *automationUDID = nil;
@@ -87,8 +86,8 @@ NSStreamDelegate>
         }
         self.server = [[NSNetService alloc] initWithDomain:@"local."
                                                       type:@"_bridge._tcp."
-                                                      name:[NSString stringWithFormat:@"%@_%@", bonjourPrefix, automationUDID]
-                                                      port:port];
+                                                      name:[NSString stringWithFormat:@"%@_%@", self.bonjourServicePrefix, automationUDID]
+                                                      port:self.port];
         [self.server setDelegate:self];
 
     }
@@ -101,7 +100,6 @@ NSStreamDelegate>
 - (void)stopAutomationBridge {
     if (self.server) {
         [self.server stop];
-        self.server = nil;
     }
 }
 

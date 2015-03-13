@@ -100,11 +100,6 @@
 + (instancetype)bridge;
 
 /**
- Start the server with a specific port and Bonjour prefix
- */
-- (void)startAutomationBridgeWithPrefix:(NSString*)bonjourPrefix onPort:(int)port WithDelegate:(id <PPAutomationBridgeDelegate>)delegate;
-
-/**
  Starts automation bridge advertising and registers delegate object to recive automation bridge messages
  Does not retain delegate, you have to do it yourself
  *
@@ -131,6 +126,16 @@
  */
 @property (nonatomic, assign) BOOL isActivated;
 
+/**
+ A prefix to be used in Bonjour registration, which can be useful if you have multiple apps
+ using Illuminator. Defaults to UIAutomationBridge
+ */
+@property (nonatomic, strong) NSString *bonjourServicePrefix;
+
+/**
+ Server port for the socket listener. Defaults to 4200.
+ */
+@property (nonatomic, assign) NSInteger port;
 @end
 
 #endif
