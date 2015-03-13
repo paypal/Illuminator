@@ -125,6 +125,7 @@ class AutomationRunner
 
   def testListenerGotTestStart name
     @testSuite[@currentTest].error "ILLUMINATOR FAILURE TO LISTEN" unless @currentTest.nil?
+    @testSuite[name].reset!
     @testSuite[name].start!
     @currentTest = name
     @stackTraceRecord = false
