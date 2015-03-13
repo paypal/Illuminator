@@ -150,14 +150,16 @@ NSStreamDelegate>
         if (!self.outputData) {
             self.outputData = [[NSMutableData alloc] initWithData:response];
         } else {
-            [self.outputData appendData:response];
+            @synchronized (self.outputData) {
+                [self.outputData appendData:response];
+            }
+        }
     }
-}
     if ([_outputStream streamStatus] == NSStreamStatusOpen) {
         [self outputStream:_outputStream handleEvent:NSStreamEventHasSpaceAvailable];
     } else {
-    [_outputStream open];
-}
+        [_outputStream open];
+    }
 }
 
 - (void)setInputStream:(NSInputStream *)inputStream {
@@ -242,13 +244,15 @@ NSStreamDelegate>
 - (void)outputStream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode {
     switch(eventCode) {
         case NSStreamEventHasSpaceAvailable: {
-            const uint8_t *pData = [self.outputData bytes];
-            while ([self.outputStream hasSpaceAvailable] && self.outputData.length > 0) {
-                NSInteger r = [self.outputStream write:pData maxLength:self.outputData.length];
-                if (r == -1) {
-                    break;
+            @synchronized (self.outputData) {
+                const uint8_t *pData = [self.outputData bytes];
+                while ([self.outputStream hasSpaceAvailable] && self.outputData.length > 0) {
+                    NSInteger r = [self.outputStream write:pData maxLength:self.outputData.length];
+                    if (r == -1) {
+                        break;
+                    }
+                    [self.outputData replaceBytesInRange:NSMakeRange(0, r) withBytes:nil length:0];
                 }
-                [self.outputData replaceBytesInRange:NSMakeRange(0, r) withBytes:nil length:0];
             }
             break;
         case NSStreamEventEndEncountered:
