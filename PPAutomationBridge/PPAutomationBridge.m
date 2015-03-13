@@ -9,6 +9,7 @@
 #ifdef DEBUG
 
 #import "PPAutomationBridge.h"
+#import "QServer.h"
 
 #define PPUIABSTRINGIFY(x) #x
 #define PPUIABTOSTRING(x) PPUIABSTRINGIFY(x)
@@ -21,16 +22,18 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 @interface PPAutomationBridge() <
-NSNetServiceDelegate,
+QServerDelegate,
 NSStreamDelegate>
 
-@property (nonatomic, strong, readwrite) NSNetService *server;
+@property (nonatomic, strong, readwrite) QServer *server;
 
 //streams
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *inputData;
 @property (nonatomic, strong) NSMutableData *outputData;
+@property (nonatomic) NSInteger writtenBytes;
+
 
 @property (nonatomic, weak) id<PPAutomationBridgeDelegate> delegate;
 
@@ -55,8 +58,26 @@ NSStreamDelegate>
 - (id)init {
     self = [super init];
     if (self) {
-        self.bonjourServicePrefix = @"UIAutomationBridge";
-        self.port = 4200;
+        NSString *automationUDID = nil;
+#ifdef AUTOMATION_UDID
+        automationUDID =  [NSString stringWithUTF8String:PPUIABTOSTRING(AUTOMATION_UDID)];
+#else
+	// If you're not using the AUTOMATION_UDID define, we'll get a name from the device name
+        NSString *deviceName = [UIDevice currentDevice].name;
+        NSCharacterSet *charactersToRemove = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+        deviceName = [[deviceName componentsSeparatedByCharactersInSet:charactersToRemove] componentsJoinedByString:@"_"];
+        automationUDID = deviceName;
+#endif
+        if (!automationUDID || [automationUDID isEqualToString:@""]) {
+            automationUDID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+        }
+        
+        self.server = [[QServer alloc] initWithDomain:@"local."
+                                                 type:@"_bridge._tcp."
+                                                 name:[NSString stringWithFormat:@"UIAutomationBridge_%@", automationUDID]
+                                        preferredPort:4200];
+        [self.server setDelegate:self];
+
     }
 
     return self;
@@ -70,29 +91,8 @@ NSStreamDelegate>
 
 - (void)startAutomationBridgeWithDelegate:(id<PPAutomationBridgeDelegate>)delegate {
     self.delegate = delegate;
-    if (self.server == nil) {
-        NSString *automationUDID = nil;
-#ifdef AUTOMATION_UDID
-        automationUDID =  [NSString stringWithUTF8String:PPUIABTOSTRING(AUTOMATION_UDID)];
-#else
-        // If you're not using the AUTOMATION_UDID define, we'll get a name from the device name
-        NSString *deviceName = [UIDevice currentDevice].name;
-        NSCharacterSet *charactersToRemove = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
-        deviceName = [[deviceName componentsSeparatedByCharactersInSet:charactersToRemove] componentsJoinedByString:@"_"];
-        automationUDID = deviceName;
-#endif
-        if (!automationUDID || [automationUDID isEqualToString:@""]) {
-            automationUDID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-        }
-        self.server = [[NSNetService alloc] initWithDomain:@"local."
-                                                      type:@"_bridge._tcp."
-                                                      name:[NSString stringWithFormat:@"%@_%@", self.bonjourServicePrefix, automationUDID]
-                                                      port:self.port];
-        [self.server setDelegate:self];
-        
-    }
     if (self.server) {
-        [self.server publishWithOptions:NSNetServiceListenForConnections];
+        [self.server start];
     }
 
 }
@@ -121,11 +121,12 @@ NSStreamDelegate>
     return nil;
 }
 #pragma mark -
-#pragma mark NSNetServiceDelegate
+#pragma mark QServerDelegate
 
-- (void)netService:(NSNetService *)sender didAcceptConnectionWithInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream {
+- (id)server:(QServer *)server connectionForInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream {
     [self setInputStream:inputStream];
     [self setOutputStream:outputStream];
+    return self;
 }
 
 #pragma mark -
@@ -133,7 +134,6 @@ NSStreamDelegate>
 
 - (void)readData {
     NSString* string = [[NSString alloc] initWithData:self.inputData encoding:NSASCIIStringEncoding];
-    [self.inputData setLength:0];
     if (string) {
         NSDictionary *returnMessage = [self receivedMessage:string];
         [self answerWith:returnMessage];
@@ -145,11 +145,8 @@ NSStreamDelegate>
     self.outputData = [[NSJSONSerialization dataWithJSONObject:dictionary
                                                        options:0
                                                          error:nil] mutableCopy];
-    if ([_outputStream streamStatus] == NSStreamStatusOpen) {
-        [self outputStream:_outputStream handleEvent:NSStreamEventHasSpaceAvailable];
-    } else {
-        [_outputStream open];
-    }
+    [_outputStream open];
+    [self setInputStream:nil];
 }
 
 - (void)setInputStream:(NSInputStream *)inputStream {
@@ -176,6 +173,7 @@ NSStreamDelegate>
         [_outputStream removeFromRunLoop:[NSRunLoop currentRunLoop]
                                 forMode:NSDefaultRunLoopMode];
         _outputStream = nil;
+        _writtenBytes = 0;
     }
     if (outputStream) {
         _outputStream = outputStream;
@@ -192,31 +190,25 @@ NSStreamDelegate>
 
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode {
     if (stream == self.inputStream) {
-        [self inputStream:(NSInputStream*)stream handleEvent:eventCode];
+        [self inputStream:stream handleEvent:eventCode];
     } else if (stream == self.outputStream) {
         [self outputStream:stream handleEvent:eventCode];
     }
 }
 
-- (void)inputStream:(NSInputStream *)stream handleEvent:(NSStreamEvent)eventCode {
+- (void)inputStream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode {
 
     switch(eventCode) {
         case NSStreamEventHasBytesAvailable: {
-            if (!self.inputData) {
-                self.inputData = [NSMutableData data];
-            }
+            self.inputData = [NSMutableData data];
 
-            while (stream.hasBytesAvailable) {
-                uint8_t buffer[32768];
-                NSInteger len = 0;
-                len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
-                if(len) {
-                    [self.inputData appendBytes:(const void *)buffer length:len];
-                }
+            uint8_t buffer[32768];
+            NSInteger len = 0;
+            len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
+            if(len) {
+                [self.inputData appendBytes:(const void *)buffer length:len];
             }
-            if ([NSJSONSerialization JSONObjectWithData:self.inputData options:0 error:nil]) {
-                [self readData];
-            }
+            [self readData];
             break;
         }
         default:
@@ -229,12 +221,15 @@ NSStreamDelegate>
     switch(eventCode) {
         case NSStreamEventHasSpaceAvailable: {
             const uint8_t *pData = [self.outputData bytes];
-            while ([self.outputStream hasSpaceAvailable] && self.outputData.length > 0) {
-                NSInteger r = [self.outputStream write:pData maxLength:self.outputData.length];
+            while ([self.outputStream hasSpaceAvailable] && self.writtenBytes < self.outputData.length) {
+                NSInteger r = [self.outputStream write:pData+self.writtenBytes maxLength:self.outputData.length-self.writtenBytes];
                 if (r == -1) {
                     break;
                 }
-                [self.outputData replaceBytesInRange:NSMakeRange(0, r) withBytes:nil length:0];
+                self.writtenBytes += r;
+            }
+            if (self.outputData.length-self.writtenBytes == 0) {
+                self.outputStream = nil;
             }
             break;
         case NSStreamEventEndEncountered:
@@ -269,11 +264,7 @@ NSStreamDelegate>
         id result = nil;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        if (self.arguments) {
-            result = [target performSelector:selector withObject:self.arguments];
-        } else {
-            result = [target performSelector:selector];
-        }
+        result = [target performSelector:selector withObject:self.arguments];
 #pragma clang diagnostic pop
         return result;
     } else {
