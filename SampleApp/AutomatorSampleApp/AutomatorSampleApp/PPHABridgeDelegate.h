@@ -6,12 +6,12 @@
 //  Copyright (c) 2014 PayPal. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 #import "PPAutomationBridge.h"
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#define kPPHABridgeNotification @"kPPHABridgeNotification"
+
 @interface PPHABridgeDelegate : NSObject <PPAutomationBridgeDelegate>
-
-
-
 
 @end
