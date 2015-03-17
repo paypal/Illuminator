@@ -43,6 +43,7 @@ NSStreamDelegate>
 #pragma mark -
 #pragma mark Init & Factory
 
+
 + (instancetype)bridge {
     static dispatch_once_t onceQueue;
     static PPAutomationBridge *bridge = nil;
@@ -169,15 +170,13 @@ NSStreamDelegate>
         
         [_inputStream setDelegate:nil];
         [_inputStream close];
-        [_inputStream removeFromRunLoop:[NSRunLoop currentRunLoop]
-                                forMode:NSDefaultRunLoopMode];
+        [self unscheduleStreamOnProperThread:inputStream];
         _inputStream = nil;
     }
     if (inputStream) {
         _inputStream = inputStream;
         [_inputStream setDelegate:self];
-        [_inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop]
-                                forMode:NSDefaultRunLoopMode];
+        [self scheduleStreamOnProperThread:inputStream];
         [_inputStream open];
     }
 }
@@ -187,19 +186,65 @@ NSStreamDelegate>
     if (_outputStream) {
         [_inputStream setDelegate:nil];
         [_outputStream close];
-        [_outputStream removeFromRunLoop:[NSRunLoop currentRunLoop]
-                                forMode:NSDefaultRunLoopMode];
+        [self unscheduleStreamOnProperThread:outputStream];
         _outputStream = nil;
     }
     if (outputStream) {
         _outputStream = outputStream;
         [_outputStream setDelegate:self];
-        [_outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop]
-                                 forMode:NSDefaultRunLoopMode];
+        [self scheduleStreamOnProperThread:outputStream];
     }
 }
 
 
+#pragma mark -
+#pragma mark threading
+
++ (NSThread *)socketThread {
+    static NSThread *socketThread = nil;
+    static dispatch_once_t oncePredicate;
+    
+    dispatch_once(&oncePredicate, ^{
+        socketThread = [[NSThread alloc] initWithTarget:self
+                                                selector:@selector(socketThreadMain:)
+                                                  object:nil];
+        [socketThread start];
+    });
+    
+    return socketThread;
+}
+
++ (void)socketThreadMain:(id)unused {
+    do {
+        @autoreleasepool {
+            [[NSRunLoop currentRunLoop] run];
+        }
+    } while (YES);
+}
+
+
+- (void)scheduleStreamOnCurrentThread:(NSStream *)stream {
+    [stream scheduleInRunLoop:[NSRunLoop currentRunLoop]
+                      forMode:NSRunLoopCommonModes];
+}
+
+- (void)unscheduleStreamOnCurrentThread:(NSStream *)stream {
+    [stream removeFromRunLoop:[NSRunLoop currentRunLoop]
+                      forMode:NSRunLoopCommonModes];
+}
+
+- (void)scheduleStreamOnProperThread:(NSStream *)stream{
+    [self performSelector:@selector(scheduleStreamOnCurrentThread:)
+                 onThread:[[self class] socketThread]
+               withObject:stream
+            waitUntilDone:YES];
+}
+- (void)unscheduleStreamOnProperThread:(NSStream *)stream{
+    [self performSelector:@selector(unscheduleStreamOnCurrentThread:)
+                 onThread:[[self class] socketThread]
+               withObject:stream
+            waitUntilDone:YES];
+}
 
 #pragma mark -
 #pragma mark NSStreamDelegate
