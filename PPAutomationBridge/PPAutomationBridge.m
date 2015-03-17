@@ -55,6 +55,7 @@ NSStreamDelegate>
 - (id)init {
     self = [super init];
     if (self) {
+        _closeAfterResponse = YES;
     }
 
     return self;
@@ -155,9 +156,10 @@ NSStreamDelegate>
             [self.outputData appendData:response];
         }
     }
-    if ([_outputStream streamStatus] != NSStreamStatusOpen) {
-        [_outputStream open];
+    if ([_outputStream streamStatus] == NSStreamStatusOpen) {
+        [self outputStream:_outputStream handleEvent:NSStreamEventHasSpaceAvailable];
     } else {
+        [_outputStream open];
     }
 }
 
@@ -239,7 +241,6 @@ NSStreamDelegate>
         }
             
         case NSStreamEventErrorOccurred:
-            [stream close];
             self.inputStream = nil;
             break;
         default:
@@ -265,12 +266,17 @@ NSStreamDelegate>
             break;
             
         case NSStreamEventErrorOccurred:
-            [stream close];
             self.outputStream = nil;
             break;
         default:
             break;
         }
+    }
+    
+    //close after completed
+    if (self.closeAfterResponse && _outputData.length == 0) {
+        self.inputStream = nil;
+        self.outputStream = nil;
     }
 
 }

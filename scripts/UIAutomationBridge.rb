@@ -192,6 +192,7 @@ begin
   # send request
   checkpoints["request"] = false
   socketStream.write(request)
+ 
   checkpoints["request"] = true
 
   # read response

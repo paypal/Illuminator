@@ -92,6 +92,13 @@
 
 @interface PPAutomationBridge : NSObject
 
+
+/**
+ *  Determines if we want to close socket after response. In UIAutomation bridge case we want to leave this to default YES
+ *  but there are use cases when you are not using bridge as UIAutomation bridge and you might want to keep socket open
+ */
+@property (nonatomic) BOOL closeAfterResponse;
+
 /**
  *  Returns an object representing bridge.
  *
