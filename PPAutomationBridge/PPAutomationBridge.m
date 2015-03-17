@@ -125,7 +125,9 @@ NSStreamDelegate>
         if (result) {
             [returnDict setObject:result forKey:@"result"];
         }
-        [returnDict setObject:[jsonObject objectForKey:@"callUID"] forKey:@"callUID"];
+        if ([jsonObject objectForKey:@"callUID"]) {
+            [returnDict setObject:[jsonObject objectForKey:@"callUID"] forKey:@"callUID"];
+        }
         return returnDict;
     }
 
@@ -153,10 +155,9 @@ NSStreamDelegate>
             [self.outputData appendData:response];
         }
     }
-    if ([_outputStream streamStatus] == NSStreamStatusOpen) {
-        [self outputStream:_outputStream handleEvent:NSStreamEventHasSpaceAvailable];
-    } else {
+    if ([_outputStream streamStatus] != NSStreamStatusOpen) {
         [_outputStream open];
+    } else {
     }
 }
 
@@ -221,13 +222,13 @@ NSStreamDelegate>
                 uint8_t buffer[32768];
                 NSInteger len = 0;
                 len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
-                if(len) {
+                if(len > 0) {
                     [self.inputData appendBytes:(const void *)buffer length:len];
                 }
             }
             NSInteger jsonMessageLength;
             do {
-                jsonMessageLength = [self findJsonMessage];
+                jsonMessageLength = [self findJsonMessageFromData:self.inputData];
                 if (jsonMessageLength > 0) {
                     NSString* json = [[NSString alloc] initWithBytes:self.inputData.bytes length:jsonMessageLength encoding:NSASCIIStringEncoding];
                     [self.inputData replaceBytesInRange:NSMakeRange(0, jsonMessageLength) withBytes:nil length:0];
@@ -236,6 +237,11 @@ NSStreamDelegate>
             } while (jsonMessageLength > 0);
             break;
         }
+            
+        case NSStreamEventErrorOccurred:
+            [stream close];
+            self.inputStream = nil;
+            break;
         default:
             break;
     }
@@ -257,7 +263,10 @@ NSStreamDelegate>
         case NSStreamEventEndEncountered:
             self.outputStream = nil;
             break;
+            
         case NSStreamEventErrorOccurred:
+            [stream close];
+            self.outputStream = nil;
             break;
         default:
             break;
@@ -270,10 +279,10 @@ NSStreamDelegate>
  Figure out if we have a fully formed JSON message in our buffer. Bad JSON will confuse this, and this is not
  intended to be a true parser. It just finds out if we have a complete message assuming well formed-ness.
  */
-- (NSInteger)findJsonMessage {
+- (NSInteger)findJsonMessageFromData:(NSData *)data {
     int count = 0;
-    const uint8_t *bytes = [self.inputData bytes];
-    for (long i = 0, len = self.inputData.length; i < len; i++) {
+    const uint8_t *bytes = [data bytes];
+    for (long i = 0, len = data.length; i < len; i++) {
         char c = bytes[i];
         switch (c) {
             case '{': case '[':
