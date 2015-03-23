@@ -192,18 +192,38 @@ begin
   # send request
   checkpoints["request"] = false
   socketStream.write(request)
+ 
   checkpoints["request"] = true
 
   # read response
   checkpoints["response"] = false
   response = ''
-  while true
-    line = nil
-    timeout(options["timeout"]) do
-      line = socketStream.gets
+
+  timeout(options["timeout"]) do
+    while true
+      char = nil
+      begin
+        timeout(0.1) do
+          char = socketStream.getc
+        end
+      rescue Timeout::Error
+        # nothing
+      end
+
+      unless char.nil?
+        response = response + char
+      end
+
+      begin
+        #TODO fix crazy parsing each character
+        if char == "}"  # somewhat better
+          JSON.parse(response)
+          break
+        end
+      rescue
+        # nothing
+      end
     end
-    break if line.nil?
-    response = response + line
   end
   checkpoints["response"] = true
 

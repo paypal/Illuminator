@@ -1,3 +1,1 @@
 
-var target = UIATarget.localTarget();
-

@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 PayPal. All rights reserved.
 //
 
+#ifdef UIAUTOMATION_BUILD
 #import "PPHABridgeDelegate.h"
 #import "PPHAAppDelegate.h"
 
@@ -35,3 +36,4 @@
 }
 
 @end
+#endif

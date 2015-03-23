@@ -7,11 +7,17 @@
 //
 
 @import Foundation;
+
+#define kPPHABridgeNotification @"kPPHABridgeNotification"
+
+#ifdef  UIAUTOMATION_BUILD
+
 #import "PPAutomationBridge.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-#define kPPHABridgeNotification @"kPPHABridgeNotification"
 
 @interface PPHABridgeDelegate : NSObject <PPAutomationBridgeDelegate>
 
 @end
+
+#endif

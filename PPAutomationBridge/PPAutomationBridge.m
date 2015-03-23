@@ -6,7 +6,7 @@
 //  Copyright 2013 PayPal. All rights reserved.
 //
 
-#ifdef DEBUG
+#ifdef UIAUTOMATION_BUILD
 
 #import "PPAutomationBridge.h"
 
@@ -43,6 +43,7 @@ NSStreamDelegate>
 #pragma mark -
 #pragma mark Init & Factory
 
+
 + (instancetype)bridge {
     static dispatch_once_t onceQueue;
     static PPAutomationBridge *bridge = nil;
@@ -55,6 +56,7 @@ NSStreamDelegate>
 - (id)init {
     self = [super init];
     if (self) {
+        _closeAfterResponse = YES;
     }
 
     return self;
@@ -90,7 +92,7 @@ NSStreamDelegate>
                                                       name:[NSString stringWithFormat:@"%@_%@", bonjourPrefix, automationUDID]
                                                       port:port];
         [self.server setDelegate:self];
-
+        
     }
     if (self.server) {
         [self.server publishWithOptions:NSNetServiceListenForConnections];
@@ -125,7 +127,9 @@ NSStreamDelegate>
         if (result) {
             [returnDict setObject:result forKey:@"result"];
         }
-        [returnDict setObject:[jsonObject objectForKey:@"callUID"] forKey:@"callUID"];
+        if ([jsonObject objectForKey:@"callUID"]) {
+            [returnDict setObject:[jsonObject objectForKey:@"callUID"] forKey:@"callUID"];
+        }
         return returnDict;
     }
 
@@ -150,29 +154,31 @@ NSStreamDelegate>
         if (!self.outputData) {
             self.outputData = [[NSMutableData alloc] initWithData:response];
         } else {
-            [self.outputData appendData:response];
+            @synchronized (self.outputData) {
+                [self.outputData appendData:response];
+            }
+        }
     }
-}
     if ([_outputStream streamStatus] == NSStreamStatusOpen) {
         [self outputStream:_outputStream handleEvent:NSStreamEventHasSpaceAvailable];
     } else {
-    [_outputStream open];
-}
+        [_outputStream open];
+    }
 }
 
 - (void)setInputStream:(NSInputStream *)inputStream {
     _inputData = nil;
     if (_inputStream) {
+        
+        [_inputStream setDelegate:nil];
         [_inputStream close];
-        [_inputStream removeFromRunLoop:[NSRunLoop currentRunLoop]
-                                forMode:NSDefaultRunLoopMode];
+        [self unscheduleStreamOnProperThread:inputStream];
         _inputStream = nil;
     }
     if (inputStream) {
         _inputStream = inputStream;
         [_inputStream setDelegate:self];
-        [_inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop]
-                                forMode:NSDefaultRunLoopMode];
+        [self scheduleStreamOnProperThread:inputStream];
         [_inputStream open];
     }
 }
@@ -180,20 +186,67 @@ NSStreamDelegate>
 - (void)setOutputStream:(NSOutputStream *)outputStream {
     _outputData = nil;
     if (_outputStream) {
+        [_inputStream setDelegate:nil];
         [_outputStream close];
-        [_outputStream removeFromRunLoop:[NSRunLoop currentRunLoop]
-                                forMode:NSDefaultRunLoopMode];
+        [self unscheduleStreamOnProperThread:outputStream];
         _outputStream = nil;
     }
     if (outputStream) {
         _outputStream = outputStream;
         [_outputStream setDelegate:self];
-        [_outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop]
-                                 forMode:NSDefaultRunLoopMode];
+        [self scheduleStreamOnProperThread:outputStream];
     }
 }
 
 
+#pragma mark -
+#pragma mark threading
+
++ (NSThread *)socketThread {
+    static NSThread *socketThread = nil;
+    static dispatch_once_t oncePredicate;
+    
+    dispatch_once(&oncePredicate, ^{
+        socketThread = [[NSThread alloc] initWithTarget:self
+                                                selector:@selector(socketThreadMain:)
+                                                  object:nil];
+        [socketThread start];
+    });
+    
+    return socketThread;
+}
+
++ (void)socketThreadMain:(id)unused {
+    do {
+        @autoreleasepool {
+            [[NSRunLoop currentRunLoop] run];
+        }
+    } while (YES);
+}
+
+
+- (void)scheduleStreamOnCurrentThread:(NSStream *)stream {
+    [stream scheduleInRunLoop:[NSRunLoop currentRunLoop]
+                      forMode:NSRunLoopCommonModes];
+}
+
+- (void)unscheduleStreamOnCurrentThread:(NSStream *)stream {
+    [stream removeFromRunLoop:[NSRunLoop currentRunLoop]
+                      forMode:NSRunLoopCommonModes];
+}
+
+- (void)scheduleStreamOnProperThread:(NSStream *)stream{
+    [self performSelector:@selector(scheduleStreamOnCurrentThread:)
+                 onThread:[[self class] socketThread]
+               withObject:stream
+            waitUntilDone:YES];
+}
+- (void)unscheduleStreamOnProperThread:(NSStream *)stream{
+    [self performSelector:@selector(unscheduleStreamOnCurrentThread:)
+                 onThread:[[self class] socketThread]
+               withObject:stream
+            waitUntilDone:YES];
+}
 
 #pragma mark -
 #pragma mark NSStreamDelegate
@@ -202,7 +255,7 @@ NSStreamDelegate>
     if (stream == self.inputStream) {
         [self inputStream:(NSInputStream*)stream handleEvent:eventCode];
     } else if (stream == self.outputStream) {
-        [self outputStream:stream handleEvent:eventCode];
+        [self outputStream:(NSOutputStream *)stream handleEvent:eventCode];
     }
 }
 
@@ -211,20 +264,20 @@ NSStreamDelegate>
     switch(eventCode) {
         case NSStreamEventHasBytesAvailable: {
             if (!self.inputData) {
-            self.inputData = [NSMutableData data];
+                self.inputData = [NSMutableData data];
             }
 
             while (stream.hasBytesAvailable) {
-            uint8_t buffer[32768];
-            NSInteger len = 0;
-            len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
-            if(len) {
-                [self.inputData appendBytes:(const void *)buffer length:len];
-            }
+                uint8_t buffer[32768];
+                NSInteger len = 0;
+                len = [(NSInputStream *)stream read:buffer maxLength:sizeof(buffer)];
+                if(len > 0) {
+                    [self.inputData appendBytes:(const void *)buffer length:len];
+                }
             }
             NSInteger jsonMessageLength;
             do {
-                jsonMessageLength = [self findJsonMessage];
+                jsonMessageLength = [self findJsonMessageFromData:self.inputData];
                 if (jsonMessageLength > 0) {
                     NSString* json = [[NSString alloc] initWithBytes:self.inputData.bytes length:jsonMessageLength encoding:NSASCIIStringEncoding];
                     [self.inputData replaceBytesInRange:NSMakeRange(0, jsonMessageLength) withBytes:nil length:0];
@@ -233,32 +286,46 @@ NSStreamDelegate>
             } while (jsonMessageLength > 0);
             break;
         }
+            
+        case NSStreamEventErrorOccurred:
+            self.inputStream = nil;
+            break;
         default:
             break;
     }
 
 }
 
-- (void)outputStream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode {
+- (void)outputStream:(NSOutputStream *)stream handleEvent:(NSStreamEvent)eventCode {
     switch(eventCode) {
         case NSStreamEventHasSpaceAvailable: {
-            const uint8_t *pData = [self.outputData bytes];
-            while ([self.outputStream hasSpaceAvailable] && self.outputData.length > 0) {
-                NSInteger r = [self.outputStream write:pData maxLength:self.outputData.length];
-                if (r == -1) {
-                    break;
+            @synchronized (self.outputData) {
+                const uint8_t *pData = [self.outputData bytes];
+                while ([self.outputStream hasSpaceAvailable] && self.outputData.length > 0) {
+                    NSInteger r = [self.outputStream write:pData maxLength:self.outputData.length];
+                    if (r == -1) {
+                        break;
+                    }
+                    [self.outputData replaceBytesInRange:NSMakeRange(0, r) withBytes:nil length:0];
                 }
-                [self.outputData replaceBytesInRange:NSMakeRange(0, r) withBytes:nil length:0];
             }
             break;
         case NSStreamEventEndEncountered:
             self.outputStream = nil;
             break;
+            
         case NSStreamEventErrorOccurred:
+            self.outputStream = nil;
             break;
         default:
             break;
         }
+    }
+    
+    //close after completed
+    if (self.closeAfterResponse && _outputData.length == 0) {
+        self.inputStream = nil;
+        self.outputStream = nil;
     }
 
 }
@@ -267,10 +334,10 @@ NSStreamDelegate>
  Figure out if we have a fully formed JSON message in our buffer. Bad JSON will confuse this, and this is not
  intended to be a true parser. It just finds out if we have a complete message assuming well formed-ness.
  */
-- (NSInteger)findJsonMessage {
+- (NSInteger)findJsonMessageFromData:(NSData *)data {
     int count = 0;
-    const uint8_t *bytes = [self.inputData bytes];
-    for (long i = 0, len = self.inputData.length; i < len; i++) {
+    const uint8_t *bytes = [data bytes];
+    for (long i = 0, len = data.length; i < len; i++) {
         char c = bytes[i];
         switch (c) {
             case '{': case '[':
