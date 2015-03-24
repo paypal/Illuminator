@@ -876,13 +876,23 @@ extendPrototype(UIAElement, {
      * @param maxRecursion a recursion limit to observe when checking parent element equality (defaults to -1 for infinite)
      */
     equals: function (elem2, maxRecursion) {
+        var sameRect = function (e1, e2) {
+            var r1 = e1.rect();
+            var r2 = e2.rect();
+            return r1.size.width  == r2.size.width
+                && r1.size.height == r2.size.height
+                && r1.origin.x    == r2.origin.x
+                && r1.origin.y    == r2.origin.y;
+        }
+
         maxRecursion = maxRecursion === undefined ? -1 : maxRecursion;
+
         if (this == elem2) return true; // shortcut when x == x
         if (null === elem2) return false; // shortcut when one is null
-        if (!isNotNilElement(this) || !isNotNilElement(elem2)) return !isNotNilElement(this) && !isNotNilElement(elem2); // both nil or neither
+        if (isNotNilElement(this) != isNotNilElement(elem2)) return false; // both nil or neither
         if (this.toString() != elem2.toString()) return false; // element type
         if (this.name() != elem2.name()) return false;
-        if (JSON.stringify(this.rect()) != JSON.stringify(elem2.rect())) return false; // possible false positives!
+        if (!sameRect(this, elem2)) return false; // possible false positives!
         if (this.isVisible() != elem2.isVisible()) return false; // hopefully a way to beat false positives
         if (0 == maxRecursion) return true; // stop recursing?
         if (-100 == maxRecursion) UIALogger.logWarning("Passed 100 recursions in UIAElement.equals");
@@ -918,14 +928,18 @@ extendPrototype(UIAElement, {
             return false;
         };
 
-
         var reduce_helper = function (elem, acc, prefix) {
-            var scalars = ["frontMostApp", "navigationBar", "mainWindow", "keyboard", "popover", "tabBar", "toolbar"];
-            var vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images","keys",
+            var scalars = ["frontMostApp", "mainWindow", "keyboard", "popover"];
+            var vectors = [];
+
+            // iOS 8.1 takes between 3 and 5 milliseconds each (????!?!?!) to evaluate these, so only do it for 7.x
+            if (isSimVersion(7)) {
+                vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images","keys",
                            "links", "navigationBars", "pageIndicators", "pickers", "progressIndicators",
                            "scrollViews", "searchBars", "secureTextFields", "segmentedControls", "sliders",
                            "staticTexts", "switches", "tabBars", "tableViews", "textFields", "textViews",
                            "toolbars", "webViews", "windows"];
+            }
 
             // function to visit an element, and add it to an array of what was discovered
             var accessed = [];
@@ -958,7 +972,6 @@ extendPrototype(UIAElement, {
             // visit scalars
             for (var i = 0; i < scalars.length; ++i) {
                 if (undefined === elem[scalars[i]]) continue;
-                if (elem.toString() == "[object UIAApplication]" && scalars[i] == "navigationBar") continue; // prevent dupe
                 visit(elem[scalars[i]](), prefix + "." + scalars[i] + "()", false);
             }
 
@@ -1063,15 +1076,15 @@ extendPrototype(UIAElement, {
         var c = criteria;
         // don't consider isVisible here, because we do it in this._reduce
         var collect_fn = function (acc, elem, prefix, _) {
-            if (c.UIAType !== undefined && "[object " + c.UIAType + "]" != elem.toString()) return acc;
-            if (c.rect !== undefined && JSON.stringify(c.rect) != JSON.stringify(elem.rect())) return acc;
+            if (c.UIAType          !== undefined && "[object " + c.UIAType + "]" != elem.toString()) return acc;
+            if (c.rect             !== undefined && JSON.stringify(c.rect) != JSON.stringify(elem.rect())) return acc;
             if (c.hasKeyboardFocus !== undefined && c.hasKeyboardFocus != elem.hasKeyboardFocus()) return acc;
-            if (c.isEnabled !== undefined && c.isEnabled != elem.isEnabled()) return acc;
-            if (c.isValid !== undefined && c.isValid !== elem.isValid()) return acc;
-            if (c.label !== undefined && c.label != elem.label()) return acc;
-            if (c.name !== undefined && c.name != elem.name()) return acc;
-            if (c.nameRegex !== undefined && (elem.name() === null || elem.name().match(c.nameRegex) === null)) return acc;
-            if (c.value !== undefined && c.value != elem.value()) return acc;
+            if (c.isEnabled        !== undefined && c.isEnabled != elem.isEnabled()) return acc;
+            if (c.isValid          !== undefined && c.isValid !== elem.isValid()) return acc;
+            if (c.label            !== undefined && c.label != elem.label()) return acc;
+            if (c.name             !== undefined && c.name != elem.name()) return acc;
+            if (c.nameRegex        !== undefined && (elem.name() === null || elem.name().match(c.nameRegex) === null)) return acc;
+            if (c.value            !== undefined && c.value != elem.value()) return acc;
 
             acc[varName + prefix] = elem;
             elem._accessor = varName + prefix; // annotate the element with its accessor

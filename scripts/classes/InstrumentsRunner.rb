@@ -40,6 +40,7 @@ class ParsedInstrumentsMessage
   def self.parseStatus(status)
     case status
       when /start/i    then :start
+      when /stopped/i  then :stopped
       when /pass/i     then :pass
       when /fail/i     then :fail
       when /error/i    then :error
