@@ -48,7 +48,9 @@ Whether the use of `eval` is good programming practice is beyond the scope of th
 
 #### 3. Criteria (soft selectors)
 
-A criteria selector is a javascript object containing values that will be matched against each element in the tree beneath the parent element.  
+A criteria selector is a javascript object containing values that will be matched against each element in the tree beneath the parent element.
+
+> Note: due to extremely poor performance in UIAutomation's javascript performance in iOS 8.x (5ms to evaluate some object methods instead of ~0ms), the future reliability of soft selectors is threatened (by Apple).  As a compromise, iOS 8 searches are done using only the `.elements()` array instead of element-specific lookups.
 
 ```javascript
 var mySelector = {name: "My button", UIAType: "UIAButton"};
