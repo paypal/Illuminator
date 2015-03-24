@@ -17,6 +17,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/FullOutpu
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/ConsoleLogger.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/TestListener.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/SaltinelAgent.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/StopDetector.rb')
 
 ####################################################################################################
 # runner
@@ -31,6 +32,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/SaltinelA
 class AutomationRunner
   include SaltinelAgentEventSink
   include TestListenerEventSink
+  include StopDetectorEventSink
 
   attr_accessor :appName
   attr_accessor :workspace
@@ -40,15 +42,16 @@ class AutomationRunner
   attr_reader :javascriptRunner
 
   def initialize
-    @testDefs          = nil
-    @testSuite         = nil
-    @currentTest       = nil
-    @restartedTests    = nil
-    @stackTraceLines   = nil
-    @stackTraceRecord  = false
-    @appCrashed        = false
-    @javascriptRunner  = JavascriptRunner.new
-    @instrumentsRunner = InstrumentsRunner.new
+    @testDefs           = nil
+    @testSuite          = nil
+    @currentTest        = nil
+    @restartedTests     = nil
+    @stackTraceLines    = nil
+    @stackTraceRecord   = false
+    @appCrashed         = false
+    @instrumentsStopped = false
+    @javascriptRunner   = JavascriptRunner.new
+    @instrumentsRunner  = InstrumentsRunner.new
 
     @instrumentsRunner.addListener("consolelogger", ConsoleLogger.new)
   end
@@ -122,6 +125,9 @@ class AutomationRunner
     @stackTraceRecord = true
   end
 
+  def stopDetectorTriggered
+    @instrumentsStopped = true
+  end
 
   def testListenerGotTestStart name
     @testSuite[@currentTest].error "ILLUMINATOR FAILURE TO LISTEN" unless @currentTest.nil?
@@ -155,6 +161,15 @@ class AutomationRunner
       @currentTest = nil
       self.saveJunitTestReport
     end
+  end
+
+  def testListenerGotTestError message
+    return if @testSuite.nil?
+    return if @currentTest.nil?
+    @testSuite[@currentTest].fail message
+    @testSuite[@currentTest].stacktrace = @stackTraceLines.join("\n")
+    @currentTest = nil
+    self.saveJunitTestReport
   end
 
   def testListenerGotLine(status, message)
@@ -253,6 +268,11 @@ class AutomationRunner
     testListener.eventSink = self
     @instrumentsRunner.addListener("testListener", testListener)
 
+    stopDetector = StopDetector.new
+    stopDetector.eventSink = self
+    @instrumentsRunner.addListener("stopDetector", stopDetector)
+
+
     # listener to provide screen output
     if options.instruments.doVerbose
       @instrumentsRunner.addListener("consoleoutput", FullOutput.new)
@@ -331,6 +351,7 @@ class AutomationRunner
     begin
       self.removeAnyAppCrashes
       @appCrashed = false
+      @instrumentsStopped = false
 
       # Setup javascript to run the appropriate list of tests (initial or leftover)
       if @testSuite.nil?
@@ -354,7 +375,7 @@ class AutomationRunner
         self.handleAppCrash
       end
 
-    end while not (@testSuite.nil? or @testSuite.unStartedTests.empty?)
+    end while not (@testSuite.nil? or @testSuite.unStartedTests.empty? or @instrumentsStopped)
 
   end
 
