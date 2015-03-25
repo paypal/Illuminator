@@ -123,7 +123,7 @@ NSStreamDelegate>
                                                       error: nil];
     if ([NSJSONSerialization isValidJSONObject:jsonObject]) {
         NSMutableDictionary *returnDict = [NSMutableDictionary dictionary];
-        NSDictionary *result = [self.delegate automationBridge:self receivedAction:[PPAutomationBridgeAction actionWithDictionary:jsonObject]];
+        NSDictionary *result = [self resultFromDelegateForAction:[PPAutomationBridgeAction actionWithDictionary:jsonObject]];
         if (result) {
             [returnDict setObject:result forKey:@"result"];
         }
@@ -134,6 +134,16 @@ NSStreamDelegate>
     }
 
     return nil;
+}
+
+- (NSDictionary *)resultFromDelegateForAction:(PPAutomationBridgeAction *)action {
+    __block id result = nil;
+    NSOperationQueue *targetQueue = [NSOperationQueue mainQueue];
+    [targetQueue addOperationWithBlock:^{
+        result = [self.delegate automationBridge:self receivedAction:action];
+    }];
+    [targetQueue waitUntilAllOperationsAreFinished];
+    return result;
 }
 #pragma mark -
 #pragma mark NSNetServiceDelegate
@@ -399,7 +409,7 @@ NSStreamDelegate>
         id result = nil;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        if (self.arguments) {
+        if ([self.selector hasSuffix:@":"]) {
             result = [target performSelector:selector withObject:self.arguments];
         } else {
             result = [target performSelector:selector];
