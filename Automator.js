@@ -699,6 +699,8 @@ var debugAutomator = false;
         // call step action with or without parameters, as appropriate
         if (step.parameters !== undefined) {
             actFn.call(this, step.parameters);
+        } else if (0 < Object.keys(step.action.params).length) {
+            actFn.call(this, {}); // ensure param'd functions always receive an argument
         } else {
             actFn.call(this);
         }
