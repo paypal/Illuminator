@@ -41,6 +41,6 @@ Further Documentation
 * [Working with elements](docs/Extensions.md)
 * [Defining screens](docs/AppMap.md)
 * [Writing tests](docs/Automator.md)
-* [Ruby scripts](docs/Commandline.md)
+* [Running tests via the command line with Ruby scripts](docs/Commandline.md)
 * [The RPC channel](docs/Bridge.md)
 * [Troubleshooting](docs/Troubleshooting.md)

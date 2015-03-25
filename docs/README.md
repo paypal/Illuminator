@@ -94,12 +94,21 @@ $ ruby ./scripts/automationTests.rb -p /path/to/Example.js -a MyTinyApp -s MyTin
 This should launch an instance of the simulator (possibly requiring credentials from OSX) and
 then run the test script, outputting the log to the terminal.
 
+
+
+Wait, But Where Do You Import Illuminator Into Your Javascript Code?
+--------------------------------------------------------------------
+
+You don't. The Illuminator [command line scripts](Commandline.md) handle this for you, as well as a host of other amazing features.
+
+
+
 Further Documentation
 ---------------------
 * [Selecting elements](Selectors.md)
 * [Working with elements](Extensions.md)
 * [Defining screens](AppMap.md)
 * [Writing tests](Automator.md)
-* [Ruby scripts](Commandline.md)
+* [Running tests via the command line with Ruby scripts](Commandline.md)
 * [The RPC channel](Bridge.md)
 * [Troubleshooting](Troubleshooting.md)
