@@ -25,6 +25,7 @@
  *  Enables PPAutomationBridge to send messages to application under test.
  *  Most general use case scenario is to make this method call [action resultFromTarget:self]; in PPAutomationBridgeDelegate and
  *  make PPAutomationBridgeDelegate object implement all methods you might get from PPAutomationBridge.
+ *  This method will always be called on main thread
  *
  *  Example:
  *
