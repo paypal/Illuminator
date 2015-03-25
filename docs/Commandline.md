@@ -297,6 +297,6 @@ success = IlluminatorFramework.runWithOptions options, workspace
 exit 1 unless success
 ```
 
-The strangest piece of this code is probably the `"xtondispaE#bzl#fBeky#crvmw#g"`.  This tells the Parser Factor which command line switches to use (by their single-letter code), and the order in which to list them in the help file (`#` indicating separators).  
+The strangest piece of this code is probably the `"xtondispaE#bzl#fBeky#crvmw#g"`.  This tells the Parser Factor which command line switches to use (by their single-letter code), and the order in which to list them in the help file (`#` indicating separators).
 
-The second-strangest piece of code is probably the `parserFactory.prepare` line.  If you're reading this far, you should email iakatz@paypal.com and ask for help, so that I can improve this documentation based on your questions.  But the comments in [IlluminatorArgumentParsing.rb](../scripts/classes/IlluminatorArgumentParsing.rb) should help somewhat.
+The second-strangest piece of code is probably the `parserFactory.prepare` line.  If you're reading this far, you should [make contact via one of the Help channels listed in the README](../README.md) and ask for help, so that I can improve this documentation based on your questions.  But the comments in [IlluminatorArgumentParsing.rb](../scripts/classes/IlluminatorArgumentParsing.rb) should help somewhat.
