@@ -41,6 +41,20 @@ Further Documentation
 * [Working with elements](docs/Extensions.md)
 * [Defining screens](docs/AppMap.md)
 * [Writing tests](docs/Automator.md)
-* [Ruby scripts](docs/Commandline.md)
+* [Running tests via the command line with Ruby scripts](docs/Commandline.md)
 * [The RPC channel](docs/Bridge.md)
 * [Troubleshooting](docs/Troubleshooting.md)
+
+Help
+----
+
+Where-to-post summary:
+
+* How do I? -- [StackExchange](http://stackoverflow.com/questions/tagged/illuminator)
+* I got this error, why? -- [StackExchange](http://stackoverflow.com/questions/tagged/illuminator)
+* I got this error and I'm sure it's a bug -- [file an issue](https://github.com/paypal/Illuminator/issues)
+* I have an idea/request -- [file an issue](https://github.com/paypal/Illuminator/issues)
+* Why do you? -- the [illuminator-dev mailing list](https://groups.google.com/forum/#!forum/illuminator-dev)
+* When will you? -- the [illuminator-users mailing list](https://groups.google.com/forum/#!forum/illuminator-users)
+* When did you? -- the [illuminator-users mailing list](https://groups.google.com/forum/#!forum/illuminator-announce)
+* Anything you want to share privately: [iakatz@paypal.com](mailto:iakatz@paypal.com)

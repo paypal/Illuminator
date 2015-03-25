@@ -4,17 +4,14 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/Illuminator
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/XcodeUtils.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/HostUtils.rb')
 
+# Change directory to sample app and use that for the workspace
 Dir.chdir 'SampleApp/AutomatorSampleApp'
 workspace = Dir.pwd
 
-#ruby ../../scripts/automationTests.rb -s AutomatorSampleApp -t smoke -p ../../SampleApp/SampleTests/tests/AllTests.js
 allTestPath = '../../SampleApp/SampleTests/tests/AllTests.js'
 allTestPath = HostUtils.realpath(allTestPath)
 
-####################################################################################################
-# Storing custom parameters
-####################################################################################################
-
+# Hard-coded options
 
 options = IlluminatorOptions.new
 options.xcode.appName = 'AutomatorSampleApp'
@@ -22,7 +19,7 @@ options.xcode.scheme = 'AutomatorSampleApp'
 
 options.illuminator.entryPoint = 'runTestsByTag'
 options.illuminator.test.tags.any = ['smoke']
-options.illuminator.clean.xcode = false
+options.illuminator.clean.xcode = true
 options.illuminator.clean.artifacts = true
 options.illuminator.clean.noDelay = true
 options.illuminator.task.build = true
@@ -45,6 +42,7 @@ end
 options.simulator.version = '8.1'
 success8 = IlluminatorFramework.runWithOptions options, workspace
 
+options.illuminator.clean.xcode = false
 options.illuminator.clean.artifacts = false
 options.illuminator.task.build = false
 options.simulator.version = '7.1'
