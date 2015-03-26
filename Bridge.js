@@ -67,7 +67,8 @@ var debugBridge = false;
 
         if (output) {
             if ("" == output.stdout.trim()) {
-                UIALogger.logWarning("Ruby may not be working, try $ ruby " + taskArguments.join(" "));
+                UIALogger.logWarning("Ruby may not be working; to diagnose, run this same command in a terminal: "
+                                     + "$ ruby " + taskArguments.join(" "));
                 throw new bridge.SetupException("Bridge got back an empty/blank string instead of JSON");
             }
             try {
