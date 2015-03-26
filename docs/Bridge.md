@@ -6,25 +6,25 @@ Some states can't be easily reproduced in simulation.  For example, hardware com
 
 For these, the Illuminator Bridge is needed; it allows you to pass JSON to and from your application.
 
-
-Bridge API Documentation
-------------------------
-
-You can generate current documentation for the Bridge module with [Appledoc](http://gentlebytes.com/appledoc/) as follows:
-
-```
-$ test 123  # Boris FIXME
-```
+Bridge API Documentation in docset format can be found in docs folder.
 
 
 Integrating a Bridge Call into Your Application
 --------------------------------------------
 
+1. Add `PPAutomationBridge` class to your project
+2. Make an object that conforms to `PPAutomationBridgeDelegate` protocol
+3. Implement `automationBridge:receivedAction:` method (if you want default implementation see `PPAutomationBridgeDelegate` example in sample app)
+4. Start your bridge with `startAutomationBridgeWithDelegate:`
+
 In this example, we'll fake the operation of a barcode scanner by adding a bridge call for `fakeBarcodeScan`.  This will return a dummy piece of data for illustrative purposes.
 
 ```objective-c
 
-// Boris FIXME
+- (NSDictionary *)fakeBarcodeScan:(NSDictionary *)parameters {
+    NSString *dummy = [dummy dummy:parameters[@"barcode"]];
+    return @{@"dummy":dummy};
+}
 
 ```
 
