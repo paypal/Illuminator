@@ -6,7 +6,7 @@ Some states can't be easily reproduced in simulation.  For example, hardware com
 
 For these, the Illuminator Bridge is needed; it allows you to pass JSON to and from your application.
 
-Bridge API Documentation in docset format can be found in docs folder.
+Bridge API Documentation in docset format can be found in [the docs folder](com.paypal.Illuminator.docset/Contents/Resources/Documents/index.html).
 
 
 Integrating a Bridge Call into Your Application
@@ -19,13 +19,42 @@ Integrating a Bridge Call into Your Application
 
 In this example, we'll fake the operation of a barcode scanner by adding a bridge call for `fakeBarcodeScan`.  This will return a dummy piece of data for illustrative purposes.
 
+Header file:
+
+```objective-c
+@import Foundation;
+
+#ifdef  UIAUTOMATION_BUILD
+#import "PPAutomationBridge.h"
+
+@interface MyCustomBridgeDelegate : NSObject <PPAutomationBridgeDelegate>
+@end
+
+#endif
+```
+
+Implementation:
+
 ```objective-c
 
+#ifdef UIAUTOMATION_BUILD
+#import "TheHeaderFileShownAbove.h"
+
+@implementation MyCustomBridgeDelegate
+
+// recommended implementation of PPAutomationBridgeDelegate function
+- (NSDictionary *)automationBridge:(PPAutomationBridge *)bridge receivedAction:(PPAutomationBridgeAction *)action {
+    return [action resultFromTarget:self];
+}
+
+// our custom bridge call
 - (NSDictionary *)fakeBarcodeScan:(NSDictionary *)parameters {
     NSString *dummy = [dummy dummy:parameters[@"barcode"]];
     return @{@"dummy":dummy};
 }
 
+@end
+#endif
 ```
 
 
