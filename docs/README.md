@@ -4,18 +4,18 @@ ILLUMINATOR Quick Start Guide
 This is the minimal crash course you need to get started writing and executing Illuminator test scenarios.
 
 ### The Basics
-* The **[AppMap](docs/AppMap.md)** defines the functionality of an iOS App
+* The **[AppMap](AppMap.md)** defines the functionality of an iOS App
     * An **app** has **screen**s that are available on certain **target**s
     * A **screen** has a function to verify whether it is active, and **action**s
     * An **action** has a set of **parameter**s and a mapping of **target**s to **implementation**s
-* The **[Automator](docs/Automator.md)** defines **test scenario**s
+* The **[Automator](Automator.md)** defines **test scenario**s
     * A test scenario has a **name**, some **tag**s, and a series of **step**s
     * A step is an **action**, possibly with some **parameter**s
-* The [command line scripts](docs/Commandline.md) provide the entry point to testing
+* The [command line scripts](Commandline.md) provide the entry point to testing
 	* Building the executable
 	* Loading the binary into the target execution environment
 	* Running the desired set of **test scenario**s, by **name** or by **tag**, for a desired **implementation**
-* The **[Bridge](docs/Bridge.md)** enables RPC functionality between the AppMap, Automator, and your app
+* The **[Bridge](Bridge.md)** enables RPC functionality between the AppMap, Automator, and your app
 
 
 Minimal Example
