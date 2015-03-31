@@ -272,6 +272,8 @@ class IlluminatorParserFactory
     # help message is hard coded!
     retval.on_tail('-h', '--help', 'Show this help message') {|foo| puts retval.help(); exit  }
 
+    retval.banner = "Usage: #{File.basename($PROGRAM_NAME)} [options]"
+
     #puts retval
     return retval
   end
