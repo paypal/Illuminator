@@ -11,7 +11,7 @@ parserFactory = IlluminatorParserFactory.new
 parserFactory.prepare({"b" => 'iPhone 5'}, # the default sim devie is iPhone 5
                       {},                  # no extra parse flags are being defined
                       {})                  # no argument processing overrides are being provided
-parser = parserFactory.buildParser(options, 'xpatonsjdiq#bzl#Bfek#crvmw')
+parser = parserFactory.buildParser(options, 'xpatonsdiq#bzl#Bfek#crvmw')
 
 optionStruct = parser.parse ARGV
 

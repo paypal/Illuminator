@@ -130,7 +130,6 @@ class IlluminatorParserFactory
       'n' => 'tagsNone',
       'q' => 'sdk',
       's' => 'scheme',
-      'j' => 'customSettingsJSONPath',
       'd' => 'hardwareID',
       'i' => 'implementation',
       'E' => 'appLocation',
@@ -150,7 +149,6 @@ class IlluminatorParserFactory
     }
 
     @letterProcessing = {
-      'j' => lambda {|p| HostUtils.realpath(p) },     # get real path to settings file
       'p' => lambda {|p| HostUtils.realpath(p) },     # get real path to tests file
       'E' => lambda {|p| HostUtils.realpath(p) },     # get real path to app
       'y' => lambda {|p| p.split(',')},               # split comma-separated string into array
@@ -190,7 +188,6 @@ class IlluminatorParserFactory
     self.addSwitch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])
     self.addSwitch('q', ['-q', '--sdk SDK', 'SDK to build against'])
     self.addSwitch('s', ['-s', '--scheme SCHEME', 'Build and run specific tests on given workspace scheme'])
-    self.addSwitch('j', ['-j', '--jsonSettingsPath PATH', 'path to JSON file containing custom configuration parameters'])
     self.addSwitch('d', ['-d', '--hardwareID ID', 'hardware id of device you run on'])
     self.addSwitch('i', ['-i', '--implementation IMPL', 'Device tests implementation'])
     self.addSwitch('E', ['-E', '--appLocation LOCATION', 'Location of app executable, if pre-built'])
