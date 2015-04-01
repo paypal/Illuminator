@@ -1,4 +1,20 @@
 /**
+ * Read data from a file
+ *
+ * @param path the path that should be read
+ * @return string the file contents
+ */
+function readFromFile(path) {
+    var result = target().host().performTaskWithPathArgumentsTimeout("/bin/cat", [path], 10);
+
+    // be verbose if something didn't go well
+    if (0 != result.exitCode) {
+        throw new Error("readFromFile failed: " + result.stderr);
+    }
+    return result.stdout;
+}
+
+/**
  * Write data to a file
  *
  * @param path the path that should be (over)written
