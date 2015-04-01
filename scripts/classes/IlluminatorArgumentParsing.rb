@@ -130,7 +130,6 @@ class IlluminatorParserFactory
       'n' => 'tagsNone',
       'q' => 'sdk',
       's' => 'scheme',
-      'j' => 'customSettingsJSONPath',
       'd' => 'hardwareID',
       'i' => 'implementation',
       'E' => 'appLocation',
@@ -150,7 +149,6 @@ class IlluminatorParserFactory
     }
 
     @letterProcessing = {
-      'j' => lambda {|p| HostUtils.realpath(p) },     # get real path to settings file
       'p' => lambda {|p| HostUtils.realpath(p) },     # get real path to tests file
       'E' => lambda {|p| HostUtils.realpath(p) },     # get real path to app
       'y' => lambda {|p| p.split(',')},               # split comma-separated string into array
@@ -181,17 +179,16 @@ class IlluminatorParserFactory
     @letterProcessing = @letterProcessing.merge(letterProcessingUpdates) unless letterProcessingUpdates.nil?
     @defaultValues = @defaultValues.merge defaultValues unless defaultValues.nil?
 
-    self.addSwitch('x', ['-x', '--entryPoint LABEL', 'The execution entry point (runTestsByTag, runTestsByName, describe)'])
+    self.addSwitch('x', ['-x', '--entryPoint LABEL', 'The execution entry point {runTestsByTag, runTestsByName, describe}'])
     self.addSwitch('p', ['-p', '--testPath PATH', 'Path to js file with all tests imported'])
-    self.addSwitch('a', ['-a', '--appName APPNAME', "Name of the app to run"])
+    self.addSwitch('a', ['-a', '--appName APPNAME', "Name of the app to build / run"])
     self.addSwitch('P', ['-P', '--xcodeProject PROJECTNAME', "Project to build -- required if there are 2 in the same directory"])
     self.addSwitch('t', ['-t', '--tags-any TAGSANY', 'Run tests with any of the given tags'])
     self.addSwitch('o', ['-o', '--tags-all TAGSALL', 'Run tests with all of the given tags'])
     self.addSwitch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])
     self.addSwitch('q', ['-q', '--sdk SDK', 'SDK to build against'])
     self.addSwitch('s', ['-s', '--scheme SCHEME', 'Build and run specific tests on given workspace scheme'])
-    self.addSwitch('j', ['-j', '--jsonSettingsPath PATH', 'path to JSON file containing custom configuration parameters'])
-    self.addSwitch('d', ['-d', '--hardwareID ID', 'hardware id of device you run on'])
+    self.addSwitch('d', ['-d', '--hardwareID ID', 'hardware id of device to run on instead of simulator'])
     self.addSwitch('i', ['-i', '--implementation IMPL', 'Device tests implementation'])
     self.addSwitch('E', ['-E', '--appLocation LOCATION', 'Location of app executable, if pre-built'])
     self.addSwitch('b', ['-b', '--simDevice DEVICE', 'Run on given simulated device'])
@@ -200,12 +197,12 @@ class IlluminatorParserFactory
     self.addSwitch('f', ['-f', '--skip-build', 'Just automate; assume already built'])
     self.addSwitch('B', ['-B', '--skip-automate', "Don't automate; build only"])
     self.addSwitch('e', ['-e', '--skip-set-sim', 'Assume that simulator has already been chosen and properly reset'])
-    self.addSwitch('k', ['-k', '--skip-kill-after', 'Do not kill the simulator after the run'])
+    self.addSwitch('k', ['-k', '--skip-kill-after', 'Leave the simulator open after the run'])
     self.addSwitch('y', ['-y', '--clean PLACES', 'Comma-separated list of places to clean {xcode, buildArtifacts, derivedData}'])
     self.addSwitch('c', ['-c', '--coverage', 'Generate coverage files'])
     self.addSwitch('r', ['-r', '--retest OPTIONS', 'Immediately retest failed tests with comma-separated options {1x, solo}'])
-    self.addSwitch('v', ['-v', '--verbose', 'Show verbose output'])
-    self.addSwitch('m', ['-m', '--timeout TIMEOUT', 'startup timeout'])
+    self.addSwitch('v', ['-v', '--verbose', 'Show verbose output from instruments'])
+    self.addSwitch('m', ['-m', '--timeout TIMEOUT', 'Seconds to wait for instruments tool to start tests'])
     self.addSwitch('w', ['-w', '--random-seed SEED', 'Randomize test order based on given integer seed'])
   end
 
@@ -222,7 +219,7 @@ class IlluminatorParserFactory
     else
       opts_with_default = opts.map do |item|
         if (!altered and item.chars.first != '-')
-          item += "        Defaults to \"#{@defaultValues[letter]}\""
+          item += "   ::   Defaults to \"#{@defaultValues[letter]}\""
           altered = true
         end
         item
@@ -274,6 +271,8 @@ class IlluminatorParserFactory
 
     # help message is hard coded!
     retval.on_tail('-h', '--help', 'Show this help message') {|foo| puts retval.help(); exit  }
+
+    retval.banner = "Usage: #{File.basename($PROGRAM_NAME)} [options]"
 
     #puts retval
     return retval

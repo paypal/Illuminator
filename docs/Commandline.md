@@ -8,36 +8,36 @@ The Basic, Quick-Start Instant-Gratification Command
 
 Included in the `scripts/` directory is `scripts/automationTests.rb` -- a script that exposes Illuminator's core options on the command line.
 
-```text
-$ ruby scripts/automationTests.rb --help
-
-    -x, --entryPoint LABEL           The execution entry point (runTestsByTag, runTestsByName, describe)        Defaults to "runTestsByTag"
-    -p, --testPath PATH              Path to js file with all tests imported
-    -a, --appName APPNAME            Name of the app to run
+```
+$ ruby scripts/automationTests.rb  --help
+Usage: automationTests.rb [options]
+    -a, --appName APPNAME            Name of the app to build / run
+    -s, --scheme SCHEME              Build and run specific tests on given workspace scheme
+    -d, --hardwareID ID              hardware id of device to run on instead of simulator
+    -q, --sdk SDK                    SDK to build against   ::   Defaults to "iphonesimulator"
+  ---------------------------------------------------------------------------------
+    -x, --entryPoint LABEL           The execution entry point {runTestsByTag, runTestsByName, describe}   ::   Defaults to "runTestsByTag"
     -t, --tags-any TAGSANY           Run tests with any of the given tags
     -o, --tags-all TAGSALL           Run tests with all of the given tags
     -n, --tags-none TAGSNONE         Run tests with none of the given tags
-    -s, --scheme SCHEME              Build and run specific tests on given workspace scheme
-    -j, --jsonSettingsPath PATH      path to JSON file containing custom configuration parameters
-    -d, --hardwareID ID              hardware id of device you run on
     -i, --implementation IMPL        Device tests implementation
-    -q, --sdk SDK                    SDK to build against        Defaults to "iphonesimulator"
   ---------------------------------------------------------------------------------
-    -b, --simDevice DEVICE           Run on given simulated device        Defaults to "iPhone 5"
-    -z, --simVersion VERSION         Run on given simulated iOS version        Defaults to "8.2"
-    -l, --simLanguage LANGUAGE       Run on given simulated iOS language        Defaults to "en"
-  ---------------------------------------------------------------------------------
-    -B, --skip-automate              Don't automate; build only        Defaults to "false"
-    -f, --skip-build                 Just automate; assume already built        Defaults to "false"
-    -e, --skip-set-sim               Assume that simulator has already been chosen and properly reset        Defaults to "false"
-    -k, --skip-kill-after            Do not kill the simulator after the run        Defaults to "false"
-  ---------------------------------------------------------------------------------
-    -c, --coverage                   Generate coverage files        Defaults to "false"
     -r, --retest OPTIONS             Immediately retest failed tests with comma-separated options {1x, solo}
-    -v, --verbose                    Show verbose output
-    -m, --timeout TIMEOUT            startup timeout        Defaults to "30"
+    -v, --verbose                    Show verbose output from instruments
+    -m, --timeout TIMEOUT            Seconds to wait for instruments tool to start tests   ::   Defaults to "30"
     -w, --random-seed SEED           Randomize test order based on given integer seed
+  ---------------------------------------------------------------------------------
+    -b, --simDevice DEVICE           Run on given simulated device   ::   Defaults to "iPhone 5"
+    -z, --simVersion VERSION         Run on given simulated iOS version   ::   Defaults to "8.2"
+    -l, --simLanguage LANGUAGE       Run on given simulated iOS language   ::   Defaults to "en"
+  ---------------------------------------------------------------------------------
+    -B, --skip-automate              Don't automate; build only   ::   Defaults to "false"
+    -f, --skip-build                 Just automate; assume already built   ::   Defaults to "false"
+    -e, --skip-set-sim               Assume that simulator has already been chosen and properly reset   ::   Defaults to "false"
+    -k, --skip-kill-after            Leave the simulator open after the run   ::   Defaults to "false"
+  ---------------------------------------------------------------------------------
     -h, --help                       Show this help message
+
 ```
 
 By simply pointing to your top-level Javascript file, this script can serve your needs for testing.

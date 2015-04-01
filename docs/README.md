@@ -105,6 +105,7 @@ You don't. The Illuminator [command line scripts](Commandline.md) handle this fo
 
 Further Documentation
 ---------------------
+* [Slow start guide - practical introduction](PracticalIntroduction.md)
 * [Selecting elements](Selectors.md)
 * [Working with elements](Extensions.md)
 * [Defining screens](AppMap.md)

@@ -45,7 +45,7 @@ For an example of this, see the [Quick Start guide](README.md).
 Note 1:
 > All **target**s must be defined for a screen before the first **action** is defined.
 
-Note 2: 
+Note 2:
 > The AppMap adds two special **action**s to each **screen** automatically: `verifyIsActive` and `verifyNotActive`.  These actions assert that the given screen is respectively active or not active  (based on the `isActiveFn` provided to `.onTarget`) -- throwing exceptions otherwise.  A `verifyIsActive` assertion is run implicitly before any action defined with `.withAction`, so it is most commonly used to verify that the last step of an automation test ended on the appropriate screen.
 
 Note 3:
@@ -111,8 +111,8 @@ Use the given function `actionFunction` as the implementation for the current ac
 
 Notes on `actionFunction`s
 
-* If a parameterized action function is desired for an implementation, that function may take a single argument -- an associative array containing the named parameters.  
-* It is acceptable to use a no-argument function for an implementation if no parameters are required.  
+* If a parameterized action function is desired for an implementation, that function may take a single argument -- an associative array containing the named parameters.
+* It is acceptable to use a no-argument function for an implementation if no parameters are required.
 * Any return value of action functions is ignored.
 
 One further note on implementation of actions:
@@ -195,3 +195,29 @@ Return a function (taking no arguments) that `.vtap(4)`s the element returned by
 
 #### `.selector.verifyExists(retryDelay, parentSelector)`
 Return a function (taking an object with fields {`selector`: [selector](Selectors.md)} as its only argument) that asserts the existence of the element returned by the [selector](Selectors.md) relative to the element returned by the `parentSelector`.
+
+
+The Illuminator "Application" And Its Actions
+=============================================
+
+For some of the most common debugging operations, Illuminator defines its own "app" and exposes them via `appmap.apps["Illuminator"]`.  Here are the available actions, and their parameters.
+
+* **captureElementTree** (parameterized): Take individual screenshots of all screen elements
+    * `imageBaseName`: The base name for the image files
+* **debug** (parameterized): Print the results of a debug function
+    * `debug_fn`: Function returning a string.  This will be evauluated just-in-time.
+* **delay** (parameterized): Delay a given amount of time
+    * `seconds`: Number of seconds to delay
+* **fail**: Unconditionally fail the current test for debugging purposes
+* **logAccessors** (parameterized): Log the list of valid element accessors
+    * `delay` (optional): Number of seconds to delay before logging
+    * `visibleOnly` (optional): Whether to log only the visible elements
+* **logTree**: Log the UI element tree; a wrapper for the UIAutomation function `logElementTree`.
+* **verifyScreenshot** (parameterized): Validate a screenshot against a png template of the expected view
+    * `allowedPercent` (optional): The maximum percentage of pixels that are allowed to differ (default 0)
+    * `allowedPixels` (optional): The maximum number of pixels that are allowed to differ (default 0)
+    * `captureTitle`: The title of the screenshot to capture
+    * `deferFailure` (optional): Whether to defer a failure until the end of the test
+    * `delay` (optional): The amount of time to delay before taking the screenshot
+    * `maskPath`: The path to the file that masks transient portions of the 'expected' view (e.g. the clock, blinking cursors, etc)
+    * `masterPath`: The path to the file that is considered the 'expected' view

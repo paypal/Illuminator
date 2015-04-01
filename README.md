@@ -37,6 +37,7 @@ Installation
 Further Documentation
 ---------------------
 * [Quick start guide](docs/README.md)
+* [Slow start guide - practical introduction](docs/PracticalIntroduction.md)
 * [Selecting elements](docs/Selectors.md)
 * [Working with elements](docs/Extensions.md)
 * [Defining screens](docs/AppMap.md)
