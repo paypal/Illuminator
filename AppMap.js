@@ -21,7 +21,7 @@ var debugAppmap = false;
     }
 
     // Exception classes
-    appmap.SetupException = makeErrorClassWithGlobalLocator("AppMap.js", "AppMapSetupException");
+    appmap.SetupException = makeErrorClassWithGlobalLocator(__file__(), "AppMapSetupException");
     appmap.ParameterException = makeErrorClass("AppMapParameterException");
 
     // internal variables

@@ -22,7 +22,7 @@ var debugAutomator = false;
     //
     ////////////////////////////////////////////////////////////////////////////////////////////
 
-    automator.ScenarioSetupException = makeErrorClassWithGlobalLocator("Automator.js", "ScenarioSetupException");
+    automator.ScenarioSetupException = makeErrorClassWithGlobalLocator(__file__(), "ScenarioSetupException");
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////

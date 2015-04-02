@@ -105,6 +105,16 @@ function getStackTrace() {
 }
 
 /**
+ * Get the filename of the current file being executed
+ *
+ * @return the filename
+ */
+function __file__() {
+    // just ask for the 1st position on stack, after the __file__ call itself
+    return getStackTrace()[1].file;
+}
+
+/**
  * Shortcut to defining simple error classes
  *
  * @param className string name for the new error class
