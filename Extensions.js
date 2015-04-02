@@ -115,6 +115,18 @@ function __file__() {
 }
 
 /**
+ * Get the name of the current function being executed
+ *
+ * @param offset integer whether to
+ * @return the function name
+ */
+function __function__(offset) {
+    offset = offset || 0;
+    // just ask for the 1st position on stack, after the __function__ call itself
+    return getStackTrace()[1 + offset].functionName;
+}
+
+/**
  * Shortcut to defining simple error classes
  *
  * @param className string name for the new error class
@@ -185,6 +197,13 @@ function mainWindow() {
     var ret = UIATarget.localTarget().frontMostApp().mainWindow();
     ret._accessor = "mainWindow()";
     return ret;
+}
+
+/**
+ * shortcut function to get UIATarget.host()
+ */
+function host() {
+    return UIATarget.localTarget().host();
 }
 
 /**
@@ -1538,6 +1557,149 @@ extendPrototype(UIAApplication, {
                                               [UIA_DEVICE_ORIENTATION_LANDSCAPELEFT, UIA_DEVICE_ORIENTATION_LANDSCAPERIGHT]);
     }
 });
+
+
+extendPrototype(UIAHost, {
+
+    /**
+     * Execute a shell command as if it was a function
+     *
+     * If the command doesn't return succss, raise an error with the from the shell as if it was from a Javascript function
+     *
+     * @param command the command to run
+     * @param args an array of arguments
+     * @param timeout the timeout for the command
+     */
+    shellAsFunction: function (command, args, timeout) {
+        var result = this.performTaskWithPathArgumentsTimeout(command, args, timeout);
+
+        // be verbose if something didn't go well
+        if (0 != result.exitCode) {
+            var owner = __function__(1); // not this function, but the calling function
+            throw new Error(owner + " failed: " + result.stderr);
+        }
+        return result.stdout;
+    },
+
+    /**
+     * Attempt to parse JSON, raise helpful error if it fails, containing the calling function name
+     *
+     * @param maybeJSON string that should contain JSON
+     * @return object
+     */
+    _guardedJSONParse: function (maybeJSON) {
+        try {
+            return JSON.parse(maybeJSON);
+        } catch(e) {
+            var owner = __function__(1);
+            throw new Error(owner + " gave bad JSON: ```" + maybeJSON + "```");
+        }
+    },
+
+    /**
+     * Read data from a file
+     *
+     * @param path the path that should be read
+     * @return string the file contents
+     */
+    readFromFile: function (path) {
+        return this.shellAsFunction("/bin/cat", [path], 10);
+    },
+
+    /**
+     * Read JSON data from a file
+     *
+     * @param path the path that should be read
+     * @return object
+     */
+    readJSONFromFile: function (path) {
+        return this._guardedJSONParse(this.readFromFile(path));
+    },
+
+    /**
+     * Read JSON data from a plist file
+     *
+     * @param path the path that should be read
+     * @return object
+     */
+    readJSONFromPlistFile: function (path) {
+        var scriptPath = IlluminatorRootDirectory + "/scripts/plist_to_json.sh";
+        UIALogger.logDebug("Running " + scriptPath + " '" + path + "'");
+
+        return this._guardedJSONParse(this.shellAsFunction(scriptPath, [path], 10));
+    },
+
+
+    /**
+     * Write data to a file
+     *
+     * @param path the path that should be (over)written
+     * @data the data of the file to write in string format
+     */
+    writeToFile: function (path, data) {
+        // type check
+        switch (typeof data) {
+        case "string": break;
+        default: throw new TypeError("writeToFile expected data in string form, got type " + (typeof data));
+        }
+
+        var chunkSize = Math.floor(262144 * 0.74) - (path.length + 100); // `getconf ARG_MAX`, adjusted for b64
+
+        var writeHelper = function (b64stuff, outputPath) {
+            var result = target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c",
+                                                                                         "echo \"$0\" | base64 -D -o \"$1\"",
+                                                                                         b64stuff,
+                                                                                         outputPath], 5);
+
+            // be verbose if something didn't go well
+            if (0 != result.exitCode) {
+                UIALogger.logDebug("Exit code was nonzero: " + result.exitCode);
+                UIALogger.logDebug("SDOUT: " + result.stdout);
+                UIALogger.logDebug("STDERR: " + result.stderr);
+                UIALogger.logDebug("I tried this command: ");
+                UIALogger.logDebug("/bin/sh -c \"echo \\\"\\$0\\\" | base64 -D -o \\\"\\$1\\\" " + b64stuff + " " + outputPath);
+                return false;
+            }
+            return true;
+        }
+
+        var result = true;
+        if (data.length < chunkSize) {
+            var b64data = Base64.encode(data);
+            UIALogger.logDebug("Writing " + data.length + " bytes to " + path + " as " + b64data.length + " bytes of b64");
+            result = result && writeHelper(b64data, path);
+
+        } else {
+            // split into chunks to avoid making the command line too long
+            splitRegex = function(str, len) {
+                var regex = new RegExp('[\\s\\S]{1,' + len + '}', 'g');
+                return str.match(regex);
+            }
+
+            // write each chunk to a file
+            var chunks = splitRegex(data, chunkSize);
+            var chunkFiles = [];
+            for (var i = 0; i < chunks.length; ++i) {
+                var chunk = chunks[i];
+                var chunkFile = path + ".chunk" + i;
+                var b64data = Base64.encode(chunk);
+                UIALogger.logDebug("Writing " + chunk.length + " bytes to " + chunkFile + " as " + b64data.length + " bytes of b64");
+                result = result && writeHelper(b64data, chunkFile);
+                chunkFiles.push(chunkFile);
+            }
+
+            // concatenate all the chunks
+            var unchunkCmd = "cat \"" + chunkFiles.join("\" \"") + "\" > \"$0\"";
+            UIALogger.logDebug("Concatenating and deleting " + chunkFiles.length + " chunks, writing " + path);
+            target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c", unchunkCmd, path], 5);
+            target().host().performTaskWithPathArgumentsTimeout("/bin/rm", chunkFiles, 5);
+        }
+
+        return result;
+    }
+
+});
+
 
 extendPrototype(UIATarget, {
 

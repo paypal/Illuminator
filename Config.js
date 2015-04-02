@@ -57,7 +57,7 @@
         "customJSConfigPath": false,
     };
 
-    var jsonConfig = getJSONData(IlluminatorBuildArtifactsDirectory + "/IlluminatorGeneratedConfig.json");
+    var jsonConfig = host().readJSONFromFile(IlluminatorBuildArtifactsDirectory + "/IlluminatorGeneratedConfig.json");
     // check for keys we don't expect
     for (var k in jsonConfig) {
         if (expectedKeys[k] === undefined) {
@@ -78,7 +78,7 @@
     IlluminatorInstrumentsOutputDirectory
     // handles globbing of a path that may have spaces in it, assumes newest directory is the run directory
     var findMostRecentDirCmd = 'eval ls -1td "' + IlluminatorInstrumentsOutputDirectory + '/Run*" | head -n 1';
-    var output = target().host().performTaskWithPathArgumentsTimeout("/bin/bash", ["-c", findMostRecentDirCmd], 5);
+    var output = host().shellAsFunction("/bin/bash", ["-c", findMostRecentDirCmd], 5);
     config.screenshotDir = output.stdout;
 
     // create temp dir for build artifacts and note path names
