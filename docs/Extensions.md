@@ -14,6 +14,9 @@ Returns a fresh reference to `UIATarget.localTarget()`.
 #### `mainWindow()`
 Returns a fresh reference to `UIATarget.localTarget().frontMostApp().mainWindow()`.
 
+#### `host()`
+Returns a fresh reference to `UIATarget.localTarget().host()`.
+
 #### `delay()`
 Shortcut to `UIATarget.localTarget().delay()`.
 
@@ -48,6 +51,14 @@ The objects in the `stack` array have fields as follows:
 
 #### `getStackTrace()`
 Return the current stack trace (minus this function itself) at any point in code.  The return value is the same format as the `stack` field from `decodeStackTrace()`
+
+#### `__file__()`
+Return the file containing this line.
+
+#### `__function__()`
+Return the name of the function containing this line.
+
+
 
 
 Exceptions Reference
@@ -260,3 +271,22 @@ Wait `timeout` seconds for `.isVisible()` on this element to be equal to `visibi
 Same as `.withName(name)` for UIAElementArray objects, but does a regular expression match on the given `pattern`.
 
 
+UIAHost Method Extensions Reference
+-----------------------------------
+
+The following methods are available for UIAHost objects
+
+#### `.readFromFile(path)`
+Read the contents of the host filesystem's file at `path`, and return it as a string.  Raises a helpful exception if the file cannot be read.
+
+#### `.readJSONFromFile(path)`
+Read the contents of the host filesystem's file at `path`, and parse it into a JSON object.  Raises a helpful exception if the file cannot be read, and a different exception if the file does not contain JSON.
+
+#### `.readJSONFromPlistFile(path)`
+Read the contents of the host filesystem's file at `path`, convert it from a plist file to a JSON file, and parse it into a JSON object.  Raises a helpful exception if the file cannot be read, and a different exception if the converted file does not contain JSON.
+
+#### `.shellAsFunction(command, args, timeout)`
+This is a wrapper for `performTaskWithPathArgumentsTimeout`, using identical arguments to that function.  If the shell command returns a nonzero exit code, an exception will be thrown that contains any text from the shell's STDERR.
+
+#### `.writeToFile(path, data)`
+Replace the contents of the host filesystem's file at `path` with `data`, returning a boolean of whether this operation was successful.

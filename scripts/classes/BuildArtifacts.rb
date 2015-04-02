@@ -93,11 +93,6 @@ class BuildArtifacts
     "#{@_root}/IlluminatorGeneratedConfig.json"
   end
 
-  def illuminatorCustomConfigFile(skipSetup = false)
-    self._setupAndUse @_root, skipSetup
-    "#{@_root}/IlluminatorCustomConfig.json"
-  end
-
   def junitReportFile(skipSetup = false)
     self._setupAndUse @_root, skipSetup
     "#{@_root}/IlluminatorJUnitReport.xml"

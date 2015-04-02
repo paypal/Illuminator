@@ -93,7 +93,6 @@ class IlluminatorParser < OptionParser
 
     illuminatorOptions.javascript.testPath       = @_options["testPath"] unless @_options["testPath"].nil?
     illuminatorOptions.javascript.implementation = @_options["implementation"] unless @_options["implementation"].nil?
-    illuminatorOptions.javascript.customConfig   = JSON.parse(IO.read(@_options["customSettingsJSONPath"])) unless @_options["customSettingsJSONPath"].nil?
 
     knownKeys = IlluminatorParserFactory.new.letterMap.values # get option keynames from a plain vanilla factory
 

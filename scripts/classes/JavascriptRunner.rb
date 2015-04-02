@@ -18,13 +18,12 @@ class JavascriptRunner
   attr_accessor :simVersion
   attr_accessor :hardwareID
   attr_accessor :randomSeed
-  attr_accessor :customJSConfig
-  attr_accessor :customJSConfigPath
   attr_accessor :tagsAny
   attr_accessor :tagsAll
   attr_accessor :tagsNone
   attr_accessor :scenarioList
   attr_accessor :scenarioNumberOffset # for consistent numbering after restarts
+  attr_accessor :appSpecificConfig
 
   def initialize
     @tagsAny        = Array.new(0)
@@ -46,12 +45,12 @@ class JavascriptRunner
       'automatorDesiredSimVersion'   => @simVersion,
       'hardwareID'                   => @hardwareID,
       'automatorSequenceRandomSeed'  => @randomSeed,
-      'customJSConfigPath'           => @customJSConfigPath,
       'automatorTagsAny'             => @tagsAny,
       'automatorTagsAll'             => @tagsAll,
       'automatorTagsNone'            => @tagsNone,
       'automatorScenarioNames'       => @scenarioList,
       'automatorScenarioOffset'      => @scenarioNumberOffset,
+      'customConfig'                 => @appSpecificConfig,
     }
 
     keyDefs.each do |key, value|
@@ -74,13 +73,6 @@ class JavascriptRunner
 
     self.renderTemplate '/../resources/IlluminatorGeneratedRunnerForInstruments.erb', BuildArtifacts.instance.illuminatorJsRunner
     self.renderTemplate '/../resources/IlluminatorGeneratedEnvironment.erb', BuildArtifacts.instance.illuminatorJsEnvironment
-
-    if @customJSConfig.nil?
-      @fullConfig["customJSConfigPath"] = nil
-    else
-      HostUtils.saveJSON(@customJSConfig, @customJSConfigPath)
-    end
-
 
     HostUtils.saveJSON(@fullConfig, BuildArtifacts.instance.illuminatorConfigFile)
   end

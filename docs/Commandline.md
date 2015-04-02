@@ -227,7 +227,7 @@ The location of the compiled application that Instruments will automate.  This o
 #### `options.javascript.testPath` (string)
 The location of the Javascript file containing your top-level entry point.  This file should define (or import) all the tests that you have defined.  The specific tests to run will be determined by the `entryPoint`.
 
-#### `options.javascript.customConfig` (hash)
+#### `options.javascript.appSpecificConfig` (hash)
 A hash of values that will be passed into the Javascript environment, made available under `config.customConfig`.  Yes, **Illuminator can pass structured values directly from Ruby, through Instruments, into Javascript**.
 
 #### `options.javascript.implementation` (string)
@@ -251,7 +251,7 @@ workspace = Dir.pwd
 # Set up the default parser
 parserFactory = IlluminatorParserFactory.new
 
-# Prepare the parser.  We will add the switch -g, aka --word-starting-with-g 
+# Prepare the parser.  We will add the switch -g, aka --word-starting-with-g
 #   and override -p, aka --ipad to be a simple switch for iPad testing
 
                        # default values for all the named switches
@@ -276,7 +276,7 @@ options.javascript.testPath = HostUtils.realpath("path/to/my/AllTests.js")
 # Storing our custom value in custom javascript config
 storage = {}
 storage["gWord"] = options.appSpecific["word-starting-with-g"]
-options.javascript.customConfig = storage
+options.javascript.appSpecificConfig = storage
 
 # Setting up several settings at once if iPad was specfied##########################################
 

@@ -10,8 +10,8 @@ function IlluminatorIlluminate() {
     assertDesiredSimVersion();
 
     // send test definitions back to framework
-    if (!writeToFile(config.buildArtifacts.automatorScenarioJSON,
-                     JSON.stringify(automator.toScenarioObject(false), null, "    ")))
+    if (!host().writeToFile(config.buildArtifacts.automatorScenarioJSON,
+                            JSON.stringify(automator.toScenarioObject(false), null, "    ")))
     {
         throw new IlluminatorSetupException("Could not save necessary build artifact to " +
                                             config.buildArtifacts.automatorScenarioJSON);
@@ -45,11 +45,11 @@ function IlluminatorIlluminate() {
         var appMapMarkdownPath    = config.buildArtifacts.appMapMarkdown;
         var automatorMarkdownPath = config.buildArtifacts.automatorMarkdown;
         var automatorJSONPath     = config.buildArtifacts.automatorJSON;
-        writeToFile(appMapMarkdownPath, appmap.toMarkdown());
+        host().writeToFile(appMapMarkdownPath, appmap.toMarkdown());
         UIALogger.logMessage("Wrote AppMap definitions to " + appMapMarkdownPath);
-        writeToFile(automatorMarkdownPath, automator.toMarkdown());
+        host().writeToFile(automatorMarkdownPath, automator.toMarkdown());
         UIALogger.logMessage("Wrote automator definitions to " + automatorMarkdownPath);
-        writeToFile(automatorJSONPath, JSON.stringify(automator.toScenarioObject(true), null, "    "));
+        host().writeToFile(automatorJSONPath, JSON.stringify(automator.toScenarioObject(true), null, "    "));
         UIALogger.logMessage("Wrote automator definition data to " + automatorJSONPath);
         break;
 

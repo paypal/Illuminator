@@ -212,8 +212,7 @@ class AutomationRunner
     jsConfig.simDevice           = options.simulator.device
     jsConfig.simVersion          = options.simulator.version
 
-    jsConfig.customJSConfig      = options.javascript.customConfig
-    jsConfig.customJSConfigPath  = BuildArtifacts.instance.illuminatorCustomConfigFile
+    jsConfig.appSpecificConfig   = options.javascript.appSpecificConfig
 
     # don't offset the numbers this time
     jsConfig.scenarioNumberOffset = 0

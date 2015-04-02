@@ -585,7 +585,7 @@ var debugAutomator = false;
         }
 
         var intendedListPath = config.buildArtifacts.intendedTestList;
-        if (!writeToFile(intendedListPath, JSON.stringify({scenarioNames: names}, null, "    "))) {
+        if (!host().writeToFile(intendedListPath, JSON.stringify({scenarioNames: names}, null, "    "))) {
             throw new IlluminatorRuntimeFailureException("Could not save intended test list to " + intendedListPath);
         }
 
@@ -608,7 +608,7 @@ var debugAutomator = false;
             totalSelectorTime += rec.time;
             csvLines.push(rec.time.toString() + "," + rec.hits + "," + (rec.time / rec.hits) + ",\"" + rec.criteria.replace(/"/g, '""') + '"');
         }
-        if (writeToFile(selectorReportCsvPath, csvLines.join("\n"))) {
+        if (host().writeToFile(selectorReportCsvPath, csvLines.join("\n"))) {
             UIALogger.logMessage("Overall time spent evaluating soft selectors: " + secondsToHMS(totalSelectorTime)
                                  + " - full report at " + selectorReportCsvPath);
         }

@@ -26,14 +26,6 @@
         case "automatorSequenceRandomSeed":
             config.automatorSequenceRandomSeed = parseInt(value);
             break;
-        case "customJSConfigPath":
-            if (null === value) break;
-            try {
-                config.customConfig = getJSONData(value)
-            } catch (e) {
-                throw new IlluminatorSetupException(key + " of '" + value + "' couldn't be parsed as JSON; error was: " + e);
-            }
-            break;
         default:
             config[key] = value;
         }
@@ -54,10 +46,10 @@
         "automatorScenarioNames": false,
         "automatorSequenceRandomSeed": false,
         "automatorScenarioOffset": true,
-        "customJSConfigPath": false,
+        "customConfig": false,
     };
 
-    var jsonConfig = getJSONData(IlluminatorBuildArtifactsDirectory + "/IlluminatorGeneratedConfig.json");
+    var jsonConfig = host().readJSONFromFile(IlluminatorBuildArtifactsDirectory + "/IlluminatorGeneratedConfig.json");
     // check for keys we don't expect
     for (var k in jsonConfig) {
         if (expectedKeys[k] === undefined) {
@@ -78,7 +70,7 @@
     IlluminatorInstrumentsOutputDirectory
     // handles globbing of a path that may have spaces in it, assumes newest directory is the run directory
     var findMostRecentDirCmd = 'eval ls -1td "' + IlluminatorInstrumentsOutputDirectory + '/Run*" | head -n 1';
-    var output = target().host().performTaskWithPathArgumentsTimeout("/bin/bash", ["-c", findMostRecentDirCmd], 5);
+    var output = host().shellAsFunction("/bin/bash", ["-c", findMostRecentDirCmd], 5);
     config.screenshotDir = output.stdout;
 
     // create temp dir for build artifacts and note path names
