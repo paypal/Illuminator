@@ -26,14 +26,6 @@
         case "automatorSequenceRandomSeed":
             config.automatorSequenceRandomSeed = parseInt(value);
             break;
-        case "customJSConfigPath":
-            if (null === value) break;
-            try {
-                config.customConfig = getJSONData(value)
-            } catch (e) {
-                throw new IlluminatorSetupException(key + " of '" + value + "' couldn't be parsed as JSON; error was: " + e);
-            }
-            break;
         default:
             config[key] = value;
         }
@@ -54,7 +46,7 @@
         "automatorScenarioNames": false,
         "automatorSequenceRandomSeed": false,
         "automatorScenarioOffset": true,
-        "customJSConfigPath": false,
+        "customConfig": false,
     };
 
     var jsonConfig = host().readJSONFromFile(IlluminatorBuildArtifactsDirectory + "/IlluminatorGeneratedConfig.json");

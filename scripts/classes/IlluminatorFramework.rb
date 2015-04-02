@@ -92,20 +92,13 @@ class IlluminatorFramework
   end
 
   # overrideOptions is a lambda function that acts on the options object
-  # overrideCustomOptions is a lambda function that acts on the custom options object
-  def self.reRun(configPath, workspace, overrideOptions = nil, overrideJavascriptCustomConfig = nil)
+  def self.reRun(configPath, workspace, overrideOptions = nil)
 
     # load config from supplied path
     jsonConfig = IO.read(configPath)
 
     # process any overrides
     options = overrideOptions.(IlluminatorOptions.new(JSON.parse(jsonConfig))) unless overrideOptions.nil?
-
-    # process the custom javascript config
-    javascriptCustomConfig = JSON.parse(jsonConfig)["javascript"]["customConfig"]
-    unless javascriptCustomConfig.nil?
-      options.javascript.customConfig = overrideJavascriptCustomConfig.(javascriptCustomConfig)
-    end
 
     return self.runWithOptions options, workspace
   end
