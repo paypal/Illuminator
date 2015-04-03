@@ -50,7 +50,7 @@ class JavascriptRunner
       'automatorTagsNone'            => @tagsNone,
       'automatorScenarioNames'       => @scenarioList,
       'automatorScenarioOffset'      => @scenarioNumberOffset,
-      'customConfig'                 => @appSpecificConfig,
+      'customConfig'                 => (@appSpecificConfig.is_a? Hash) ? @appSpecificConfig : @appSpecificConfig.to_h,
     }
 
     keyDefs.each do |key, value|
