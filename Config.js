@@ -40,6 +40,7 @@
         "automatorDesiredSimDevice": true,
         "automatorDesiredSimVersion": true,
         "hardwareID": false,
+        "targetDeviceID": true,
         "automatorTagsAny": false,
         "automatorTagsAll": false,
         "automatorTagsNone": false,

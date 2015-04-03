@@ -11,6 +11,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), '/HostUtils.rb')
 class JavascriptRunner
 
   attr_reader   :saltinel # the salted sentinel
+  attr_accessor :targetDeviceID
   attr_accessor :entryPoint
   attr_accessor :testPath
   attr_accessor :implementation
@@ -44,6 +45,7 @@ class JavascriptRunner
       'automatorDesiredSimDevice'    => @simDevice,
       'automatorDesiredSimVersion'   => @simVersion,
       'hardwareID'                   => @hardwareID,
+      'targetDeviceID'               => @targetDeviceID,
       'automatorSequenceRandomSeed'  => @randomSeed,
       'automatorTagsAny'             => @tagsAny,
       'automatorTagsAll'             => @tagsAll,
