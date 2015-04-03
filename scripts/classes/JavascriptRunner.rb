@@ -5,6 +5,7 @@ require 'socket'
 require 'digest/sha1'
 require File.join(File.expand_path(File.dirname(__FILE__)), '/BuildArtifacts.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), '/HostUtils.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '/XcodeUtils.rb')
 
 # Class to handle all configuration relating to the javascript environment
 # "runner" is a bit of a misnomer (this runs as part of instruments) but without this code, nothing runs
@@ -46,6 +47,7 @@ class JavascriptRunner
       'automatorDesiredSimVersion'   => @simVersion,
       'hardwareID'                   => @hardwareID,
       'targetDeviceID'               => @targetDeviceID,
+      'xcodePath'                    => XcodeUtils.instance.getXcodePath,
       'automatorSequenceRandomSeed'  => @randomSeed,
       'automatorTagsAny'             => @tagsAny,
       'automatorTagsAll'             => @tagsAll,

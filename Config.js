@@ -41,6 +41,7 @@
         "automatorDesiredSimVersion": true,
         "hardwareID": false,
         "targetDeviceID": true,
+        "xcodePath": true,
         "automatorTagsAny": false,
         "automatorTagsAll": false,
         "automatorTagsNone": false,
