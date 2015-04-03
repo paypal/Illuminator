@@ -19,6 +19,10 @@ then
     exit
 fi
 
+# check existence of file, exit if it doesn't exist
+ls "$1" 1>/dev/null
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
 # create temp file for the result
 mycmd=$(basename $0)
 tmpfile=$(mktemp -t "$mycmd.")
