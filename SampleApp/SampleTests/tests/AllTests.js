@@ -12,7 +12,7 @@ function printCallbackArgs(sourceName) {
 }
 
 automator.setCallbackPreScenario(function (parameters) {
-    bridge.runNativeMethod("returnToMainMenu");
+    bridge.runNativeMethod("resetToMainMenu");
 });
 
 // for informational purposes, we'll just print out the parameters that each callback receives

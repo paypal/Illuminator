@@ -14,7 +14,7 @@ Let's bootstrap a project -- the Illuminator sample app.
 Important Questions To Ask
 --------------------------
 
-Since we plan on running more than one automated test in a row against the app, we need a way to return the app to a known state -- no matter what!  One of the simplest ways to do this is to simply connect a reset function to an action that is available on all the screens (like the shake gesture).  At PayPal, we use a [bridge call](Bridge.md) named `resetToLogin:`.  The included sample app uses a bridge call named `returnToMainMenu:`.  Any action that can be invoked from any app state is acceptable, and must be tied to application code that returns the app to a known state.  **How will you implement this in your app?**
+Since we plan on running more than one automated test in a row against the app, we need a way to return the app to a known state -- no matter what!  One of the simplest ways to do this is to simply connect a reset function to an action that is available on all the screens (like the shake gesture).  At PayPal, we use a [bridge call](Bridge.md) named `resetToLogin:`.  The included sample app uses a bridge call named `resetToMainMenu:`.  Any action that can be invoked from any app state is acceptable, and must be tied to application code that returns the app to a known state.  **How will you implement this in your app?**
 
 Since different devices can cause subtle changes in the behavior of any app, it may be necessary to perform the same action in slightly different ways.  Alternatively, two separate compilation targets (iPhone and iPad) may produce 2 separate apps but share a large amount of code -- allowing a large amount of shared automation code.  At PayPal, these translate into the automation target implementations `iPhone` and `iPad`.  These labels are completely arbitrary; they are functionally unrelated to the device names.  They could just as well be called `phone` and `tablet`, or be split into more functional variants like `short iPhone`, `tall iPhone`, `tablet`, and `phablet`.  **How many screen-specific variants of your app did you write?**
 
@@ -22,7 +22,7 @@ Since different devices can cause subtle changes in the behavior of any app, it 
 Laying Out the Basic Structure
 ------------------------------
 
-The recommended filesystem structure for an Illuminator-powered automation project is as follows.  We assume that at least one bridge call will be used (`returnToMainMenu:`), and that there is only one target, called `iPhone`.
+The recommended filesystem structure for an Illuminator-powered automation project is as follows.  We assume that at least one bridge call will be used (`resetToMainMenu:`), and that there is only one target, called `iPhone`.
 
 ```
 ./MyApp/IlluminatorTests/
@@ -81,7 +81,7 @@ appmap.createOrAugmentApp("SampleApp").withScreen("bridge")
     .onTarget("iPhone", function () { return true; }) // the bridge "screen" is always active -- it is unconditionally accessible
 
     .withAction("resetToHomeScreen", "forcibly return the app to the home screen in an initial state")
-    .withImplementation(bridge.makeActionFunction("returnToMainMenu:"));       // we changed the name on purpose so you can see how it works
+    .withImplementation(bridge.makeActionFunction("resetToMainMenu:"));       // we changed the name on purpose so you can see how it works
 ```
 
 
@@ -103,7 +103,7 @@ function printCallbackArgs(sourceName) {
 }
 
 automator.setCallbackPreScenario(function (parameters) {
-    bridge.runNativeMethod("returnToMainMenu");
+    bridge.runNativeMethod("resetToMainMenu");
 });
 
 // for informational purposes, we'll just print out the parameters that each callback receives
@@ -165,8 +165,8 @@ Waiting for device to boot...
 2015-03-31 16:29:53 +0000 Debug: (No previous test)
 2015-03-31 16:29:53 +0000 Debug: ----------------------------------------------------------------
 2015-03-31 16:29:53 +0000 Default: STEP 0: Reset automator for new scenario
-2015-03-31 16:29:53 +0000 Debug: Bridge running native method via 'Bridge_call_1': selector='returnToMainMenu', arguments=''
-2015-03-31 16:29:53 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=returnToMainMenu
+2015-03-31 16:29:53 +0000 Debug: Bridge running native method via 'Bridge_call_1': selector='resetToMainMenu', arguments=''
+2015-03-31 16:29:53 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
 2015-03-31 16:29:54 +0000 Debug: ----------------------------------------------------------------
 2015-03-31 16:29:54 +0000 Default: STEP 1 of 1: (SampleApp.homeScreen.verifyIsActive) Null op to verify that the homeScreen screen is active
 2015-03-31 16:29:54 +0000 Debug: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -260,7 +260,7 @@ Result: !
 There are a few notable bits in this output.
 
 * `Start: The most basic of all tests` - our test was executed
-* `Default: STEP 0: Reset automator for new scenario` followed by `Bridge running native method via 'Bridge_call_1': selector='returnToMainMenu', arguments=''` - our pre-scenario callback is being executed
+* `Default: STEP 0: Reset automator for new scenario` followed by `Bridge running native method via 'Bridge_call_1': selector='resetToMainMenu', arguments=''` - our pre-scenario callback is being executed
 * `STEP 1 of 1: (SampleApp.homeScreen.verifyIsActive) Null op to verify that the homeScreen screen is active` - the only step in our scenario is executing
 
 Then, there is the failure itself: `FAILED: Failed assertion that 'homeScreen' is active`, followed by a lot of output:
@@ -311,8 +311,8 @@ $ ruby scripts/automationTests.rb --scheme AutomatorSampleApp --appName Automato
 2015-03-31 17:15:04 +0000 Debug: (No previous test)
 2015-03-31 17:15:04 +0000 Debug: ----------------------------------------------------------------
 2015-03-31 17:15:04 +0000 Default: STEP 0: Reset automator for new scenario
-2015-03-31 17:15:04 +0000 Debug: Bridge running native method via 'Bridge_call_1': selector='returnToMainMenu', arguments=''
-2015-03-31 17:15:04 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=returnToMainMenu
+2015-03-31 17:15:04 +0000 Debug: Bridge running native method via 'Bridge_call_1': selector='resetToMainMenu', arguments=''
+2015-03-31 17:15:04 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
 2015-03-31 17:15:05 +0000 Debug: ----------------------------------------------------------------
 2015-03-31 17:15:05 +0000 Default: STEP 1 of 1: (SampleApp.homeScreen.verifyIsActive) Null op to verify that the homeScreen screen is active
 2015-03-31 17:15:05 +0000 Pass: The most basic of all tests
@@ -433,8 +433,8 @@ What happens when we run this?
 2015-04-01 17:28:59 +0000 Debug: (No previous test)
 2015-04-01 17:28:59 +0000 Debug: ----------------------------------------------------------------
 2015-04-01 17:28:59 +0000 Default: STEP 0: Reset automator for new scenario
-2015-04-01 17:28:59 +0000 Debug: Bridge running native method via 'Bridge_call_1': selector='returnToMainMenu', arguments=''
-2015-04-01 17:28:59 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/ios-here-newgen/libs/ios-automator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=returnToMainMenu
+2015-04-01 17:28:59 +0000 Debug: Bridge running native method via 'Bridge_call_1': selector='resetToMainMenu', arguments=''
+2015-04-01 17:28:59 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/ios-here-newgen/libs/ios-automator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
 2015-04-01 17:29:00 +0000 Debug: ----------------------------------------------------------------
 2015-04-01 17:29:00 +0000 Default: STEP 1 of 3: (SampleApp.homeScreen.openSearch) Open the element search screen
 2015-04-01 17:29:00 +0000 Debug: target.frontMostApp().mainWindow().tableViews()["Main Menu"].cells()["Searching Elements"].tap()

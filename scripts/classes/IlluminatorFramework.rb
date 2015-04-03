@@ -29,7 +29,9 @@ class IlluminatorFramework
   ################################################################################################
   # MAIN ENTRY POINT
   ################################################################################################
-  def self.runWithOptions(options, workspace)
+  def self.runWithOptions(originalOptions, workspace)
+
+    options = IlluminatorOptions.new(originalOptions.to_h) # immediately create a copy of the options, because we may mangle them
 
     hardwareID = options.illuminator.hardwareID
     appName    = options.xcode.appName

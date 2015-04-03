@@ -8,3 +8,9 @@ automator.createScenario("Wait for an element to appear", ["functional", "smoke"
     .withStep(app.waitForMe.verifyDelayedMessage, {expected: false})
     .withStep(ia.do.delay, {seconds: 5})
     .withStep(app.waitForMe.verifyDelayedMessage, {expected: true, text: "Thanks for waiting"});
+
+automator.createScenario("Visit all app screens", ["smoke"])
+    .withStep(app.homeScreen.openSearch)
+    .withStep(app.searchingElements.back)
+    .withStep(app.homeScreen.openWait)
+    .withStep(app.waitForMe.verifyIsActive)
