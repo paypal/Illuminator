@@ -1,6 +1,7 @@
 ILLUMINATOR - the iOS Automator
 ===============================
 
+
 Illuminator enables [continuous integration](http://en.wikipedia.org/wiki/Continuous_integration) for iOS apps.  It makes it easy (well, easier) to write and debug sophisticated app tests.  Additionally, it makes the entire UIAutomation apparatus more capable of handling high-volume automated testing -- providing features that are missing from Apple's "Instruments" application.
 
 
