@@ -9,6 +9,7 @@
 #ifdef UIAUTOMATION_BUILD
 
 #import "PPAutomationBridge.h"
+#import <UIKit/UIKit.h>
 
 #define PPUIABSTRINGIFY(x) #x
 #define PPUIABTOSTRING(x) PPUIABSTRINGIFY(x)
