@@ -156,6 +156,9 @@ UIAElement Method Extensions Reference
 
 This is a function reference, not a class reference; the classes to which these functions belong will be indicated.
 
+#### `.addPhoto(path)` - UIATarget
+Add the photo at `path` to the target device.
+
 #### `.captureImage(imageName)` - UIAElement
 Capture a screenshot of just this element, using `imageName` as the name for the resultant image file.
 
@@ -170,6 +173,9 @@ Clear the text in the text field.
 
 #### `.clear(inputElement)` - UIAKeyboard
 Clear the text in the input element intelligently; if we are able to see an effect on the value of the input element, press the delete key that number of times. Otherwise, hold the delete button for 3.7 seconds to trigger automatic clearing of the field.
+
+#### `.connectHardwareKeyboard(connected)` - UIATarget
+Set the state of the simulator's hardware keyboard to `connected`.
 
 #### `.customInputMethod()` - UIATextField, UIATextView, UIAStaticText
 Tap the element to bring up the element's custom input method, and return a reference to the input method.
@@ -210,11 +216,17 @@ Returns an associative array of UIAElements matching the `criteria` [selector](S
 #### `.getOneChildElement(selector)` - UIAElement
 Returns one non-nil UIAElement specified by the [`selector`](Selectors.md); throws an exception if 0 or multiple elements are returned.
 
+#### `.iCloudSync()` - UIATarget
+Trigger an iCloud sync on the target device.
+
 #### `.isNotNil()` - UIAElement, UIAElementNil
 Returns true if the element is not `UIAElementNil`.
 
 #### `.isVisible()` - UIAElementNil
 Similar to `.isVisible()` for ordinary UIAElement objects but always returns false.  Provided for compatibility.
+
+#### `.openURL(url)` - UIATarget
+Open a URL on the target device.
 
 #### `.preProcessSelector(selector)` - UIAElement
 This is a prototype function that can be overridden by an app-specific preprocessing function.  Any [`selector`](Selectors.md) that can be passed to any selector evaluation function must pass through this function first, so by overriding this function in your application you can allow new functionality or criteria to be understood.  See the [Selectors appendix](Selectors.md) for an example of this.
