@@ -175,10 +175,11 @@ class XcodeUtils
   end
 
   # use the provided applescript to reset the content and settings of the simulator
-  def self.resetSimulator
-    command = "osascript '#{File.dirname(__FILE__)}/../reset_simulator.applescript'"
+  def resetSimulator deviceID
+    command = "#{self.getXcodeSimctlPath} erase #{deviceID}"
     puts command.green
     puts `#{command}`
+
   end
 
   # remove any apps in the specified directory

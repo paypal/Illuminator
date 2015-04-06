@@ -198,7 +198,8 @@ class AutomationRunner
   def configureJavascriptRunner(options, targetDeviceID)
     jsConfig = @javascriptRunner
 
-    jsConfig.targetDeviceID      = targetDeviceID  # could be either hardware id or sim ID
+    jsConfig.targetDeviceID      = targetDeviceID
+    jsConfig.isHardware          = !(options.illuminator.hardwareID.nil?)
     jsConfig.implementation      = options.javascript.implementation
     jsConfig.testPath            = options.javascript.testPath
 
@@ -208,7 +209,6 @@ class AutomationRunner
     jsConfig.tagsAll             = options.illuminator.test.tags.all
     jsConfig.tagsNone            = options.illuminator.test.tags.none
     jsConfig.randomSeed          = options.illuminator.test.randomSeed
-    jsConfig.hardwareID          = options.illuminator.hardwareID
 
     jsConfig.simDevice           = options.simulator.device
     jsConfig.simVersion          = options.simulator.version
@@ -246,7 +246,7 @@ class AutomationRunner
     @appLocation    = options.instruments.appLocation
     @implementation = options.javascript.implementation
 
-    # set up instruments
+    # set up instruments and get target device ID
     @instrumentsRunner.startupTimeout = options.instruments.timeout
     @instrumentsRunner.hardwareID     = options.illuminator.hardwareID
     @instrumentsRunner.appLocation    = @appLocation
@@ -282,8 +282,11 @@ class AutomationRunner
       @instrumentsRunner.addListener("consoleoutput", PrettyOutput.new)
     end
 
+    # reset the simulator if desired
     XcodeUtils.killAllSimulatorProcesses
-    XcodeUtils.resetSimulator if options.illuminator.hardwareID.nil? and options.illuminator.task.setSim
+    if options.illuminator.hardwareID.nil? and options.illuminator.task.setSim
+      XcodeUtils.instance.resetSimulator targetDeviceID
+    end
 
     startTime = Time.now
 

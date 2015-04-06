@@ -13,12 +13,12 @@ class JavascriptRunner
 
   attr_reader   :saltinel # the salted sentinel
   attr_accessor :targetDeviceID
+  attr_accessor :isHardware
   attr_accessor :entryPoint
   attr_accessor :testPath
   attr_accessor :implementation
   attr_accessor :simDevice
   attr_accessor :simVersion
-  attr_accessor :hardwareID
   attr_accessor :randomSeed
   attr_accessor :tagsAny
   attr_accessor :tagsAll
@@ -45,8 +45,8 @@ class JavascriptRunner
       'implementation'               => @implementation,
       'automatorDesiredSimDevice'    => @simDevice,
       'automatorDesiredSimVersion'   => @simVersion,
-      'hardwareID'                   => @hardwareID,
       'targetDeviceID'               => @targetDeviceID,
+      'isHardware'                   => @isHardware,
       'xcodePath'                    => XcodeUtils.instance.getXcodePath,
       'automatorSequenceRandomSeed'  => @randomSeed,
       'automatorTagsAny'             => @tagsAny,
