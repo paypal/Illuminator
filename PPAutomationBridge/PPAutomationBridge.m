@@ -10,6 +10,10 @@
 
 #import "PPAutomationBridge.h"
 
+#ifndef AUTOMATION_UDID
+#import <UIKit/UIKit.h>
+#endif
+
 #define PPUIABSTRINGIFY(x) #x
 #define PPUIABTOSTRING(x) PPUIABSTRINGIFY(x)
 
@@ -78,15 +82,15 @@ NSStreamDelegate>
 #ifdef AUTOMATION_UDID
         automationUDID =  [NSString stringWithUTF8String:PPUIABTOSTRING(AUTOMATION_UDID)];
 #else
-	// If you're not using the AUTOMATION_UDID define, we'll get a name from the device name
+        // If you're not using the AUTOMATION_UDID define, we'll get a name from the device name
         NSString *deviceName = [UIDevice currentDevice].name;
         NSCharacterSet *charactersToRemove = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
         deviceName = [[deviceName componentsSeparatedByCharactersInSet:charactersToRemove] componentsJoinedByString:@"_"];
         automationUDID = deviceName;
-#endif
         if (!automationUDID || [automationUDID isEqualToString:@""]) {
             automationUDID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
         }
+#endif
         self.server = [[NSNetService alloc] initWithDomain:@"local."
                                                       type:@"_bridge._tcp."
                                                       name:[NSString stringWithFormat:@"%@_%@", bonjourPrefix, automationUDID]
