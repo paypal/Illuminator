@@ -174,6 +174,9 @@ Clear the text in the text field.
 #### `.clear(inputElement)` - UIAKeyboard
 Clear the text in the input element intelligently; if we are able to see an effect on the value of the input element, press the delete key that number of times. Otherwise, hold the delete button for 3.7 seconds to trigger automatic clearing of the field.
 
+#### `.connectHardwareKeyboard(connected)` - UIATarget
+Set the state of the simulator's hardware keyboard to `connected`.
+
 #### `.customInputMethod()` - UIATextField, UIATextView, UIAStaticText
 Tap the element to bring up the element's custom input method, and return a reference to the input method.
 

@@ -1713,6 +1713,21 @@ extendPrototype(UIATarget, {
     },
 
     /**
+     * Connect or disconnect the hardware keyboard
+     *
+     * @param connected boolean whether the keyboard is connected
+     */
+    connectHardwareKeyboard: function (connected) {
+        if (config.isHardware) {
+            throw new IlluminatorSetupException("Can't set the hardware keyboard option for a non-simulated device");
+        }
+        var on = connected ? "1" : "0";
+        var scriptPath = IlluminatorRootDirectory + "/scripts/set_hardware_keyboard.applescript";
+
+        host().shellAsFunction("/usr/bin/osascript", [scriptPath, on], 5);
+    },
+
+    /**
      * Open a URL on the target device
      *
      * @param url string the URL
