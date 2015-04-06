@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'erb'
 require 'pathname'
 require 'json'
