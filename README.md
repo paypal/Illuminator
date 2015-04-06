@@ -51,8 +51,8 @@ Help
 
 Where-to-post summary:
 
-* How do I? -- [StackExchange](http://stackoverflow.com/questions/tagged/illuminator)
-* I got this error, why? -- [StackExchange](http://stackoverflow.com/questions/tagged/illuminator)
+* How do I? -- [StackExchange](http://stackoverflow.com/questions/ask?tags=illuminator,ios-ui-automation)
+* I got this error, why? -- [StackExchange](http://stackoverflow.com/questions/ask?tags=illuminator,ios-ui-automation)
 * I got this error and I'm sure it's a bug -- [file an issue](https://github.com/paypal/Illuminator/issues)
 * I have an idea/request -- [file an issue](https://github.com/paypal/Illuminator/issues)
 * Why do you? -- the [illuminator-dev mailing list](https://groups.google.com/forum/#!forum/illuminator-dev)
