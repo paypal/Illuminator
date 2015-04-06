@@ -5,6 +5,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationRunner.rb
 require File.join(File.expand_path(File.dirname(__FILE__)), 'DeviceInstaller.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
 
 
 class IlluminatorFramework
@@ -26,6 +27,31 @@ class IlluminatorFramework
     print "\n"
   end
 
+  def self.validateOptions(options)
+
+    # fail quickly if simulator device and/or version are wrong
+    if options.illuminator.hardwareID.nil?
+      device = options.simulator.device
+      version = options.simulator.version
+      devices = XcodeUtils.instance.getSimulatorDeviceTypes()
+      versions = XcodeUtils.instance.getSimulatorRuntimes()
+
+      noproblems = true
+
+      unless devices.include? device
+        puts "Specified simulator device '#{device}' does not appear to be installed -  options are #{devices}".red
+        noproblems = false
+      end
+
+      unless versions.include? version
+        puts "Specified simulator iOS version '#{version}' does not appear to be installed -  options are #{versions}".red
+        noproblems = false
+      end
+    end
+
+    return noproblems
+  end
+
   ################################################################################################
   # MAIN ENTRY POINT
   ################################################################################################
@@ -36,12 +62,14 @@ class IlluminatorFramework
     hardwareID = options.illuminator.hardwareID
     appName    = options.xcode.appName
 
+    # validate some inputs
+    return false unless self.validateOptions(options)
+
+    # do any initial cleaning
     cleanDirs = {
       HostUtils.realpath("~/Library/Developer/Xcode/DerivedData") => options.illuminator.clean.derived,
       BuildArtifacts.instance.root(true)                          => options.illuminator.clean.artifacts,
     }
-
-    # do any initial cleaning
     self.cleanCountdown if self.willClean(options) and (not options.illuminator.clean.noDelay)
     cleanDirs.each do |d, doClean|
       dir = HostUtils.realpath d

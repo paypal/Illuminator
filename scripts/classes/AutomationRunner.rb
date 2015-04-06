@@ -195,9 +195,11 @@ class AutomationRunner
   end
 
   # translate input options into javascript config
-  def configureJavascriptRunner(options)
+  def configureJavascriptRunner(options, targetDeviceID)
     jsConfig = @javascriptRunner
 
+    jsConfig.targetDeviceID      = targetDeviceID
+    jsConfig.isHardware          = !(options.illuminator.hardwareID.nil?)
     jsConfig.implementation      = options.javascript.implementation
     jsConfig.testPath            = options.javascript.testPath
 
@@ -207,7 +209,6 @@ class AutomationRunner
     jsConfig.tagsAll             = options.illuminator.test.tags.all
     jsConfig.tagsNone            = options.illuminator.test.tags.none
     jsConfig.randomSeed          = options.illuminator.test.randomSeed
-    jsConfig.hardwareID          = options.illuminator.hardwareID
 
     jsConfig.simDevice           = options.simulator.device
     jsConfig.simVersion          = options.simulator.version
@@ -245,11 +246,14 @@ class AutomationRunner
     @appLocation    = options.instruments.appLocation
     @implementation = options.javascript.implementation
 
-    # set up instruments
+    # set up instruments and get target device ID
     @instrumentsRunner.startupTimeout = options.instruments.timeout
     @instrumentsRunner.hardwareID     = options.illuminator.hardwareID
     @instrumentsRunner.appLocation    = @appLocation
-    if options.illuminator.hardwareID.nil?
+    unless options.illuminator.hardwareID.nil?
+      puts "Using hardwareID = '#{options.illuminator.hardwareID}' instead of simulator".green
+      targetDeviceID = options.illuminator.hardwareID
+    else
       @instrumentsRunner.simLanguage  = options.simulator.language
       @instrumentsRunner.simDevice    = XcodeUtils.instance.getSimulatorID(options.simulator.device,
                                                                            options.simulator.version)
@@ -258,8 +262,7 @@ class AutomationRunner
         puts XcodeUtils.instance.getSimulatorDevices.yellow
         return false
       end
-    else
-      puts "Using hardwareID = '#{options.illuminator.hardwareID}' instead of simulator".green
+      targetDeviceID = @instrumentsRunner.simDevice
     end
 
     # setup listeners on instruments
@@ -279,15 +282,18 @@ class AutomationRunner
       @instrumentsRunner.addListener("consoleoutput", PrettyOutput.new)
     end
 
+    # reset the simulator if desired
     XcodeUtils.killAllSimulatorProcesses
-    XcodeUtils.resetSimulator if options.illuminator.hardwareID.nil? and options.illuminator.task.setSim
+    if options.illuminator.hardwareID.nil? and options.illuminator.task.setSim
+      XcodeUtils.instance.resetSimulator targetDeviceID
+    end
 
     startTime = Time.now
 
     @testSuite = nil
 
     # run the first time
-    self.executeEntireTestSuite(options, nil)
+    self.executeEntireTestSuite(options, targetDeviceID, nil)
 
     unless options.illuminator.test.retest.attempts.nil?
       # retry any failed tests
@@ -298,14 +304,14 @@ class AutomationRunner
         # run them in batch mode if desired
         unless options.illuminator.test.retest.solo
           puts "Retrying failed tests in batch, attempt #{att} of #{options.illuminator.test.retest.attempts}"
-          self.executeEntireTestSuite(options, unPassedTests)
+          self.executeEntireTestSuite(options, targetDeviceID, unPassedTests)
         else
           puts "Retrying failed tests individually, attempt #{att} of #{options.illuminator.test.retest.attempts}"
 
           unPassedTests.each_with_index do |t, index|
             testNum = index + 1
             puts "Solo attempt for test #{testNum} of #{unPassedTests.length}"
-            self.executeEntireTestSuite(options, [t])
+            self.executeEntireTestSuite(options, targetDeviceID, [t])
           end
         end
       end
@@ -343,7 +349,7 @@ class AutomationRunner
   end
 
   # run a test suite, restarting if necessary
-  def executeEntireTestSuite(options, specificTests)
+  def executeEntireTestSuite(options, targetDeviceID, specificTests)
 
     # loop until all test cases are covered.
     # we won't get the actual test list until partway through -- from a listener callback
@@ -355,7 +361,7 @@ class AutomationRunner
       # Setup javascript to run the appropriate list of tests (initial or leftover)
       if @testSuite.nil?
         # very first attempt
-        self.configureJavascriptRunner options
+        self.configureJavascriptRunner(options, targetDeviceID)
       elsif specificTests.nil?
         # not first attempt, but we haven't made it all the way through yet
         self.configureJavascriptReRunner(@testSuite.unStartedTests, @testSuite.finishedTests.length)

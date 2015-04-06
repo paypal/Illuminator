@@ -46,8 +46,8 @@ var debugBridge = false;
 
         taskArguments.push("--callUID=" + UID)
 
-        if (config.hardwareID !== undefined) {
-            taskArguments.push("--hardwareID=" + config.hardwareID);
+        if (config.isHardware) {
+            taskArguments.push("--hardwareID=" + config.targetDeviceID);
         }
 
         if (selector !== undefined) {

@@ -1704,6 +1704,32 @@ extendPrototype(UIAHost, {
 extendPrototype(UIATarget, {
 
     /**
+     * Add a photo to the iPhoto library
+     *
+     * @param path the photo path
+     */
+    addPhoto: function (path) {
+        host().shellAsFunction(config.xcodePath + "/usr/bin/simctl", ["addphoto", config.targetDeviceID, path], 15);
+    },
+
+    /**
+     * Open a URL on the target device
+     *
+     * @param url string the URL
+     */
+    openURL: function (url) {
+        host().shellAsFunction(config.xcodePath + "/usr/bin/simctl", ["openurl", config.targetDeviceID, url], 5);
+    },
+
+    /**
+     * Trigger icloud sync
+     *
+     */
+    iCloudSync: function () {
+        host().shellAsFunction(config.xcodePath + "/usr/bin/simctl", ["icloud_sync", config.targetDeviceID], 5);
+    },
+
+    /**
      * Wait for this element to become visible
      *
      * @param timeout the timeout in seconds

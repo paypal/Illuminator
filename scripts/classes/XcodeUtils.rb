@@ -10,6 +10,9 @@ class XcodeUtils
     @xcodeVersion = nil
     @sdkPath = nil
     @instrumentsPath = nil
+    @_simulatorDevicesText = nil
+    @simulatorDeviceTypes = nil
+    @simulatorRuntims = nil
   end
 
   def getXcodePath
@@ -18,6 +21,10 @@ class XcodeUtils
 
   def getXcodeAppPath
     HostUtils.realpath(File.join(@xcodePath, "../../"))
+  end
+
+  def getXcodeSimctlPath
+    HostUtils.realpath(File.join(@xcodePath, "/usr/bin/simctl"))
   end
 
   def getXcodeVersion
@@ -61,8 +68,59 @@ class XcodeUtils
     "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
   end
 
+  def _getAllSimulatorInfo
+    info = `#{self.getXcodeSimctlPath} list`.split("\n")
+
+    output = {"devices" => [], "runtimes" => []}
+    pointer = nil
+    needle = nil
+
+    info.each do |line|
+      case line
+      when "== Device Types =="
+        # all data we want is followed by " (" e.g. "iPhone 5 (com.apple.C......."
+        pointer = "devices"
+        needle = '([^(]*) '
+      when "== Runtimes =="
+        # all data we want is in the form "iOS 7.0 (7.0.3 - ........." and we want the 7.0
+        pointer = "runtimes"
+        needle = 'iOS ([^(]*) '
+      when "== Devices =="
+        pointer = nil
+        needle = nil
+      else
+        unless pointer.nil?
+          match = line.match(needle)
+          if match
+            output[pointer] << match.captures[0]
+          end
+        end
+      end
+    end
+
+    @simulatorDeviceTypes = output["devices"]
+    @simulatorRuntimes = output["runtimes"]
+  end
+
+  def getSimulatorDeviceTypes
+    if @simulatorDeviceTypes.nil?
+      self._getAllSimulatorInfo
+    end
+    @simulatorDeviceTypes
+  end
+
+  def getSimulatorRuntimes
+    if @simulatorRuntimes.nil?
+      self._getAllSimulatorInfo
+    end
+    @simulatorRuntimes
+  end
+
   def getSimulatorDevices
-    return `instruments -s devices`
+    if @_simulatorDevicesText.nil?
+      @_simulatorDevicesText = `instruments -s devices`
+    end
+    @_simulatorDevicesText
   end
 
   # Based on the desired device and version, get the ID of the simulator that will be passed to instruments
@@ -117,10 +175,11 @@ class XcodeUtils
   end
 
   # use the provided applescript to reset the content and settings of the simulator
-  def self.resetSimulator
-    command = "osascript '#{File.dirname(__FILE__)}/../reset_simulator.applescript'"
+  def resetSimulator deviceID
+    command = "#{self.getXcodeSimctlPath} erase #{deviceID}"
     puts command.green
     puts `#{command}`
+
   end
 
   # remove any apps in the specified directory
