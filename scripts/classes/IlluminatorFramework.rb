@@ -1,5 +1,6 @@
+require 'bundler/setup'
 require 'ostruct'
-
+require 'colorize'
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationRunner.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'DeviceInstaller.rb')
