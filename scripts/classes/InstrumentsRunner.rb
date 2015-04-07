@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'rubygems'
 require 'fileutils'
 require 'colorize'

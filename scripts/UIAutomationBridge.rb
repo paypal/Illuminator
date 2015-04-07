@@ -1,4 +1,4 @@
-
+require 'bundler/setup'
 require 'rubygems'
 require 'json'
 require 'base64'

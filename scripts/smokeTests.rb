@@ -1,4 +1,3 @@
-
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorFramework.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorOptions.rb')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/XcodeUtils.rb')

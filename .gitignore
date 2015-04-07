@@ -2,6 +2,7 @@ buildArtifacts/
 **/.DS_Store
 .DS_Store
 .bundle
+vendor
 .idea
 *.xcworkspace
 !default.xcworkspace
