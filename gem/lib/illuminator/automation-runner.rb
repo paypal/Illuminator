@@ -1,24 +1,22 @@
-require 'bundler/setup'
-require 'rubygems'
 require 'fileutils'
 require 'find'
 require 'pathname'
 require 'json'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsRunner.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'JavascriptRunner.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'TestSuite.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'TestDefinitions.rb')
+require_relative './instruments-runner'
+require_relative './javascript-runner'
+require_relative './host-utils'
+require_relative './xcode-utils'
+require_relative './build-artifacts'
+require_relative './test-suite'
+require_relative './test-definitions'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/PrettyOutput.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/FullOutput.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/ConsoleLogger.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/TestListener.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/SaltinelAgent.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/StopDetector.rb')
+require_relative 'listeners/pretty-output'
+require_relative 'listeners/full-output'
+require_relative 'listeners/console-logger'
+require_relative 'listeners/test-listener'
+require_relative 'listeners/saltinel-agent'
+require_relative 'listeners/stop-detector'
 
 ####################################################################################################
 # runner

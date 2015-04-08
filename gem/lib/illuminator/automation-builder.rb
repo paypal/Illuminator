@@ -1,8 +1,7 @@
-require 'rubygems'
 require 'fileutils'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeBuilder.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
+require_relative './xcode-builder'
+require_relative './build-artifacts'
 
 ####################################################################################################
 # Builder
