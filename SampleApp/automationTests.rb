@@ -1,12 +1,9 @@
+require 'bundler/setup'
+require 'illuminator'
 require 'pathname'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), '../src/scripts/classes/IlluminatorFramework.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), '../src/scripts/classes/IlluminatorArgumentParsing.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), '../src/scripts/classes/HostUtils.rb')
-
-
 options = {}
-parserFactory = IlluminatorParserFactory.new
+parserFactory = Illuminator::ParserFactory.new
 
 parserFactory.prepare({"b" => 'iPhone 5'}, # the default sim devie is iPhone 5
                       {},                  # no extra parse flags are being defined
@@ -19,11 +16,10 @@ optionStruct = parser.parse ARGV
 optionStruct.xcode.appName = 'AutomatorSampleApp'
 optionStruct.xcode.scheme = 'AutomatorSampleApp'
 optionStruct.javascript.implementation = 'iPhone'
-optionStruct.javascript.testPath = HostUtils.realpath('../SampleTests/tests/AllTests.js') # must be full path
+optionStruct.javascript.testPath = Illuminator::HostUtils.realpath('../SampleTests/tests/AllTests.js') # must be full path
 
-Dir.chdir 'SampleApp/AutomatorSampleApp'
 workspace = Dir.pwd
 
 
-success = IlluminatorFramework.runWithOptions optionStruct, workspace
+success = Illuminator::runWithOptions optionStruct, workspace
 exit 1 unless success

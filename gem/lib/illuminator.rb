@@ -2,60 +2,63 @@ require "illuminator/version"
 
 require "illuminator/automation-builder"
 require "illuminator/automation-runner"
+require "illuminator/argument-parsing"
 require "illuminator/device-installer"
 require "illuminator/build-artifacts"
 require "illuminator/host-utils"
 require "illuminator/xcode-utils"
 require "illuminator/options"
 
-class IlluminatorFramework
-
-  def self.willClean options
-    return true if options.illuminator.clean.derived
-    return true if options.illuminator.clean.artifacts
-    return true if options.illuminator.clean.xcode
-    return false
-  end
-
-  def self.cleanCountdown
-    countdown = "3....2....1...."
-    print "Cleaning in ".yellow
-    countdown.split("").each do |c|
-      print c.yellow
-      sleep(0.2)
-    end
-    print "\n"
-  end
-
-  def self.validateOptions(options)
-
-    # fail quickly if simulator device and/or version are wrong
-    if options.illuminator.hardwareID.nil?
-      device = options.simulator.device
-      version = options.simulator.version
-      devices = XcodeUtils.instance.getSimulatorDeviceTypes()
-      versions = XcodeUtils.instance.getSimulatorRuntimes()
-
-      noproblems = true
-
-      unless devices.include? device
-        puts "Specified simulator device '#{device}' does not appear to be installed -  options are #{devices}".red
-        noproblems = false
-      end
-
-      unless versions.include? version
-        puts "Specified simulator iOS version '#{version}' does not appear to be installed -  options are #{versions}".red
-        noproblems = false
-      end
-    end
-
-    return noproblems
-  end
-
-end
-
 
 module Illuminator
+
+  class Framework
+
+    def self.willClean options
+      return true if options.illuminator.clean.derived
+      return true if options.illuminator.clean.artifacts
+      return true if options.illuminator.clean.xcode
+      return false
+    end
+
+    def self.cleanCountdown
+      countdown = "3....2....1...."
+      print "Cleaning in ".yellow
+      countdown.split("").each do |c|
+        print c.yellow
+        sleep(0.2)
+      end
+      print "\n"
+    end
+
+    def self.validateOptions(options)
+
+      # fail quickly if simulator device and/or version are wrong
+      if options.illuminator.hardwareID.nil?
+        device = options.simulator.device
+        version = options.simulator.version
+        devices = XcodeUtils.instance.getSimulatorDeviceTypes()
+        versions = XcodeUtils.instance.getSimulatorRuntimes()
+
+        noproblems = true
+
+        unless devices.include? device
+          puts "Specified simulator device '#{device}' does not appear to be installed -  options are #{devices}".red
+          noproblems = false
+        end
+
+        unless versions.include? version
+          puts "Specified simulator iOS version '#{version}' does not appear to be installed -  options are #{versions}".red
+          noproblems = false
+        end
+      end
+
+      return noproblems
+    end
+
+  end
+
+
 
   def self.runWithOptions(originalOptions, workspace)
 
@@ -65,14 +68,14 @@ module Illuminator
     appName    = options.xcode.appName
 
     # validate some inputs
-    return false unless IlluminatorFramework.validateOptions(options)
+    return false unless Framework.validateOptions(options)
 
     # do any initial cleaning
     cleanDirs = {
       HostUtils.realpath("~/Library/Developer/Xcode/DerivedData") => options.illuminator.clean.derived,
       BuildArtifacts.instance.root(true)                          => options.illuminator.clean.artifacts,
     }
-    IlluminatorFramework.cleanCountdown if IlluminatorFramework.willClean(options) and (not options.illuminator.clean.noDelay)
+    Framework.cleanCountdown if Framework.willClean(options) and (not options.illuminator.clean.noDelay)
     cleanDirs.each do |d, doClean|
       dir = HostUtils.realpath d
       if doClean
