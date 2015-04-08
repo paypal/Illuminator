@@ -7,7 +7,7 @@
 //
 
 #import "PPHAAppDelegate.h"
-#import "PPAutomationBridge.h"
+#import <Illuminator/PPAutomationBridge.h>
 #import "PPHABridgeDelegate.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
