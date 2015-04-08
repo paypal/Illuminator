@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.author             = "PayPal"
   s.platform     = :ios
   s.source       = { :git => "https://github.com/kviksilver/Illuminator.git", :tag => "0.0.1" }
-  s.source_files  = "PPAutomationBridge", "PPAutomationBridge/*.{h,m}"
+  s.source_files  = "PPAutomationBridge/*.{h,m}"
   s.resources =  "src/*"
   
 end

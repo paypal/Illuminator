@@ -1,8 +1,8 @@
 require 'pathname'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/IlluminatorFramework.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), '/classes/IlluminatorArgumentParsing.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/HostUtils.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '../src/scripts/classes/IlluminatorFramework.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '../src/scripts/classes/IlluminatorArgumentParsing.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '../src/scripts/classes/HostUtils.rb')
 
 
 options = {}
@@ -19,7 +19,7 @@ optionStruct = parser.parse ARGV
 optionStruct.xcode.appName = 'AutomatorSampleApp'
 optionStruct.xcode.scheme = 'AutomatorSampleApp'
 optionStruct.javascript.implementation = 'iPhone'
-optionStruct.javascript.testPath = HostUtils.realpath('SampleApp/SampleTests/tests/AllTests.js') # must be full path
+optionStruct.javascript.testPath = HostUtils.realpath('../SampleTests/tests/AllTests.js') # must be full path
 
 Dir.chdir 'SampleApp/AutomatorSampleApp'
 workspace = Dir.pwd
