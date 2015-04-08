@@ -1,12 +1,12 @@
-require 'bundler/setup'
 require 'erb'
 require 'pathname'
 require 'json'
 require 'socket'
 require 'digest/sha1'
-require File.join(File.expand_path(File.dirname(__FILE__)), '/BuildArtifacts.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), '/HostUtils.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), '/XcodeUtils.rb')
+
+require_relative './build-artifacts'
+require_relative './host-utils'
+require_relative './xcode-utils'
 
 # Class to handle all configuration relating to the javascript environment
 # "runner" is a bit of a misnomer (this runs as part of instruments) but without this code, nothing runs

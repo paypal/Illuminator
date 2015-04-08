@@ -1,13 +1,11 @@
-require 'bundler/setup'
-require 'rubygems'
 require 'fileutils'
 require 'colorize'
 require 'pty'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/StartDetector.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'listeners/IntermittentFailureDetector.rb')
+require_relative './xcode-utils'
+require_relative './build-artifacts'
+require_relative 'listeners/start-detector'
+require_relative 'listeners/intermittent-failure-detector'
 
 ####################################################################################################
 # status

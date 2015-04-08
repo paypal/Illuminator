@@ -1,12 +1,12 @@
-require 'ostruct'
+require "illuminator/version"
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationBuilder.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'AutomationRunner.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'DeviceInstaller.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'BuildArtifacts.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'XcodeUtils.rb')
-
+require "illuminator/automation-builder"
+require "illuminator/automation-runner"
+require "illuminator/device-installer"
+require "illuminator/build-artifacts"
+require "illuminator/host-utils"
+require "illuminator/xcode-utils"
+require "illuminator/options"
 
 class IlluminatorFramework
 
@@ -52,25 +52,27 @@ class IlluminatorFramework
     return noproblems
   end
 
-  ################################################################################################
-  # MAIN ENTRY POINT
-  ################################################################################################
+end
+
+
+module Illuminator
+
   def self.runWithOptions(originalOptions, workspace)
 
-    options = IlluminatorOptions.new(originalOptions.to_h) # immediately create a copy of the options, because we may mangle them
+    options = Options.new(originalOptions.to_h) # immediately create a copy of the options, because we may mangle them
 
     hardwareID = options.illuminator.hardwareID
     appName    = options.xcode.appName
 
     # validate some inputs
-    return false unless self.validateOptions(options)
+    return false unless IlluminatorFramework.validateOptions(options)
 
     # do any initial cleaning
     cleanDirs = {
       HostUtils.realpath("~/Library/Developer/Xcode/DerivedData") => options.illuminator.clean.derived,
       BuildArtifacts.instance.root(true)                          => options.illuminator.clean.artifacts,
     }
-    self.cleanCountdown if self.willClean(options) and (not options.illuminator.clean.noDelay)
+    IlluminatorFramework.cleanCountdown if IlluminatorFramework.willClean(options) and (not options.illuminator.clean.noDelay)
     cleanDirs.each do |d, doClean|
       dir = HostUtils.realpath d
       if doClean
@@ -130,7 +132,8 @@ class IlluminatorFramework
     # process any overrides
     options = overrideOptions.(IlluminatorOptions.new(JSON.parse(jsonConfig))) unless overrideOptions.nil?
 
-    return self.runWithOptions options, workspace
+    return runWithOptions options, workspace
   end
+
 
 end

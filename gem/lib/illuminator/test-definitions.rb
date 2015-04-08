@@ -1,4 +1,3 @@
-require 'bundler/setup'
 require 'json'
 
 # A class to hold the defintions of all automator tests, as defined in the (generated) automatorScenarios.json

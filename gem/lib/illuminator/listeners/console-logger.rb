@@ -1,7 +1,7 @@
 
 require 'logger'
-require File.join(File.expand_path(File.dirname(__FILE__)), '../BuildArtifacts.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsListener.rb')
+require_relative '../build-artifacts'
+require_relative './instruments-listener'
 
 class ConsoleLogger < InstrumentsListener
 

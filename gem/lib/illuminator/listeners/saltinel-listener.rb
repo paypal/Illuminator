@@ -1,5 +1,5 @@
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'InstrumentsListener.rb')
+require_relative './instruments-listener'
 
 # A listener class that just looks for saltinel messages and parses them,
 #  sending them off to a subclassable handler

@@ -1,6 +1,6 @@
 require 'singleton'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'HostUtils.rb')
+require_relative './host-utils'
 
 # Wrapper for possible methods of installing an app on physical hardware
 class DeviceInstaller
