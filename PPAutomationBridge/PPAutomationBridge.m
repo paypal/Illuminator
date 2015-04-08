@@ -6,8 +6,6 @@
 //  Copyright 2013 PayPal. All rights reserved.
 //
 
-#ifdef UIAUTOMATION_BUILD
-
 #import "PPAutomationBridge.h"
 
 #ifndef AUTOMATION_UDID
@@ -427,4 +425,3 @@ NSStreamDelegate>
 
 @end
 
-#endif

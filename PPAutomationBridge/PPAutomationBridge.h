@@ -10,8 +10,6 @@
 
 #import <Foundation/Foundation.h>
 
-#ifdef UIAUTOMATION_BUILD
-
 @class PPAutomationBridge;
 @class PPAutomationBridgeAction;
 
@@ -147,4 +145,3 @@
 
 @end
 
-#endif
