@@ -6,7 +6,7 @@ DEPENDENCIES:
 
 EXTERNAL SOURCES:
   Illuminator:
-    :local: ../../
+    :path: ../../
 
 SPEC CHECKSUMS:
   Illuminator: 6d22f2dc02bbcfc9b83b3443fce4cad6ad9daacb

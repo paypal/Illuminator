@@ -1,1 +1,1 @@
-pod 'Illuminator', :local => "../../"
+pod 'Illuminator', :path => "../../"
