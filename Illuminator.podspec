@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
   s.platform     = :ios
   s.source       = { :git => "https://github.com/kviksilver/Illuminator.git", :tag => "0.0.1" }
   s.source_files  = "PPAutomationBridge", "PPAutomationBridge/*.{h,m}"
-  s.resources =  "Illuminator/*"
+  s.resources =  "src/*"
   
 end
