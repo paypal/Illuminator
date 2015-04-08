@@ -13,6 +13,7 @@ allTestPath = Illuminator::HostUtils.realpath(allTestPath)
 options = Illuminator::Options.new
 options.xcode.appName = 'AutomatorSampleApp'
 options.xcode.scheme = 'AutomatorSampleApp'
+options.xcode.workspaceFile = 'AutomatorSampleApp.xcworkspace'
 
 options.illuminator.entryPoint = 'runTestsByTag'
 options.illuminator.test.tags.any = ['smoke']

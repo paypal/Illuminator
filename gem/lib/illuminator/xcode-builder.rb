@@ -10,6 +10,7 @@ class XcodeBuilder
   attr_accessor :arch
   attr_accessor :scheme
   attr_accessor :workspace
+  attr_accessor :workspaceFile
   attr_accessor :destination
   attr_accessor :xcconfig
   attr_accessor :doClean
@@ -47,6 +48,7 @@ class XcodeBuilder
       'arch'          => @arch,
       'scheme'        => @scheme,
       'destination'   => @destination,
+	  'workspace'     => @workspaceFile,
       'xcconfig'      => @xcconfig,
     }
 

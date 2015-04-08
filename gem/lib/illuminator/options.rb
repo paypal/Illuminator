@@ -52,6 +52,7 @@ module Illuminator
       self.xcode.project = nil
       self.xcode.appName = nil
       self.xcode.sdk = nil
+	  self.xcode.workspace = nil
       self.xcode.scheme = nil
       self.xcode.environmentVars = nil
 

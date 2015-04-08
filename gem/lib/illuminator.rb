@@ -95,6 +95,7 @@ module Illuminator
       builder.doClean   = options.illuminator.clean.xcode
       builder.project   = options.xcode.project
       builder.scheme    = options.xcode.scheme
+	  builder.workspaceFile = options.xcode.workspaceFile
       unless options.xcode.environmentVars.nil?
         options.xcode.environmentVars.each { |name, value| builder.addEnvironmentVariable(name, value) }
       end
