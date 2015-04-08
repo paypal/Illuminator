@@ -77,7 +77,7 @@ class XcodeBuilder
     command << 'xcodebuild'
     command << parameters << environmentVars << tasks
     command << " | tee '#{self.logfilePath}'"
-    command << " | xcpretty -c -r junit" unless HostUtils.which("xcpretty").nil?  # use xcpretty if available
+    command << " | xcpretty -c -r junit" unless Illuminator::HostUtils.which("xcpretty").nil?  # use xcpretty if available
     command << ' && exit ${PIPESTATUS[0]}' unless usePipefail
 
     command

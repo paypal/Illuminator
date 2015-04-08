@@ -4,112 +4,114 @@ require 'ostruct'
 require_relative './options'
 require_relative './host-utils'
 
-
-class IlluminatorParser < OptionParser
-  def initialize options
-    super
-    @_options = options
-  end
-
-
-  def checkRetestArgs
-    knownRetests = ["solo"]
-
-    @_options["retest"] = [] if @_options["retest"].nil?
-
-    @_options["retest"].each do |r|
-      if knownRetests.include? r
-        # ok
-      elsif /^\d+x$/.match(r)
-        # ok (1x, 2x, 3x...)
-      else
-        puts "Got unknown --retest specifier '#{r}'".yellow
-      end
-    end
-  end
-
-  def getMaxRetests
-    ret = 0
-    @_options["retest"].each do |r|
-      matches = /^(\d+)x$/.match(r)
-      unless matches.nil?
-        ret = [ret, matches[1].to_i].max
-      end
-    end
-    ret
-  end
-
-  def checkCleanArgs
-    knownCleans = ["xcode", "buildArtifacts", "derivedData", "noDelay"]
-
-    @_options["clean"] = [] if @_options["clean"].nil?
-
-    @_options["clean"].each do |c|
-      unless knownCleans.include? c
-        puts "Got unknown --clean specifier '#{c}'".yellow
-      end
-    end
-  end
-
-  # copy internal options storage into a options object
-  def copyParsedOptionsInto(illuminatorOptions)
-    self.checkCleanArgs
-    self.checkRetestArgs
-
-    # load up known illuminatorOptions
-    # we only load non-nil options, just in case there was already something in the illuminatorOptions obj
-    illuminatorOptions.xcode.appName = @_options["appName"] unless @_options["appName"].nil?
-    illuminatorOptions.xcode.sdk     = @_options["sdk"] unless @_options["sdk"].nil?
-    illuminatorOptions.xcode.scheme  = @_options["scheme"] unless @_options["scheme"].nil?
-
-    illuminatorOptions.illuminator.entryPoint      = @_options["entryPoint"] unless @_options["entryPoint"].nil?
-    illuminatorOptions.illuminator.test.randomSeed = @_options["randomSeed"].to_i unless @_options["randomSeed"].nil?
-    illuminatorOptions.illuminator.test.tags.any   = @_options["tagsAny"] unless @_options["tagsAny"].nil?
-    illuminatorOptions.illuminator.test.tags.all   = @_options["tagsAll"] unless @_options["tagsAll"].nil?
-    illuminatorOptions.illuminator.test.tags.none  = @_options["tagsNone"] unless @_options["tagsNone"].nil?
-
-    illuminatorOptions.illuminator.test.retest.attempts = getMaxRetests
-    illuminatorOptions.illuminator.test.retest.solo     = @_options["retest"].include? "solo"
-
-    illuminatorOptions.illuminator.clean.xcode     = @_options["clean"].include? "xcode"
-    illuminatorOptions.illuminator.clean.derived   = @_options["clean"].include? "derivedData"
-    illuminatorOptions.illuminator.clean.artifacts = @_options["clean"].include? "buildArtifacts"
-    illuminatorOptions.illuminator.clean.noDelay   = @_options["clean"].include? "noDelay"
-
-    illuminatorOptions.illuminator.task.build    = (not @_options["skipBuild"]) unless @_options["skipBuild"].nil?
-    illuminatorOptions.illuminator.task.automate = (not @_options["skipAutomate"]) unless @_options["skipAutomate"].nil?
-    illuminatorOptions.illuminator.task.setSim   = (not @_options["skipSetSim"]) unless @_options["skipSetSim"].nil?
-    illuminatorOptions.illuminator.task.coverage = @_options["coverage"] unless @_options["coverage"].nil?
-    illuminatorOptions.illuminator.hardwareID    = @_options["hardwareID"] unless @_options["hardwareID"].nil?
-
-    illuminatorOptions.simulator.device    = @_options["simDevice"] unless @_options["simDevice"].nil?
-    illuminatorOptions.simulator.version   = @_options["simVersion"] unless @_options["simVersion"].nil?
-    illuminatorOptions.simulator.language  = @_options["simLanguage"] unless @_options["simLanguage"].nil?
-    illuminatorOptions.simulator.killAfter = (not @_options["skipKillAfter"]) unless @_options["skipKillAfter"].nil?
-
-    illuminatorOptions.instruments.appLocation = @_options["appLocation"] unless @_options["appLocation"].nil?
-    illuminatorOptions.instruments.doVerbose   = @_options["verbose"] unless @_options["verbose"].nil?
-    illuminatorOptions.instruments.timeout     = @_options["timeout"].to_i unless @_options["timeout"].nil?
-
-    illuminatorOptions.javascript.testPath       = @_options["testPath"] unless @_options["testPath"].nil?
-    illuminatorOptions.javascript.implementation = @_options["implementation"] unless @_options["implementation"].nil?
-
-    knownKeys = IlluminatorParserFactory.new.letterMap.values # get option keynames from a plain vanilla factory
-
-    # load up unknown illuminatorOptions
-    illuminatorOptions.appSpecific = @_options.select { |keyname, _| not (knownKeys.include? keyname) }
-
-    return illuminatorOptions
-  end
-
-  def parse args
-    leftovers = super(args)
-    return self.copyParsedOptionsInto(IlluminatorOptions.new)
-  end
-
-end
-
 module Illuminator
+
+  class Parser < OptionParser
+    def initialize options
+      super
+      @_options = options
+    end
+
+
+    def checkRetestArgs
+      knownRetests = ["solo"]
+
+      @_options["retest"] = [] if @_options["retest"].nil?
+
+      @_options["retest"].each do |r|
+        if knownRetests.include? r
+          # ok
+        elsif /^\d+x$/.match(r)
+          # ok (1x, 2x, 3x...)
+        else
+          puts "Got unknown --retest specifier '#{r}'".yellow
+        end
+      end
+    end
+
+    def getMaxRetests
+      ret = 0
+      @_options["retest"].each do |r|
+        matches = /^(\d+)x$/.match(r)
+        unless matches.nil?
+          ret = [ret, matches[1].to_i].max
+        end
+      end
+      ret
+    end
+
+    def checkCleanArgs
+      knownCleans = ["xcode", "buildArtifacts", "derivedData", "noDelay"]
+
+      @_options["clean"] = [] if @_options["clean"].nil?
+
+      @_options["clean"].each do |c|
+        unless knownCleans.include? c
+          puts "Got unknown --clean specifier '#{c}'".yellow
+        end
+      end
+    end
+
+    # copy internal options storage into a options object
+    def copyParsedOptionsInto(illuminatorOptions)
+      self.checkCleanArgs
+      self.checkRetestArgs
+
+      # load up known illuminatorOptions
+      # we only load non-nil options, just in case there was already something in the illuminatorOptions obj
+      illuminatorOptions.xcode.appName = @_options["appName"] unless @_options["appName"].nil?
+      illuminatorOptions.xcode.sdk     = @_options["sdk"] unless @_options["sdk"].nil?
+      illuminatorOptions.xcode.scheme  = @_options["scheme"] unless @_options["scheme"].nil?
+
+      illuminatorOptions.illuminator.entryPoint      = @_options["entryPoint"] unless @_options["entryPoint"].nil?
+      illuminatorOptions.illuminator.test.randomSeed = @_options["randomSeed"].to_i unless @_options["randomSeed"].nil?
+      illuminatorOptions.illuminator.test.tags.any   = @_options["tagsAny"] unless @_options["tagsAny"].nil?
+      illuminatorOptions.illuminator.test.tags.all   = @_options["tagsAll"] unless @_options["tagsAll"].nil?
+      illuminatorOptions.illuminator.test.tags.none  = @_options["tagsNone"] unless @_options["tagsNone"].nil?
+
+      illuminatorOptions.illuminator.test.retest.attempts = getMaxRetests
+      illuminatorOptions.illuminator.test.retest.solo     = @_options["retest"].include? "solo"
+
+      illuminatorOptions.illuminator.clean.xcode     = @_options["clean"].include? "xcode"
+      illuminatorOptions.illuminator.clean.derived   = @_options["clean"].include? "derivedData"
+      illuminatorOptions.illuminator.clean.artifacts = @_options["clean"].include? "buildArtifacts"
+      illuminatorOptions.illuminator.clean.noDelay   = @_options["clean"].include? "noDelay"
+
+      illuminatorOptions.illuminator.task.build    = (not @_options["skipBuild"]) unless @_options["skipBuild"].nil?
+      illuminatorOptions.illuminator.task.automate = (not @_options["skipAutomate"]) unless @_options["skipAutomate"].nil?
+      illuminatorOptions.illuminator.task.setSim   = (not @_options["skipSetSim"]) unless @_options["skipSetSim"].nil?
+      illuminatorOptions.illuminator.task.coverage = @_options["coverage"] unless @_options["coverage"].nil?
+      illuminatorOptions.illuminator.hardwareID    = @_options["hardwareID"] unless @_options["hardwareID"].nil?
+
+      illuminatorOptions.simulator.device    = @_options["simDevice"] unless @_options["simDevice"].nil?
+      illuminatorOptions.simulator.version   = @_options["simVersion"] unless @_options["simVersion"].nil?
+      illuminatorOptions.simulator.language  = @_options["simLanguage"] unless @_options["simLanguage"].nil?
+      illuminatorOptions.simulator.killAfter = (not @_options["skipKillAfter"]) unless @_options["skipKillAfter"].nil?
+
+      illuminatorOptions.instruments.appLocation = @_options["appLocation"] unless @_options["appLocation"].nil?
+      illuminatorOptions.instruments.doVerbose   = @_options["verbose"] unless @_options["verbose"].nil?
+      illuminatorOptions.instruments.timeout     = @_options["timeout"].to_i unless @_options["timeout"].nil?
+
+      illuminatorOptions.javascript.testPath       = @_options["testPath"] unless @_options["testPath"].nil?
+      illuminatorOptions.javascript.implementation = @_options["implementation"] unless @_options["implementation"].nil?
+
+      knownKeys = Illuminator::ParserFactory.new.letterMap.values # get option keynames from a plain vanilla factory
+
+      # load up unknown illuminatorOptions
+      illuminatorOptions.appSpecific = @_options.select { |keyname, _| not (knownKeys.include? keyname) }
+
+      return illuminatorOptions
+    end
+
+    def parse args
+      leftovers = super(args)
+      return self.copyParsedOptionsInto(Illuminator::Options.new)
+    end
+
+  end
+
+
+
   class ParserFactory
 
     attr_reader :letterMap
@@ -149,13 +151,13 @@ module Illuminator
       }
 
       @letterProcessing = {
-        'p' => lambda {|p| HostUtils.realpath(p) },     # get real path to tests file
-        'E' => lambda {|p| HostUtils.realpath(p) },     # get real path to app
-        'y' => lambda {|p| p.split(',')},               # split comma-separated string into array
-        'r' => lambda {|p| p.split(',')},               # split comma-separated string into array
-        't' => lambda {|p| p.split(',')},               # split comma-separated string into array
-        'o' => lambda {|p| p.split(',')},               # split comma-separated string into array
-        'n' => lambda {|p| p.split(',')},               # split comma-separated string into array
+        'p' => lambda {|p| Illuminator::HostUtils.realpath(p) },     # get real path to tests file
+        'E' => lambda {|p| Illuminator::HostUtils.realpath(p) },     # get real path to app
+        'y' => lambda {|p| p.split(',')},                            # split comma-separated string into array
+        'r' => lambda {|p| p.split(',')},                            # split comma-separated string into array
+        't' => lambda {|p| p.split(',')},                            # split comma-separated string into array
+        'o' => lambda {|p| p.split(',')},                            # split comma-separated string into array
+        'n' => lambda {|p| p.split(',')},                            # split comma-separated string into array
       }
 
       @defaultValues = {
@@ -256,7 +258,7 @@ module Illuminator
       bad_chars = letters.chars.to_a.select{|c| c != "#" and @switches[c].nil?}
       raise ArgumentError, "buildParser got letters (" + letters + ") containing unknown option characters: " + bad_chars.to_s unless bad_chars.empty?
 
-      retval = IlluminatorParser.new options
+      retval = Illuminator::Parser.new options
 
       # build a parser as specified by the user
       letters.each_char do |c|
