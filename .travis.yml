@@ -1,2 +1,5 @@
 language: objective-c
-script: ruby SampleApp/smokeTests.rb
+install: bundle install --jobs=3 --retry=3 --gemfile SampleApp/Gemfile
+script:
+   - cd SampleApp
+   - ruby smokeTests.rb

@@ -1,0 +1,22 @@
+PATH
+  remote: ../
+  specs:
+    illuminator (0.1.0)
+      colorize
+      dnssd
+      json
+      xcpretty
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    colorize (0.7.5)
+    dnssd (3.0.1)
+    json (1.8.2)
+    xcpretty (0.1.8)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  illuminator!
