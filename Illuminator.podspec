@@ -12,8 +12,10 @@ Pod::Spec.new do |s|
   s.license            = 'Apache License, Version 2.0'
   s.author             = "PayPal"
   s.platform     = :ios
-  s.source       = { :git => "https://github.com/kviksilver/Illuminator.git", :tag => "0.0.1" }
+  s.ios.deployment_target = "7.0"
+  s.source       = { :git => "https://github.com/kviksilver/Illuminator.git", :tag => s.version.to_s }
   s.source_files  = "PPAutomationBridge/*.{h,m}"
+  s.public_header_files = "PPAutomationBridge/*.h"
   s.resources =  "src/*"
-  
+  #s.prepare_command = 'bundle install' #maybe do this?
 end
