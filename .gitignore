@@ -8,3 +8,4 @@ vendor
 !default.xcworkspace
 xcuserdata
 SampleApp/AutomatorSampleApp/build
+SampleApp/AutomatorSampleApp/Pods
