@@ -1,13 +1,13 @@
-require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorFramework.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/IlluminatorOptions.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/XcodeUtils.rb')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'classes/HostUtils.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '../Illuminator/scripts/classes/IlluminatorFramework.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '../Illuminator/scripts/classes/IlluminatorOptions.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '../Illuminator/scripts/classes/XcodeUtils.rb')
+require File.join(File.expand_path(File.dirname(__FILE__)), '../Illuminator/scripts/classes/HostUtils.rb')
 
 # Change directory to sample app and use that for the workspace
-Dir.chdir 'SampleApp/AutomatorSampleApp'
+Dir.chdir File.join(File.expand_path(File.dirname(__FILE__)), '/AutomatorSampleApp')
 workspace = Dir.pwd
 
-allTestPath = '../../SampleApp/SampleTests/tests/AllTests.js'
+allTestPath = '../SampleTests/tests/AllTests.js'
 allTestPath = HostUtils.realpath(allTestPath)
 
 # Hard-coded options

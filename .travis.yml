@@ -1,2 +1,2 @@
 language: objective-c
-script: ruby scripts/smokeTests.rb
+script: ruby SampleApp/smokeTests.rb
