@@ -48,7 +48,7 @@ class JavascriptRunner
       'automatorDesiredSimVersion'   => @simVersion,
       'targetDeviceID'               => @targetDeviceID,
       'isHardware'                   => @isHardware,
-      'xcodePath'                    => XcodeUtils.instance.getXcodePath,
+      'xcodePath'                    => Illuminator::XcodeUtils.instance.getXcodePath,
       'automatorSequenceRandomSeed'  => @randomSeed,
       'automatorTagsAny'             => @tagsAny,
       'automatorTagsAll'             => @tagsAll,
@@ -68,7 +68,7 @@ class JavascriptRunner
   def writeConfiguration()
     # instance variables required for renderTemplate
     @saltinel                   = Digest::SHA1.hexdigest (Time.now.to_i.to_s + Socket.gethostname)
-    @illuminatorRoot            = HostUtils.realpath(File.join(File.dirname(__FILE__), "../.."))
+    @illuminatorRoot            = Illuminator::HostUtils.realpath(File.dirname(__FILE__))
     @artifactsRoot              = BuildArtifacts.instance.root
     @illuminatorInstrumentsRoot = BuildArtifacts.instance.instruments
     @environmentFile            = BuildArtifacts.instance.illuminatorJsEnvironment
@@ -76,10 +76,10 @@ class JavascriptRunner
     # prepare @fullConfig
     self.assembleConfig
 
-    self.renderTemplate '/../resources/IlluminatorGeneratedRunnerForInstruments.erb', BuildArtifacts.instance.illuminatorJsRunner
-    self.renderTemplate '/../resources/IlluminatorGeneratedEnvironment.erb', BuildArtifacts.instance.illuminatorJsEnvironment
+    self.renderTemplate '/resources/IlluminatorGeneratedRunnerForInstruments.erb', BuildArtifacts.instance.illuminatorJsRunner
+    self.renderTemplate '/resources/IlluminatorGeneratedEnvironment.erb', BuildArtifacts.instance.illuminatorJsEnvironment
 
-    HostUtils.saveJSON(@fullConfig, BuildArtifacts.instance.illuminatorConfigFile)
+    Illuminator::HostUtils.saveJSON(@fullConfig, BuildArtifacts.instance.illuminatorConfigFile)
   end
 
 

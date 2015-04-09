@@ -91,7 +91,7 @@ class InstrumentsRunner
 
     # remove directories in the list
     dirsToRemove.each do |d|
-      dir = HostUtils.realpath d
+      dir = Illuminator::HostUtils.realpath d
       puts "InstrumentsRunner cleanup: removing #{dir}"
       FileUtils.rmtree dir
     end
@@ -120,8 +120,8 @@ class InstrumentsRunner
     self.addListener("startDetector", startDetector)
 
     globalJSFile = BuildArtifacts.instance.illuminatorJsRunner
-    xcodePath    = XcodeUtils.instance.getXcodePath
-    templatePath = XcodeUtils.instance.getInstrumentsTemplatePath
+    xcodePath    = Illuminator::XcodeUtils.instance.getXcodePath
+    templatePath = Illuminator::XcodeUtils.instance.getInstrumentsTemplatePath
 
     command = "env DEVELOPER_DIR='#{xcodePath}' /usr/bin/instruments"
     if hardwareID
@@ -199,7 +199,7 @@ class InstrumentsRunner
               puts "\n Timeout #{@startupTimeout} reached without any output - ".red
               self.killInstruments(r, w, pid)
               puts "killing simulator processes...".red
-              XcodeUtils.killAllSimulatorProcesses
+              Illuminator::XcodeUtils.killAllSimulatorProcesses
               # TODO: might be necessary to delete any app crashes at this point
             else
               # We failed to get output for @startuptTimeout, but that's probably OK since we've successfully started

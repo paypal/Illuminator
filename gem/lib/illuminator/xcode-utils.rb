@@ -22,11 +22,11 @@ module Illuminator
     end
 
     def getXcodeAppPath
-      HostUtils.realpath(File.join(@xcodePath, "../../"))
+      Illuminator::HostUtils.realpath(File.join(@xcodePath, "../../"))
     end
 
     def getXcodeSimctlPath
-      HostUtils.realpath(File.join(@xcodePath, "/usr/bin/simctl"))
+      Illuminator::HostUtils.realpath(File.join(@xcodePath, "/usr/bin/simctl"))
     end
 
     def getXcodeVersion
