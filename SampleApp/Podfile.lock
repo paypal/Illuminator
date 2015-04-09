@@ -1,5 +1,5 @@
 PODS:
-  - Illuminator (0.0.1)
+  - Illuminator (0.1.0)
 
 DEPENDENCIES:
   - Illuminator (from `../`)
@@ -9,6 +9,6 @@ EXTERNAL SOURCES:
     :path: ../
 
 SPEC CHECKSUMS:
-  Illuminator: 840a7ba29feed51e151038fe6ba2e92943224cf8
+  Illuminator: d7a2b11278f7aa606c4aa19df9aa8ae793d54c6a
 
 COCOAPODS: 0.36.3
