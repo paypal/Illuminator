@@ -9,6 +9,6 @@ EXTERNAL SOURCES:
     :path: ../
 
 SPEC CHECKSUMS:
-  Illuminator: 6d22f2dc02bbcfc9b83b3443fce4cad6ad9daacb
+  Illuminator: 840a7ba29feed51e151038fe6ba2e92943224cf8
 
 COCOAPODS: 0.36.3

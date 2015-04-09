@@ -2,7 +2,7 @@ require 'bundler/setup'
 require 'illuminator'
 
 # Change directory to sample app and use that for the workspace
-Dir.chdir File.join(File.expand_path(File.dirname(__FILE__)), '/AutomatorSampleApp')
+Dir.chdir File.expand_path(File.dirname(__FILE__))
 workspace = Dir.pwd
 
 allTestPath = '../SampleTests/tests/AllTests.js'
