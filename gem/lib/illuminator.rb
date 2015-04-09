@@ -51,6 +51,11 @@ module Illuminator
           puts "Specified simulator iOS version '#{version}' does not appear to be installed -  options are #{versions}".red
           noproblems = false
         end
+
+        unless File.exists? options.javascript.testPath
+          puts "Could not find specified javascript test definitions file at '#{options.javascript.testPath}'".red
+          noproblems = false
+        end
       end
 
       return noproblems
