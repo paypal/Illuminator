@@ -6,7 +6,7 @@ buildArtifacts/
 !default.xcworkspace
 xcuserdata
 SampleApp/AutomatorSampleApp/build
-SampleApp/AutomatorSampleApp/Pods
+SampleApp/Pods
 
 ## For gem
 
