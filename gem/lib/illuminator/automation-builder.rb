@@ -21,7 +21,7 @@ class AutomationBuilder < XcodeBuilder
 
 
   def buildForAutomation sdk, hardwareID
-    @xcconfig = "'#{File.dirname(__FILE__)}/../resources/BuildConfiguration.xcconfig'"
+    @xcconfig = "'#{File.dirname(__FILE__)}/../../resources/BuildConfiguration.xcconfig'"
 
     preprocessorDefinitions = '$(value) UIAUTOMATION_BUILD=1'
     if hardwareID.nil?
