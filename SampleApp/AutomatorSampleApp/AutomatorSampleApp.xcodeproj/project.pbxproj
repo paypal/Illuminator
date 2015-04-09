@@ -23,9 +23,11 @@
 		88945E1618F5AE3200F02E4A /* PPHABridgeDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 88945E1518F5AE3200F02E4A /* PPHABridgeDelegate.m */; };
 		88A92B691A7BE76500D288A8 /* PPHAWaitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 88A92B681A7BE76500D288A8 /* PPHAWaitViewController.m */; };
 		DC2A4DC7D739A8C70CD8705C /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A98E8546B4575DC9C73C646A /* libPods.a */; };
+		E807D797E58F236E38ED8BEB /* libPods-AutomatorSampleApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E9B65B272723C561C471530 /* libPods-AutomatorSampleApp.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0E9B65B272723C561C471530 /* libPods-AutomatorSampleApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AutomatorSampleApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		206AC460FBA2873F874C3043 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		885ED8961A7A8CCB00E75280 /* PPHATableDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PPHATableDataObject.h; path = Misc/PPHATableDataObject.h; sourceTree = "<group>"; };
 		885ED8971A7A8CCB00E75280 /* PPHATableDataObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PPHATableDataObject.m; path = Misc/PPHATableDataObject.m; sourceTree = "<group>"; };
@@ -66,6 +68,7 @@
 				88945DD918F5AC4E00F02E4A /* UIKit.framework in Frameworks */,
 				88945DD518F5AC4E00F02E4A /* Foundation.framework in Frameworks */,
 				DC2A4DC7D739A8C70CD8705C /* libPods.a in Frameworks */,
+				E807D797E58F236E38ED8BEB /* libPods-AutomatorSampleApp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,6 +135,7 @@
 				88945DD818F5AC4E00F02E4A /* UIKit.framework */,
 				88945DF618F5AC4E00F02E4A /* XCTest.framework */,
 				A98E8546B4575DC9C73C646A /* libPods.a */,
+				0E9B65B272723C561C471530 /* libPods-AutomatorSampleApp.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -255,7 +259,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/../Pods/Target Support Files/Pods-AutomatorSampleApp/Pods-AutomatorSampleApp-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
