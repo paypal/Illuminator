@@ -6,19 +6,19 @@ class BuildArtifacts
   include Singleton
 
   def initialize
-    # use a default root directory location that's inside this project
-    @_root = File.join(File.dirname(__FILE__), "../../buildArtifacts")
+    @_root = nil
     @artifactsHaveBeenCreated = false
   end
 
   def setRoot(dir)
     if @_root != dir and @artifactsHaveBeenCreated
       puts "Warning: changing BuildArtifacts root to '#{dir}' after creating artifacts in '#{@_root}'".red
-      @_root = dir
     end
+    @_root = dir
   end
 
   def _setupAndUse(dir, skipSetup)
+    raise TypeError, "The buildArtifact root directory is nil; perhaps it was not set" if @_root.nil?
     unless skipSetup or File.directory?(dir)
       FileUtils.mkdir_p dir
       @artifactsHaveBeenCreated = true

@@ -34,7 +34,6 @@ class AutomationRunner
   include StopDetectorEventSink
 
   attr_accessor :appName
-  attr_accessor :workspace
   attr_accessor :appLocation
 
   attr_reader :instrumentsRunner
