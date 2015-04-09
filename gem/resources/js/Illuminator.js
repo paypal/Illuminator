@@ -102,7 +102,7 @@ function actionCompareScreenshotToMaster(parm) {
 
     delay(delayCapture); // wait for any animations to settle
 
-    var diff_pngPath = IlluminatorRootDirectory + "/scripts/diff_png.sh";
+    var diff_pngPath = IlluminatorScriptsDirectory + "/diff_png.sh";
     UIATarget.localTarget().captureScreenWithName(captureTitle);
 
     var screenshotFile  = captureTitle + ".png";

@@ -5,7 +5,7 @@ require 'illuminator'
 Dir.chdir File.expand_path(File.dirname(__FILE__))
 workspace = Dir.pwd
 
-allTestPath = '../SampleTests/tests/AllTests.js'
+allTestPath = 'SampleTests/tests/AllTests.js'
 allTestPath = Illuminator::HostUtils.realpath(allTestPath)
 
 # Hard-coded options

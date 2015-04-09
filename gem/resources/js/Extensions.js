@@ -1623,7 +1623,7 @@ extendPrototype(UIAHost, {
      * @return object
      */
     readJSONFromPlistFile: function (path) {
-        var scriptPath = IlluminatorRootDirectory + "/scripts/plist_to_json.sh";
+        var scriptPath = IlluminatorScriptsDirectory + "/plist_to_json.sh";
         UIALogger.logDebug("Running " + scriptPath + " '" + path + "'");
 
         return this._guardedJSONParse(this.shellAsFunction(scriptPath, [path], 10));
@@ -1722,7 +1722,7 @@ extendPrototype(UIATarget, {
             throw new IlluminatorSetupException("Can't set the hardware keyboard option for a non-simulated device");
         }
         var on = connected ? "1" : "0";
-        var scriptPath = IlluminatorRootDirectory + "/scripts/set_hardware_keyboard.applescript";
+        var scriptPath = IlluminatorScriptsDirectory + "/set_hardware_keyboard.applescript";
 
         host().shellAsFunction("/usr/bin/osascript", [scriptPath, on], 5);
     },

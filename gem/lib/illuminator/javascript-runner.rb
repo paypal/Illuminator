@@ -68,7 +68,8 @@ class JavascriptRunner
   def writeConfiguration()
     # instance variables required for renderTemplate
     @saltinel                   = Digest::SHA1.hexdigest (Time.now.to_i.to_s + Socket.gethostname)
-    @illuminatorRoot            = Illuminator::HostUtils.realpath(File.dirname(__FILE__))
+    @illuminatorRoot            = Illuminator::HostUtils.realpath(File.join(File.dirname(__FILE__), "../../resources/js/"))
+    @illuminatorScripts         = Illuminator::HostUtils.realpath(File.join(File.dirname(__FILE__), "../../resources/scripts/"))
     @artifactsRoot              = BuildArtifacts.instance.root
     @illuminatorInstrumentsRoot = BuildArtifacts.instance.instruments
     @environmentFile            = BuildArtifacts.instance.illuminatorJsEnvironment

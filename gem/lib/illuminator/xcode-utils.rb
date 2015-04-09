@@ -193,7 +193,7 @@ module Illuminator
     end
 
     def self.killAllSimulatorProcesses
-      command = HostUtils.realpath(File.join(File.dirname(__FILE__), "../kill_all_sim_processes.sh"))
+      command = HostUtils.realpath(File.join(File.dirname(__FILE__), "../../resources/scripts/kill_all_sim_processes.sh"))
       puts "Running #{command}"
       puts `'#{command}'`
     end
