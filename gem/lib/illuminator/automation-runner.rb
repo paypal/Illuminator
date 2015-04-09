@@ -72,7 +72,7 @@ class AutomationRunner
 
     # remove directories in the list
     dirsToRemove.each do |d|
-      dir = HostUtils.realpath d
+      dir = Illuminator::HostUtils.realpath d
       puts "AutomationRunner cleanup: removing #{dir}"
       FileUtils.rmtree dir
     end
@@ -254,11 +254,11 @@ class AutomationRunner
       targetDeviceID = options.illuminator.hardwareID
     else
       @instrumentsRunner.simLanguage  = options.simulator.language
-      @instrumentsRunner.simDevice    = XcodeUtils.instance.getSimulatorID(options.simulator.device,
-                                                                           options.simulator.version)
+      @instrumentsRunner.simDevice    = Illuminator::XcodeUtils.instance.getSimulatorID(options.simulator.device,
+                                                                                        options.simulator.version)
       if @instrumentsRunner.simDevice.nil?
         puts "Could not find a simulator for device='#{options.simulator.device}', version='#{options.simulator.version}'".red
-        puts XcodeUtils.instance.getSimulatorDevices.yellow
+        puts Illuminator::XcodeUtils.instance.getSimulatorDevices.yellow
         return false
       end
       targetDeviceID = @instrumentsRunner.simDevice
@@ -282,9 +282,9 @@ class AutomationRunner
     end
 
     # reset the simulator if desired
-    XcodeUtils.killAllSimulatorProcesses
+    Illuminator::XcodeUtils.killAllSimulatorProcesses
     if options.illuminator.hardwareID.nil? and options.illuminator.task.setSim
-      XcodeUtils.instance.resetSimulator targetDeviceID
+      Illuminator::XcodeUtils.instance.resetSimulator targetDeviceID
     end
 
     startTime = Time.now
@@ -323,7 +323,7 @@ class AutomationRunner
     # DONE LOOPING
     unless @testSuite.nil?
       if options.illuminator.task.coverage #TODO: only if there are no crashes?
-        if HostUtils.which("gcovr").nil?
+        if Illuminator::HostUtils.which("gcovr").nil?
           puts "Skipping requested coverage generation because gcovr does not appear to be in the PATH".yellow
         else
           self.generateCoverage gcovrWorkspace
@@ -332,7 +332,7 @@ class AutomationRunner
       self.saveFailedTestsConfig(options, @testSuite.unPassedTests)
     end
 
-    XcodeUtils.killAllSimulatorProcesses if options.simulator.killAfter
+    Illuminator::XcodeUtils.killAllSimulatorProcesses if options.simulator.killAfter
 
     if "describe" == options.illuminator.entryPoint
       return true       # no tests needed to run
@@ -427,11 +427,11 @@ class AutomationRunner
     newOptions.illuminator.entryPoint      = "runTestsByName"
     newOptions.illuminator.test.names      = failedTests.map { |t| t.name }
 
-    HostUtils.saveJSON(newOptions.to_h, BuildArtifacts.instance.illuminatorRerunFailedTestsSettings)
+    Illuminator::HostUtils.saveJSON(newOptions.to_h, BuildArtifacts.instance.illuminatorRerunFailedTestsSettings)
   end
 
   def removeAnyAppCrashes()
-    Dir.glob("#{XcodeUtils.instance.getCrashDirectory}/#{@appName}*.crash").each do |crashPath|
+    Dir.glob("#{Illuminator::XcodeUtils.instance.getCrashDirectory}/#{@appName}*.crash").each do |crashPath|
       FileUtils.rmtree crashPath
     end
   end
@@ -450,7 +450,7 @@ class AutomationRunner
     # write something useful depending on what crash reports are found
     case crashes.keys.length
     when 0
-      stacktraceText = "No crash reports found in #{XcodeUtils.instance.getCrashDirectory}, perhaps the app exited cleanly instead"
+      stacktraceText = "No crash reports found in #{Illuminator::XcodeUtils.instance.getCrashDirectory}, perhaps the app exited cleanly instead"
     when 1
       stacktraceText = crashes[crashes.keys[0]]
     else
@@ -471,14 +471,14 @@ class AutomationRunner
 
     crashes = Hash.new
     # TODO: glob if @appName is nil
-    Dir.glob("#{XcodeUtils.instance.getCrashDirectory}/#{@appName}*.crash").each do |crashPath|
+    Dir.glob("#{Illuminator::XcodeUtils.instance.getCrashDirectory}/#{@appName}*.crash").each do |crashPath|
       # TODO: extract process name and ignore ["launchd_sim", ...]
 
       puts "Found a crash report from this test run at #{crashPath}"
       crashName = File.basename(crashPath, ".crash")
       crashReportPath = "#{crashReportsPath}/#{crashName}.crash"
       crashText = []
-      if XcodeUtils.instance.createSymbolicatedCrashReport(@appLocation, crashPath, crashReportPath)
+      if Illuminator::XcodeUtils.instance.createSymbolicatedCrashReport(@appLocation, crashPath, crashReportPath)
         puts "Created a symbolicated version of the crash report at #{crashReportPath}".red
       else
         FileUtils.cp(crashPath, crashReportPath)

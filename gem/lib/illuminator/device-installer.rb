@@ -10,7 +10,7 @@ class DeviceInstaller
     installers = ['ios-deploy']
 
     @installedInstallers = {}
-    installers.each { |exe| @installedInstallers[exe] = HostUtils.which(exe) }
+    installers.each { |exe| @installedInstallers[exe] = Illuminator::HostUtils.which(exe) }
   end
 
 

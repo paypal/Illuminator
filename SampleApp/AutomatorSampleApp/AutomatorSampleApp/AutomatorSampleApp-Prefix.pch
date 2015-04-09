@@ -14,9 +14,3 @@
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
 #endif
-
-//just define every build as automation build so we can test bridge
-
-#ifdef DEBUG
-#define UIAUTOMATION_BUILD = 1
-#endif
