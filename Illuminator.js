@@ -220,4 +220,8 @@ appmap.createOrAugmentApp("Illuminator").withScreen("do")
     .withParam("allowedPixels", "The maximum number of pixels that are allowed to differ (default 0)", false, true)
     .withParam("allowedPercent", "The maximum percentage of pixels that are allowed to differ (default 0)", false, true)
     .withParam("deferFailure", "Whether to defer a failure until the end of the test", false, true)
-    .withImplementation(actionCompareScreenshotToMaster);
+    .withImplementation(actionCompareScreenshotToMaster)
+
+    .withAction("testAsAction", "Execute an entire test as one action")
+    .withParam("test", "The function that performs the entire test")
+    .withImplementation(function (parm) { parm.test(); });

@@ -138,7 +138,7 @@ Gearing Up To Fail Our Very First Test, And Making It Fail Even Faster
 
 If you were hoping to never fail a test, now is the time when you should go outside and take a few deep breaths.  We are going to generate a lot of failures as we go.
 
-We'll start by running the test we just wrote:
+We'll start by running the test we just wrote (with `--verbose`, since we want to see all the failure messages):
 
 ```
 $ ruby scripts/automationTests.rb --scheme AutomatorSampleApp --appName AutomatorSampleApp --entryPoint runTestsByTag --tags-all functional --implementation iPhone --verbose --simDevice "iPhone 5" --simVersion "7.1"
@@ -462,7 +462,7 @@ function searchingElementsScreenIsActive() {
 }
 ```
 
-This function returns immediately with a true or false response (it could also throw an exception about undefined methods if it evaluated a more complex hierarchy, but part of it was missing).  In real apps, it may take several seconds to transition between screens (e.g. during the process of logging in or processing a network request).  This would likely cause an error like `Failed assertion that 'searchingElements' is active`.
+This function returns immediately with a true or false response (you are expected to catch any exception thrown by evaluating a hierarchy that is missing an expected element).  In real apps, it may take several seconds to transition between screens (e.g. during the process of logging in or processing a network request).  This would likely cause an error like `Failed assertion that 'searchingElements' is active`.
 
 It is much better practice to use a [Selector](Selectors.md) and a wait function in these situations.
 
@@ -485,7 +485,7 @@ function searchingElementsScreenIsActive() {
 
 In other words, wait up to 10 seconds while continuously evaluating the selector (the snippet starting with `function (mw) {`) until it produces a valid element.
 
-This code is boilerplate, so if you're into the whole brevity thing then you can take advantage of the AppMap's ActionBuilder.  All you need is a selector that works relative to UIATarget():
+This code is boilerplate, so if you're into the whole brevity thing then you can take advantage of the AppMap's ActionBuilder.  All you need is a selector that works relative to `target()`:
 
 ```javascript
 var ab = appmap.actionBuilder.makeAction;
