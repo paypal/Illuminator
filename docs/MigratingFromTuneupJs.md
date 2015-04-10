@@ -136,6 +136,22 @@ Currently unimplemented.
 Extensions - `uiautomation-ext.js`
 ==================================
 
+If you'd prefer to use your own test runner but just take advantage of the Illuminator javascript extensions (in the way that you might have taken advantage of the tuneup_js extensions), then simply add the following 2 lines to your code:
+
+```javascript
+#import "/path/to/Illuminator/gem/resources/js/Extensions.js"
+IlluminatorScriptsDirectory = "/path/to/Illuminator/gem/resources/scripts";
+```
+
+Additionally, if you want to use any of the functionality provided by `simctl`, then you should define the following as well:
+
+```javascript
+config.xcodePath = "/Applications/Xcode.app/Contents/Developer";
+config.targetDeviceID = "<one of the UIDs from 'simctl list'>";
+config.isHardware = false; // indicate that we are on a simulator
+```
+
+
 UIAutomation Extensions
 -----------------------
 
