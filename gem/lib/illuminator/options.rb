@@ -40,6 +40,7 @@ module Illuminator
       self.javascript  = RecursiveOpenStruct.new
       self.illuminator = RecursiveOpenStruct.new
       self.appSpecific = nil    # all unknown options will go here
+      self.buildArtifactsDir = nil
 
       self.illuminator.clean  = RecursiveOpenStruct.new
       self.illuminator.task   = RecursiveOpenStruct.new
@@ -49,10 +50,11 @@ module Illuminator
       self.illuminator.test.retest = RecursiveOpenStruct.new
 
       # name all the keys (just for visibiilty)
+      self.xcode.projectDir = nil
       self.xcode.project = nil
       self.xcode.appName = nil
       self.xcode.sdk = nil
-	  self.xcode.workspace = nil
+      self.xcode.workspace = nil
       self.xcode.scheme = nil
       self.xcode.environmentVars = nil
 

@@ -51,6 +51,17 @@ module Illuminator
           puts "Specified simulator iOS version '#{version}' does not appear to be installed -  options are #{versions}".red
           noproblems = false
         end
+
+      end
+
+      unless File.exists? options.javascript.testPath
+        puts "Could not find specified javascript test definitions file at '#{options.javascript.testPath}'".red
+        noproblems = false
+      end
+
+      if options.buildArtifactsDir.nil?
+        puts "Build artifacts directory was not specified!".red
+        noproblems = false
       end
 
       return noproblems
@@ -60,9 +71,10 @@ module Illuminator
 
 
 
-  def self.runWithOptions(originalOptions, workspace)
+  def self.runWithOptions(originalOptions)
 
     options = Options.new(originalOptions.to_h) # immediately create a copy of the options, because we may mangle them
+    BuildArtifacts.instance.setRoot options.buildArtifactsDir
 
     hardwareID = options.illuminator.hardwareID
     appName    = options.xcode.appName
@@ -91,11 +103,11 @@ module Illuminator
       options.instruments.appLocation = BuildArtifacts.instance.appLocation(appName) # assume app is here
     else
       builder = AutomationBuilder.new
-      builder.workspace = workspace
-      builder.doClean   = options.illuminator.clean.xcode
-      builder.project   = options.xcode.project
-      builder.scheme    = options.xcode.scheme
-	  builder.workspaceFile = options.xcode.workspaceFile
+      builder.projectDir = options.xcode.projectDir
+      builder.project    = options.xcode.project
+      builder.scheme     = options.xcode.scheme
+      builder.workspace  = options.xcode.workspace
+      builder.doClean    = options.illuminator.clean.xcode
       unless options.xcode.environmentVars.nil?
         options.xcode.environmentVars.each { |name, value| builder.addEnvironmentVariable(name, value) }
       end
@@ -120,15 +132,14 @@ module Illuminator
 
     # Initialize automation
     runner = AutomationRunner.new
-    runner.workspace = workspace
-    runner.appName   = appName
+    runner.appName = appName
     runner.cleanup
     return runner.runWithOptions(options)
 
   end
 
   # overrideOptions is a lambda function that acts on the options object
-  def self.reRun(configPath, workspace, overrideOptions = nil)
+  def self.reRun(configPath, overrideOptions = nil)
 
     # load config from supplied path
     jsonConfig = IO.read(configPath)
@@ -136,7 +147,7 @@ module Illuminator
     # process any overrides
     options = overrideOptions.(IlluminatorOptions.new(JSON.parse(jsonConfig))) unless overrideOptions.nil?
 
-    return runWithOptions options, workspace
+    return runWithOptions options
   end
 
 

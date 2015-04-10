@@ -59,10 +59,12 @@ module Illuminator
 
       # load up known illuminatorOptions
       # we only load non-nil options, just in case there was already something in the illuminatorOptions obj
-      illuminatorOptions.xcode.appName = @_options["appName"] unless @_options["appName"].nil?
-      illuminatorOptions.xcode.sdk     = @_options["sdk"] unless @_options["sdk"].nil?
-      illuminatorOptions.xcode.scheme  = @_options["scheme"] unless @_options["scheme"].nil?
-	  illuminatorOptions.xcode.workspaceFile  = @_options["workspaceFile"] unless @_options["workspaceFile"].nil?
+      illuminatorOptions.buildArtifactsDir = @_options["buildArtifacts"] unless @_options["buildArtifacts"].nil?
+
+      illuminatorOptions.xcode.appName        = @_options["appName"] unless @_options["appName"].nil?
+      illuminatorOptions.xcode.sdk            = @_options["sdk"] unless @_options["sdk"].nil?
+      illuminatorOptions.xcode.scheme         = @_options["scheme"] unless @_options["scheme"].nil?
+      illuminatorOptions.xcode.workspace      = @_options["xcodeWorkspace"] unless @_options["xcodeWorkspace"].nil?
 
       illuminatorOptions.illuminator.entryPoint      = @_options["entryPoint"] unless @_options["entryPoint"].nil?
       illuminatorOptions.illuminator.test.randomSeed = @_options["randomSeed"].to_i unless @_options["randomSeed"].nil?
@@ -124,11 +126,13 @@ module Illuminator
 
       # build the list of how each parameter will be saved in the output
       @letterMap = {
+        'A' => 'buildArtifacts',
         'x' => 'entryPoint',
         'p' => 'testPath',
         'a' => 'appName',
+        'D' => 'xcodeProjectDir',
         'P' => 'xcodeProject',
-		'W' => 'xcodeWorkspace',
+        'W' => 'xcodeWorkspace',
         't' => 'tagsAny',
         'o' => 'tagsAll',
         'n' => 'tagsNone',
@@ -163,6 +167,8 @@ module Illuminator
       }
 
       @defaultValues = {
+        # 'D' => Dir.pwd,   # Since this effectively happens in xcode-builder, DON'T do it here too
+        'A' => File.join(Dir.pwd, "buildArtifacts"),
         'b' => 'iPhone 5',
         'z' => '8.2',
         'q' => 'iphonesimulator',
@@ -183,11 +189,13 @@ module Illuminator
       @letterProcessing = @letterProcessing.merge(letterProcessingUpdates) unless letterProcessingUpdates.nil?
       @defaultValues = @defaultValues.merge defaultValues unless defaultValues.nil?
 
+      self.addSwitch('A', ['-A', '--buildArtifacts PATH', 'The directory in which to store build artifacts'])
       self.addSwitch('x', ['-x', '--entryPoint LABEL', 'The execution entry point {runTestsByTag, runTestsByName, describe}'])
       self.addSwitch('p', ['-p', '--testPath PATH', 'Path to js file with all tests imported'])
       self.addSwitch('a', ['-a', '--appName APPNAME', "Name of the app to build / run"])
+      self.addSwitch('D', ['-D', '--xcodeProjectDirectory PATH', "Directory containing the Xcode project to build"])
       self.addSwitch('P', ['-P', '--xcodeProject PROJECTNAME', "Project to build -- required if there are 2 in the same directory"])
-	  self.addSwitch('W', ['-W', '--xcodeWorkspace WORKSPACENAME', "Workspace to build"])
+      self.addSwitch('W', ['-W', '--xcodeWorkspace WORKSPACENAME', "Workspace to build"])
       self.addSwitch('t', ['-t', '--tags-any TAGSANY', 'Run tests with any of the given tags'])
       self.addSwitch('o', ['-o', '--tags-all TAGSALL', 'Run tests with all of the given tags'])
       self.addSwitch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])

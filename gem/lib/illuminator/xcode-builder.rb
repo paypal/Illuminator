@@ -9,8 +9,8 @@ class XcodeBuilder
   attr_accessor :sdk
   attr_accessor :arch
   attr_accessor :scheme
+  attr_accessor :projectDir
   attr_accessor :workspace
-  attr_accessor :workspaceFile
   attr_accessor :destination
   attr_accessor :xcconfig
   attr_accessor :doClean
@@ -23,7 +23,7 @@ class XcodeBuilder
   def initialize
     @parameters      = Hash.new
     @environmentVars = Hash.new
-    @workspace       = nil
+    @projectDir      = nil
     @doClean         = FALSE
     @doTest          = FALSE
     @doBuild         = TRUE
@@ -48,7 +48,7 @@ class XcodeBuilder
       'arch'          => @arch,
       'scheme'        => @scheme,
       'destination'   => @destination,
-	  'workspace'     => @workspaceFile,
+      'workspace'     => @workspace,
       'xcconfig'      => @xcconfig,
     }
 
@@ -111,10 +111,10 @@ class XcodeBuilder
     directory = Dir.pwd
     retval = nil
     begin
-      Dir.chdir(@workspace) unless @workspace.nil?
+      Dir.chdir(@projectDir) unless @projectDir.nil?
       retval = self._executeBuildCommand command
     ensure
-      Dir.chdir(directory) unless @workspace.nil?
+      Dir.chdir(directory) unless @projectDir.nil?
     end
 
     retval
