@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{iOS CI test runner for Illuminator}
   spec.homepage      = "http://github.com/paypal/illuminator"
 
-  spec.files         = `git ls-files -z gem`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.files         =  Dir['gem/**/*.*'].reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["gem/lib"]
