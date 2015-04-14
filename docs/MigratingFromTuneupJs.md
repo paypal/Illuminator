@@ -140,7 +140,7 @@ appmap.createOrAugmentApp("MyTuneupApp").withScreen("myscreen2") // your app and
         try {
             return mainWindow().scrollViews()[0].keys()["1"].isVisible();
         } catch (e) {
-             return false;
+            return false;
         }
     })
 ```
@@ -158,7 +158,7 @@ For example, this action that verifies the order total amount:
         var amount = "$" + parm.amount.toFixed(2);  // convert amount to string with currency
         // this will find the element matching our expected amount, or throw
         mainWindow().waitForChildExistence(3, true, "amount of " + amount, function (mw) {
-	        return mw.elements()["Order Total View"].staticTexts()[amount];
+            return mw.elements()["Order Total View"].staticTexts()[amount];
         });
     })
 ```
