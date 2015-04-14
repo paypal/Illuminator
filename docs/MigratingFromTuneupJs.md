@@ -84,6 +84,89 @@ automator.createScenario('Select invoice payment method, cancel flow, do invoice
     }});
 ```
 
+Fully Migrating to Illuminator Tests
+------------------------------------
+
+The most direct way to split a monolithic tuneup.js test into an Illuminator style test is to split the sequence of UIAutomation element interactions into a set of screens.  Every line in your tuneup.js test will (or _should_) fall into one of the following categories:
+
+1. Interacting with the app via the on-screen elements
+2. Verifying that current screen is the one you expected to see (based on what elements are in the tree)
+3. Verifying that individual elements display the messages you want them to display
+4. Setting a state within the test for future verification
+
+The first step is organizational: decide how many screens are represented by the set of interactions in your test code, and stub out a dummy [screen definition](AppMap.md) for each of them.  For example:
+
+```javascript
+appmap.createOrAugmentApp("MyTuneupApp").withScreen("myscreen1") // your app and screen names
+    .onTarget("iphone", function () { return true; })            // only one target, assume always available
+```
+
+The `function () { return true; }` means that any action defined for this screen will be assumed to be valid at any time -- literally unconditionally.  That's fine for now.
+
+
+### 1. Migrating Interactions With Screen Elements
+
+In the case of the example above, you might implement the login action as follows.  As a continuation of the former code block:
+
+```javascript
+    .withAction("enterLoginCredentials", "Enter the specified credentials")
+    .withParam("myUsername", "The username to enter")
+    .withParam("myPassword", "The password to enter")
+    .withImplementation(function (parm) {
+        var container = mainWindow().elements()["Login Container"];
+        container.textFields()["Login Email Text field"].typeString(parm.myUsername);
+        container.secureTextFields()["Email Password Text Field"].typeString(parm.myPassword);
+    })
+    // for clarity, we defined the function inline.  Your style may vary.
+    // note the way in which the parameters were defined; their existence will be validated for you.
+```
+
+We've now defined `appmap.apps("MyTuneupApp").myscreen1.enterLoginCredentials`, and you can use this action in your tests as appropriate.  In our example, it would be:
+
+```javascript
+    // assuming mta = appmap.apps("MyTuneupApp")
+    // and a previous automator.createScenario(...) line
+    .withStep(mta.myscreen1.enterLoginCredentials, {username: "f@kae.user", password: "1234"})
+```
+
+### 2. Migrating the Verifications of Correct Screens
+
+Again in the above example, we may want to verify that we are on our order entry screen.  We'll simplify this by just peeking at whether the numeric buttons are visible.
+
+```javascript
+appmap.createOrAugmentApp("MyTuneupApp").withScreen("myscreen2") // your app and screen names
+    .onTarget("iphone", function () {
+        // we consider the screen to be active if one of our number keys is showing
+        try {
+            return mainWindow().scrollViews()[0].keys()["1"].isVisible();
+        } catch (e) {
+            return false;
+        }
+    })
+```
+
+### 3. Verifying an Individual Element's Correctness
+
+Simply create an action function that performs the validation.  The function should throw an exception if the validation fails; any return value will be ignored and considered a success.
+
+For example, this action that verifies the order total amount:
+
+```javascript
+    .withAction("verifyTotal", "Verify the order total amount")
+    .withParam("amount", "The amount, as a decimal")
+    .withImplementation(function (parm) {
+        var amount = "$" + parm.amount.toFixed(2);  // convert amount to string with currency
+        // this will find the element matching our expected amount, or throw
+        mainWindow().waitForChildExistence(3, true, "amount of " + amount, function (mw) {
+            return mw.elements()["Order Total View"].staticTexts()[amount];
+        });
+    })
+```
+
+### 4. Setting an Internal State
+
+In some cases, you may need to perform validation that depends on an environmental value -- verifying that your app performs properly relative to a value that is beyond your control.  For these situations, you might record that value (state) in one step and later validate against it. See the `.hasState()`, `.getState()`, and `.setState()` functions in the [Automator](Automator.md).
+
 
 Running Tests
 -------------
