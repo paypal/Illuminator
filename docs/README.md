@@ -1,7 +1,7 @@
 ILLUMINATOR Quick Start Guide
 =============================
 
-This is the minimal crash course you need to get started writing and executing Illuminator test scenarios.
+This is the minimal crash course you need to get started writing and executing Illuminator test scenarios once you've [installed](Installation.md) Illuminator.
 
 ### The Basics
 * The **[AppMap](AppMap.md)** defines the functionality of an iOS App
@@ -41,8 +41,8 @@ function actionVerifyUsername(param) {
 // describe the login screen and possible interactions
 appmap.createOrAugmentApp("MyTinyApp").withScreen("login")
     .onTarget("MyIphone", ab.screenIsActive.byElement("login", "login button",  // the screen and element
-                                                    {name: "Log In", UIAType: "UIAButton"},  // selector
-                                                    10))  // timeout for screen to become active
+                                                      {name: "Log In", UIAType: "UIAButton"},  // selector
+                                                      10))  // timeout for screen to become active
 
     .withAction("enterCredentials", "Enter username and password")
     .withImplementation(actionEnterCredentials)   // reference to function defined above.
@@ -56,8 +56,8 @@ appmap.createOrAugmentApp("MyTinyApp").withScreen("login")
 // describe the welcome screen and possible interactions
 appmap.createOrAugmentApp("MyTinyApp").withScreen("welcome")
     .onTarget("MyIphone", ab.screenIsActive.byElement("welcome", "logout button",
-                                                    {name: "Log Out", UIAType: "UIAButton"},
-                                                    10))
+                                                      {name: "Log Out", UIAType: "UIAButton"},
+                                                      10))
 
     .withAction("verifyUsername", "Verify that the proper username is shown on the screen")
     .withImplementation(actionVerifyUsername)     // reference to function defined above.
@@ -83,11 +83,11 @@ automator.createScenario("Bad password doesn't get to welcome screen", ["myTestT
     .withStep(mta.welcome.verifyNotActive);  // note that we didn't define verifyNotActive; it's built-in
 ```
 
-A script is available to run integration test files from the command line: `automationTests.rb`.
+A script is available to run integration test files from the command line: `illuminatorTestRunner.rb`.
 
 Example usage of the `Example.js` file above:
 ```
-$ ruby ./scripts/automationTests.rb -p /path/to/Example.js -a MyTinyApp -s MyTinyApp -i MyIphone -t myTestTag
+$ ruby gem/bin/illuminatorTestRunner.rb -A /tmp/buildArtifacts -p /path/to/Example.js -a MyTinyApp -s MyTinyApp -i MyIphone -t myTestTag
 ```
 
 
@@ -105,6 +105,7 @@ You don't. The Illuminator [command line scripts](Commandline.md) handle this fo
 
 Further Documentation
 ---------------------
+* [Installation](Installation.md)
 * [Slow start guide - practical introduction](PracticalIntroduction.md)
 * [Selecting elements](Selectors.md)
 * [Working with elements](Extensions.md)
