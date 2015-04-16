@@ -3,10 +3,7 @@ A Practical Introduction to iOS Automation with Illuminator
 
 For [this author](http://github.com/ifreecarve/), the [technical documentation](./) can only go so far toward explaining how to use any new system, and more practical guide is more valuable.  This is that guide.
 
-At this point, you should have taken care of the basics:
-
-1. Downloaded the repository, or otherwise placed Illuminator on your machine
-2. Run `bundle install` to bring in the appropriate Ruby gems
+At this point, you should have at least [installed](Installation.md) Illuminator.
 
 Let's bootstrap a project -- the Illuminator sample app.
 
