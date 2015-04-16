@@ -537,7 +537,11 @@ var debugAutomator = false;
         }
 
         // run initial callback and only continue on if it succeeds
-        if (!automator._executeCallback("prepare", undefined, false, false)) return;
+        if (!automator._executeCallback("prepare", undefined, false, false)) {
+            notifyIlluminatorFramework("Successful launch");
+            UIALogger.logMessage("Automator's 'prepare' callback failed, so halting.");
+            return;
+        }
 
         // At this point, we consider the instruments/app launch to be a success
         // this function will also serve as notification to the framework that we consider instruments to have started
