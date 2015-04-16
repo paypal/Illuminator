@@ -41,8 +41,8 @@ function actionVerifyUsername(param) {
 // describe the login screen and possible interactions
 appmap.createOrAugmentApp("MyTinyApp").withScreen("login")
     .onTarget("MyIphone", ab.screenIsActive.byElement("login", "login button",  // the screen and element
-                                                    {name: "Log In", UIAType: "UIAButton"},  // selector
-                                                    10))  // timeout for screen to become active
+                                                      {name: "Log In", UIAType: "UIAButton"},  // selector
+                                                      10))  // timeout for screen to become active
 
     .withAction("enterCredentials", "Enter username and password")
     .withImplementation(actionEnterCredentials)   // reference to function defined above.
@@ -56,8 +56,8 @@ appmap.createOrAugmentApp("MyTinyApp").withScreen("login")
 // describe the welcome screen and possible interactions
 appmap.createOrAugmentApp("MyTinyApp").withScreen("welcome")
     .onTarget("MyIphone", ab.screenIsActive.byElement("welcome", "logout button",
-                                                    {name: "Log Out", UIAType: "UIAButton"},
-                                                    10))
+                                                      {name: "Log Out", UIAType: "UIAButton"},
+                                                      10))
 
     .withAction("verifyUsername", "Verify that the proper username is shown on the screen")
     .withImplementation(actionVerifyUsername)     // reference to function defined above.

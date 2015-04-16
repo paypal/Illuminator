@@ -38,7 +38,7 @@ The recommended filesystem structure for an Illuminator-powered automation proje
 
 ### `Common.js`
 
-Tis file needs no text whatsoever when you start out.  Common functions will eventually end up here.
+This file needs no text whatsoever when you start out.  Common functions will eventually end up here.
 
 ### `AllScreens.js`
 
@@ -60,8 +60,9 @@ This file should be named appropriately for whatever the landing screen of your 
 // Appmap additions
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 appmap.createOrAugmentApp("SampleApp").withScreen("homeScreen")
-    .onTarget("iPhone", function() { return false; });  // in other words, pretend the screen is never active
-                                                        // this will cause an error, which will help us get started
+    .onTarget("iPhone", function() { return false; });
+                        // in other words, pretend the screen is never active
+                        // this will cause an error, which will help us get started
 
 ```
 
@@ -78,10 +79,13 @@ Here is a perfectly acceptable implementation of a bridge "screen" for a single 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 var ab = appmap.actionBuilder.makeAction;
 appmap.createOrAugmentApp("SampleApp").withScreen("bridge")
-    .onTarget("iPhone", function () { return true; }) // the bridge "screen" is always active -- it is unconditionally accessible
+    .onTarget("iPhone", function () { return true; })
+                        // the bridge "screen" is always active -- it is unconditionally accessible
 
     .withAction("resetToHomeScreen", "forcibly return the app to the home screen in an initial state")
-    .withImplementation(bridge.makeActionFunction("resetToMainMenu:"));       // we changed the name on purpose so you can see how it works
+    .withImplementation(bridge.makeActionFunction("resetToMainMenu:"));
+                                                  // we changed the name on purpose
+                                                  // so you can see how it works
 ```
 
 
@@ -150,7 +154,7 @@ Waiting for device to boot...
 2015-03-31 12:29:48.039 ScriptAgent[47006:3007] CLTilesManagerClient: initialize, sSharedTilesManagerClient
 2015-03-31 12:29:48.039 ScriptAgent[47006:3007] CLTilesManagerClient: init
 2015-03-31 12:29:48.039 ScriptAgent[47006:3007] CLTilesManagerClient: reconnecting, 0xa044970
-2015-03-31 16:29:51 +0000 Debug: Writing 249 bytes to /Users/iakatz/Code Base/ios-here-newgen/libs/ios-automator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/automatorScenarios.json as 332 bytes of b64
+2015-03-31 16:29:51 +0000 Debug: Writing 249 bytes to /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/automatorScenarios.json as 332 bytes of b64
 2015-03-31 16:29:52 +0000 Debug: 0f546f5f1ded23e12411b225896c627858b81d6b Saved scenario definitions to: /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/automatorScenarios.json 0f546f5f1ded23e12411b225896c627858b81d6b
 2015-03-31 16:29:52 +0000 Debug: onInit callback firing with args: {"entryPoint":"runTestsByTag"}
 2015-03-31 16:29:52 +0000 Default: Automator running scenarios with tagsAny: [], tagsAll: [functional], tagsNone: []
@@ -238,7 +242,7 @@ target().frontMostApp().windows()[1].elements()[0].elements()["100% battery powe
 2015-03-31 16:29:54 +0000 Debug: Scenario completed in 00:01.46
 2015-03-31 16:29:54 +0000 Debug: onScenarioFail callback firing with args: {"scenarioName":"The most basic of all tests","scenarioTags":["functional"],"timeStarted":1427819393.451,"duration":1.4600000381469727}
 2015-03-31 16:29:54 +0000 Default: Completed running scenario list (1 of 1 total scenarios)  in 00:01.46
-2015-03-31 16:29:54 +0000 Debug: Writing 52 bytes to /Users/iakatz/Code Base/ios-here-newgen/libs/ios-automator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv as 72 bytes of b64
+2015-03-31 16:29:54 +0000 Debug: Writing 52 bytes to /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv as 72 bytes of b64
 2015-03-31 16:29:55 +0000 Default: Overall time spent evaluating soft selectors: 00:00 - full report at /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv
 2015-03-31 16:29:55 +0000 Debug: complete callback firing with args: {"scenarioCount":1,"timeStarted":1427819393.451,"duration":1.4600000381469727}
 Instruments Trace Complete (Duration : 13.561836s; Output : /Users/iakatz/Code Base/Illuminator/buildArtifacts/instruments/instrumentscli0.trace)
@@ -434,7 +438,7 @@ What happens when we run this?
 2015-04-01 17:28:59 +0000 Debug: ----------------------------------------------------------------
 2015-04-01 17:28:59 +0000 Default: STEP 0: Reset automator for new scenario
 2015-04-01 17:28:59 +0000 Debug: Bridge running native method via 'Bridge_call_1': selector='resetToMainMenu', arguments=''
-2015-04-01 17:28:59 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/ios-here-newgen/libs/ios-automator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
+2015-04-01 17:28:59 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
 2015-04-01 17:29:00 +0000 Debug: ----------------------------------------------------------------
 2015-04-01 17:29:00 +0000 Default: STEP 1 of 3: (SampleApp.homeScreen.openSearch) Open the element search screen
 2015-04-01 17:29:00 +0000 Debug: target.frontMostApp().mainWindow().tableViews()["Main Menu"].cells()["Searching Elements"].tap()
@@ -472,10 +476,15 @@ For example, creating a 10-second timeout for the "Searching For Elements" scree
 function searchingElementsScreenIsActive() {
     var expectedExistence = true;
     try {
-        var navBar = mainWindow().waitForChildExistence(10, expectedExistence, "Searching for Elements navbar", function (mw) {
-            return mw.navigationBars()["Searching For Elements"]);
-        });
-        return true;  // we don't actually care about the navBar.  If we got here, we found it and therefore the screen is active.
+        var navBar = mainWindow().waitForChildExistence(10,
+                                                        expectedExistence,
+                                                        "Searching for Elements navbar",
+                                                        function (mw) {
+                                                            return mw.navigationBars()["Searching For Elements"]);
+                                                        });
+        // we don't actually care about the navBar.
+        // If we got here, we found the navBar and therefore the screen is active.
+        return true;
     } catch (e) {
         UIALogger.logDebug("searchingElementsScreenIsActive failed: " + e.toString());
         return false;
@@ -490,7 +499,8 @@ This code is boilerplate, so if you're into the whole brevity thing then you can
 ```javascript
 var ab = appmap.actionBuilder.makeAction;
 
-// same as in previous example, but we're giving it a name and making it relative to target() instead of mainWindow()
+// same as in previous example, but we're giving it a name
+//    and making it relative to target() instead of mainWindow()
 var mySelectorFunction = function(targ) {
     return targ.frontMostApp().mainWindow().navigationBars()["Searching For Elements"]);
 };
