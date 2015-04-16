@@ -293,7 +293,8 @@ class AutomationRunner
     # run the first time
     self.executeEntireTestSuite(options, targetDeviceID, nil)
 
-    unless options.illuminator.test.retest.attempts.nil?
+    # rerun if specified.  do not rerun if @testsuite wasn't received (indicating setup problems)
+    unless options.illuminator.test.retest.attempts.nil? or @testSuite.nil?
       # retry any failed tests
       for i in 0..(options.illuminator.test.retest.attempts - 1)
         att = i + 1
