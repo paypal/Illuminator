@@ -29,14 +29,9 @@ Other Features
 * Screenshot comparison capability with the ability to mask certain screen areas
 
 
-Installation
-------------
-
-* Run `bundle install` to set up ruby gems
-
-
 Further Documentation
 ---------------------
+* [Installation](docs/Installation.md)
 * [Quick start guide](docs/README.md)
 * [Slow start guide - practical introduction](docs/PracticalIntroduction.md)
 * [Selecting elements](docs/Selectors.md)

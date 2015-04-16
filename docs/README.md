@@ -1,7 +1,7 @@
 ILLUMINATOR Quick Start Guide
 =============================
 
-This is the minimal crash course you need to get started writing and executing Illuminator test scenarios.
+This is the minimal crash course you need to get started writing and executing Illuminator test scenarios once you've [installed](Installation.md) Illuminator.
 
 ### The Basics
 * The **[AppMap](AppMap.md)** defines the functionality of an iOS App
@@ -105,6 +105,7 @@ You don't. The Illuminator [command line scripts](Commandline.md) handle this fo
 
 Further Documentation
 ---------------------
+* [Installation](Installation.md)
 * [Slow start guide - practical introduction](PracticalIntroduction.md)
 * [Selecting elements](Selectors.md)
 * [Working with elements](Extensions.md)
