@@ -83,11 +83,11 @@ automator.createScenario("Bad password doesn't get to welcome screen", ["myTestT
     .withStep(mta.welcome.verifyNotActive);  // note that we didn't define verifyNotActive; it's built-in
 ```
 
-A script is available to run integration test files from the command line: `automationTests.rb`.
+A script is available to run integration test files from the command line: `illuminatorTestRunner.rb`.
 
 Example usage of the `Example.js` file above:
 ```
-$ ruby ./scripts/automationTests.rb -p /path/to/Example.js -a MyTinyApp -s MyTinyApp -i MyIphone -t myTestTag
+$ ruby gem/bin/illuminatorTestRunner.rb -A /tmp/buildArtifacts -p /path/to/Example.js -a MyTinyApp -s MyTinyApp -i MyIphone -t myTestTag
 ```
 
 

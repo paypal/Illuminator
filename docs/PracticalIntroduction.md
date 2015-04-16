@@ -142,7 +142,7 @@ If you were hoping to never fail a test, now is the time when you should go outs
 We'll start by running the test we just wrote (with `--verbose`, since we want to see all the failure messages):
 
 ```
-$ ruby scripts/automationTests.rb --scheme AutomatorSampleApp --appName AutomatorSampleApp --entryPoint runTestsByTag --tags-all functional --implementation iPhone --verbose --simDevice "iPhone 5" --simVersion "7.1"
+$ ruby gem/bin/illuminatorTestRunner.rb --buildArtifacts /tmp/buildArtifacts --scheme AutomatorSampleApp --appName AutomatorSampleApp --entryPoint runTestsByTag --tags-all functional --implementation iPhone --verbose --simDevice "iPhone 5" --simVersion "7.1"
 
         [ build messages removed ]
 
@@ -151,13 +151,13 @@ Waiting for device to boot...
 2015-03-31 12:29:48.039 ScriptAgent[47006:3007] CLTilesManagerClient: initialize, sSharedTilesManagerClient
 2015-03-31 12:29:48.039 ScriptAgent[47006:3007] CLTilesManagerClient: init
 2015-03-31 12:29:48.039 ScriptAgent[47006:3007] CLTilesManagerClient: reconnecting, 0xa044970
-2015-03-31 16:29:51 +0000 Debug: Writing 249 bytes to /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/automatorScenarios.json as 332 bytes of b64
-2015-03-31 16:29:52 +0000 Debug: 0f546f5f1ded23e12411b225896c627858b81d6b Saved scenario definitions to: /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/automatorScenarios.json 0f546f5f1ded23e12411b225896c627858b81d6b
+2015-03-31 16:29:51 +0000 Debug: Writing 249 bytes to /tmp/buildArtifacts/UIAutomation-outputs/automatorScenarios.json as 332 bytes of b64
+2015-03-31 16:29:52 +0000 Debug: 0f546f5f1ded23e12411b225896c627858b81d6b Saved scenario definitions to: /tmp/buildArtifacts/UIAutomation-outputs/automatorScenarios.json 0f546f5f1ded23e12411b225896c627858b81d6b
 2015-03-31 16:29:52 +0000 Debug: onInit callback firing with args: {"entryPoint":"runTestsByTag"}
 2015-03-31 16:29:52 +0000 Default: Automator running scenarios with tagsAny: [], tagsAll: [functional], tagsNone: []
 2015-03-31 16:29:52 +0000 Debug: prepare callback firing with args: undefined
-2015-03-31 16:29:52 +0000 Debug: Writing 70 bytes to /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/intendedTestList.json as 96 bytes of b64
-2015-03-31 16:29:53 +0000 Debug: 0f546f5f1ded23e12411b225896c627858b81d6b Saved intended test list to:/Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/intendedTestList.json 0f546f5f1ded23e12411b225896c627858b81d6b
+2015-03-31 16:29:52 +0000 Debug: Writing 70 bytes to /tmp/buildArtifacts/UIAutomation-outputs/intendedTestList.json as 96 bytes of b64
+2015-03-31 16:29:53 +0000 Debug: 0f546f5f1ded23e12411b225896c627858b81d6b Saved intended test list to:/tmp/buildArtifacts/UIAutomation-outputs/intendedTestList.json 0f546f5f1ded23e12411b225896c627858b81d6b
 2015-03-31 16:29:53 +0000 Default: 1 scenarios to run
 2015-03-31 16:29:53 +0000 Debug: ###############################################################
 2015-03-31 16:29:53 +0000 Start: The most basic of all tests
@@ -167,7 +167,7 @@ Waiting for device to boot...
 2015-03-31 16:29:53 +0000 Debug: ----------------------------------------------------------------
 2015-03-31 16:29:53 +0000 Default: STEP 0: Reset automator for new scenario
 2015-03-31 16:29:53 +0000 Debug: Bridge running native method via 'Bridge_call_1': selector='resetToMainMenu', arguments=''
-2015-03-31 16:29:53 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
+2015-03-31 16:29:53 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/gem/resources/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
 2015-03-31 16:29:54 +0000 Debug: ----------------------------------------------------------------
 2015-03-31 16:29:54 +0000 Default: STEP 1 of 1: (SampleApp.homeScreen.verifyIsActive) Null op to verify that the homeScreen screen is active
 2015-03-31 16:29:54 +0000 Debug: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -239,8 +239,8 @@ target().frontMostApp().windows()[1].elements()[0].elements()["100% battery powe
 2015-03-31 16:29:54 +0000 Debug: Scenario completed in 00:01.46
 2015-03-31 16:29:54 +0000 Debug: onScenarioFail callback firing with args: {"scenarioName":"The most basic of all tests","scenarioTags":["functional"],"timeStarted":1427819393.451,"duration":1.4600000381469727}
 2015-03-31 16:29:54 +0000 Default: Completed running scenario list (1 of 1 total scenarios)  in 00:01.46
-2015-03-31 16:29:54 +0000 Debug: Writing 52 bytes to /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv as 72 bytes of b64
-2015-03-31 16:29:55 +0000 Default: Overall time spent evaluating soft selectors: 00:00 - full report at /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv
+2015-03-31 16:29:54 +0000 Debug: Writing 52 bytes to /tmp/buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv as 72 bytes of b64
+2015-03-31 16:29:55 +0000 Default: Overall time spent evaluating soft selectors: 00:00 - full report at /tmp/buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv
 2015-03-31 16:29:55 +0000 Debug: complete callback firing with args: {"scenarioCount":1,"timeStarted":1427819393.451,"duration":1.4600000381469727}
 Instruments Trace Complete (Duration : 13.561836s; Output : /Users/iakatz/Code Base/Illuminator/buildArtifacts/instruments/instrumentscli0.trace)
 Automation completed in 00:00:15
@@ -300,7 +300,7 @@ appmap.createOrAugmentApp("SampleApp").withScreen("homeScreen")
 Rerunning the same command as before, the test passes.
 
 ```
-$ ruby scripts/automationTests.rb --scheme AutomatorSampleApp --appName AutomatorSampleApp --entryPoint runTestsByTag --tags-all functional --implementation iPhone --verbose --simDevice "iPhone 5" --simVersion "7.1"
+$ ruby gem/bin/illuminatorTestRunner.rb --buildArtifacts /tmp/buildArtifacts --scheme AutomatorSampleApp --appName AutomatorSampleApp --entryPoint runTestsByTag --tags-all functional --implementation iPhone --verbose --simDevice "iPhone 5" --simVersion "7.1"
 
         [ messages removed ]
 
@@ -313,15 +313,15 @@ $ ruby scripts/automationTests.rb --scheme AutomatorSampleApp --appName Automato
 2015-03-31 17:15:04 +0000 Debug: ----------------------------------------------------------------
 2015-03-31 17:15:04 +0000 Default: STEP 0: Reset automator for new scenario
 2015-03-31 17:15:04 +0000 Debug: Bridge running native method via 'Bridge_call_1': selector='resetToMainMenu', arguments=''
-2015-03-31 17:15:04 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
+2015-03-31 17:15:04 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/gem/resources/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
 2015-03-31 17:15:05 +0000 Debug: ----------------------------------------------------------------
 2015-03-31 17:15:05 +0000 Default: STEP 1 of 1: (SampleApp.homeScreen.verifyIsActive) Null op to verify that the homeScreen screen is active
 2015-03-31 17:15:05 +0000 Pass: The most basic of all tests
 2015-03-31 17:15:05 +0000 Debug: Scenario completed in 00:01.4
 2015-03-31 17:15:05 +0000 Debug: onScenarioPass callback firing with args: {"scenarioName":"The most basic of all tests","scenarioTags":["functional"],"timeStarted":1427822104.142,"duration":1.0369999408721924}
 2015-03-31 17:15:05 +0000 Default: Completed running scenario list (1 of 1 total scenarios)  in 00:01.4
-2015-03-31 17:15:05 +0000 Debug: Writing 52 bytes to /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv as 72 bytes of b64
-2015-03-31 17:15:06 +0000 Default: Overall time spent evaluating soft selectors: 00:00 - full report at /Users/iakatz/Code Base/Illuminator/scripts/classes/../../buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv
+2015-03-31 17:15:05 +0000 Debug: Writing 52 bytes to /tmp/buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv as 72 bytes of b64
+2015-03-31 17:15:06 +0000 Default: Overall time spent evaluating soft selectors: 00:00 - full report at /tmp/buildArtifacts/UIAutomation-outputs/selectorTimeCostReport.csv
 2015-03-31 17:15:06 +0000 Debug: complete callback firing with args: {"scenarioCount":1,"timeStarted":1427822104.141,"duration":1.0379998683929443}
 Instruments Trace Complete (Duration : 12.634939s; Output : /Users/iakatz/Code Base/Illuminator/buildArtifacts/instruments/instrumentscli0.trace)
 Automation completed in 00:00:16
@@ -435,7 +435,7 @@ What happens when we run this?
 2015-04-01 17:28:59 +0000 Debug: ----------------------------------------------------------------
 2015-04-01 17:28:59 +0000 Default: STEP 0: Reset automator for new scenario
 2015-04-01 17:28:59 +0000 Debug: Bridge running native method via 'Bridge_call_1': selector='resetToMainMenu', arguments=''
-2015-04-01 17:28:59 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
+2015-04-01 17:28:59 +0000 Debug: Bridge waiting for acknowledgment of UID 'Bridge_call_1' from $ /usr/bin/ruby /Users/iakatz/Code Base/Illuminator/gem/resources/scripts/UIAutomationBridge.rb --callUID=Bridge_call_1 --selector=resetToMainMenu
 2015-04-01 17:29:00 +0000 Debug: ----------------------------------------------------------------
 2015-04-01 17:29:00 +0000 Default: STEP 1 of 3: (SampleApp.homeScreen.openSearch) Open the element search screen
 2015-04-01 17:29:00 +0000 Debug: target.frontMostApp().mainWindow().tableViews()["Main Menu"].cells()["Searching Elements"].tap()
