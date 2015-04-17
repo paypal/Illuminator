@@ -99,6 +99,7 @@ module Illuminator
     # Initialize builder and build
     if (not options.instruments.appLocation.nil?)
       puts "Skipping build because appLocation was provided".yellow if options.illuminator.task.build
+      options.instruments.appLocation = HostUtils::realpath(options.instruments.appLocation)
     elsif (not options.illuminator.task.build)
       options.instruments.appLocation = BuildArtifacts.instance.appLocation(appName) # assume app is here
     else
