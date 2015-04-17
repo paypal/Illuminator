@@ -32,6 +32,21 @@ module Illuminator
     end
 
     def self.validateOptions(options)
+      noproblems = true
+
+      # so we can call BS on the user
+      bs = lambda do |message|
+        puts message.red
+        noproblems = false
+      end
+
+      # some things to check
+      things = {
+        "Build artifacts directory" => options.buildArtifactsDir,
+      }
+
+      # now check them
+      things.each { |k, v| bs.call "#{k} was not specified" if v.nil? }
 
       # fail quickly if simulator device and/or version are wrong
       if options.illuminator.hardwareID.nil?
@@ -40,28 +55,28 @@ module Illuminator
         devices = XcodeUtils.instance.getSimulatorDeviceTypes()
         versions = XcodeUtils.instance.getSimulatorRuntimes()
 
-        noproblems = true
 
         unless devices.include? device
-          puts "Specified simulator device '#{device}' does not appear to be installed -  options are #{devices}".red
-          noproblems = false
+          bs.call "Specified simulator device '#{device}' does not appear to be installed -  options are #{devices}"
         end
 
         unless versions.include? version
-          puts "Specified simulator iOS version '#{version}' does not appear to be installed -  options are #{versions}".red
-          noproblems = false
+          bs.call "Specified simulator iOS version '#{version}' does not appear to be installed -  options are #{versions}"
         end
 
       end
 
-      unless File.exists? options.javascript.testPath
-        puts "Could not find specified javascript test definitions file at '#{options.javascript.testPath}'".red
-        noproblems = false
-      end
+      # check paths
+      if options.illuminator.task.automate
+        bs.call "Implementation was not specified" if options.javascript.implementation.nil?
 
-      if options.buildArtifactsDir.nil?
-        puts "Build artifacts directory was not specified!".red
-        noproblems = false
+        if options.javascript.testPath.nil?
+          bs.call "Javascript test definitions file was not specified"
+        else
+          unless File.exists? options.javascript.testPath
+            bs.call "Could not find specified javascript test definitions file at '#{options.javascript.testPath}'"
+          end
+        end
       end
 
       return noproblems
