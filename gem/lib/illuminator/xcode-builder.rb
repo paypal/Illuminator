@@ -84,7 +84,9 @@ module Illuminator
       command << 'xcodebuild'
       command << parameters << environmentVars << tasks
       command << " | tee '#{self.logfilePath}'"
-      command << " | xcpretty -c -r junit" unless Illuminator::HostUtils.which("xcpretty").nil?  # use xcpretty if available
+      unless Illuminator::HostUtils.which("xcpretty").nil?  # use xcpretty if available
+        command << " | xcpretty -c -r junit -o #{BuildArtifacts.instance.xcprettyReportFile}"
+      end
       command << ' && exit ${PIPESTATUS[0]}' unless usePipefail
 
       command

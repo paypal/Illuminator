@@ -30,8 +30,9 @@ function IlluminatorIlluminate() {
 
     case "runTestsByTag":
         if (0 == (config.automatorTagsAny.length + config.automatorTagsAll.length + config.automatorTagsNone.length)) {
-            UIALogger.logMessage("No tag sets (any / all / none) were defined, so printing some information about defined scenarios");
+            UIALogger.logMessage("No tag sets (any / all / none) were specified, so printing some information about defined scenarios");
             automator.logInfo();
+            notifyIlluminatorFramework("Successful launch");
         } else {
             automator.runTaggedScenarios(config.automatorTagsAny,
                                          config.automatorTagsAll,

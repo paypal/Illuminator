@@ -10,7 +10,8 @@ class BuildArtifacts
     @artifactsHaveBeenCreated = false
   end
 
-  def setRoot(dir)
+  def setRoot(dir_raw)
+    dir = Illuminator::HostUtils.realpath(dir_raw)
     if @_root != dir and @artifactsHaveBeenCreated
       puts "Warning: changing BuildArtifacts root to '#{dir}' after creating artifacts in '#{@_root}'".red
     end
@@ -71,6 +72,11 @@ class BuildArtifacts
     else
       return "#{appOutputDirectory}/#{appName}.app"
     end
+  end
+
+  def xcprettyReportFile(skipSetup = false)
+    self._setupAndUse "#{@_root}/xcpretty", skipSetup
+    "#{@_root}/xcpretty/report.xml"
   end
 
   def coverageReportFile(skipSetup = false)
