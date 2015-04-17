@@ -32,7 +32,13 @@ class StartDetector < SaltinelListener
 
     # error cases that indicate successful start but involve errors that won't be fixed by a restart
     self.trigger if :error == message.status and /Script threw an uncaught JavaScript error:/ =~ message.message
-    self.trigger if /^Instruments Usage Error :/ =~ message.fullLine
+
+    # Instruments usage error generally means we can't recover... unless it's a device booting issue
+    if /^Instruments Usage Error :/ =~ message.fullLine
+      unless /^Instruments Usage Error : Timed out waiting for device to boot:/ =~ message.fullLine
+        self.trigger
+      end
+    end
   end
 
   def onSaltinel innerMessage
