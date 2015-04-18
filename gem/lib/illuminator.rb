@@ -161,7 +161,7 @@ module Illuminator
     jsonConfig = IO.read(configPath)
 
     # process any overrides
-    options = overrideOptions.(IlluminatorOptions.new(JSON.parse(jsonConfig))) unless overrideOptions.nil?
+    options = overrideOptions.(Illuminator::Options.new(JSON.parse(jsonConfig))) unless overrideOptions.nil?
 
     return runWithOptions options
   end
