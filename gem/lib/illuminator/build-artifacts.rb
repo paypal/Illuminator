@@ -38,6 +38,10 @@ module Illuminator
       self._setupAndUse "#{@_root}/xcode", skipSetup
     end
 
+    def derivedData(skipSetup = false)
+      self._setupAndUse "#{@_root}/xcodeDerivedData", skipSetup
+    end
+
     def instruments(skipSetup = false)
       self._setupAndUse "#{@_root}/instruments", skipSetup
     end
