@@ -30,6 +30,10 @@ module Illuminator
       @doBuild         = TRUE
       @doArchive       = FALSE
       @exitCode        = nil
+
+      resultPath = BuildArtifacts.instance.xcode
+      self.addEnvironmentVariable('CONFIGURATION_BUILD_DIR', "'#{resultPath}'")
+      self.addEnvironmentVariable('CONFIGURATION_TEMP_DIR', "'#{resultPath}'")
     end
 
     def setBuildArtifactsRoot rootDir

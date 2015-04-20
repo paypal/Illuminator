@@ -14,9 +14,6 @@ module Illuminator
       super
       @configuration = 'Debug'
 
-      resultPath = BuildArtifacts.instance.xcode
-      self.addEnvironmentVariable('CONFIGURATION_BUILD_DIR', "'#{resultPath}'")
-      self.addEnvironmentVariable('CONFIGURATION_TEMP_DIR', "'#{resultPath}'")
       self.addEnvironmentVariable('UIAUTOMATION_BUILD', true)
     end
 
