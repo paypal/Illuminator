@@ -89,7 +89,7 @@ module Illuminator
   def self.runWithOptions(originalOptions)
 
     options = Options.new(originalOptions.to_h) # immediately create a copy of the options, because we may mangle them
-    BuildArtifacts.instance.setRoot options.buildArtifactsDir
+    Illuminator::BuildArtifacts.instance.setRoot options.buildArtifactsDir
 
     hardwareID = options.illuminator.hardwareID
     appName    = options.xcode.appName
@@ -100,7 +100,7 @@ module Illuminator
     # do any initial cleaning
     cleanDirs = {
       HostUtils.realpath("~/Library/Developer/Xcode/DerivedData") => options.illuminator.clean.derived,
-      BuildArtifacts.instance.root(true)                          => options.illuminator.clean.artifacts,
+      Illuminator::BuildArtifacts.instance.root(true)             => options.illuminator.clean.artifacts,
     }
     Framework.cleanCountdown if Framework.willClean(options) and (not options.illuminator.clean.noDelay)
     cleanDirs.each do |d, doClean|
@@ -116,7 +116,7 @@ module Illuminator
       puts "Skipping build because appLocation was provided".yellow if options.illuminator.task.build
       options.instruments.appLocation = HostUtils::realpath(options.instruments.appLocation)
     elsif (not options.illuminator.task.build)
-      options.instruments.appLocation = BuildArtifacts.instance.appLocation(appName) # assume app is here
+      options.instruments.appLocation = Illuminator::BuildArtifacts.instance.appLocation(appName) # assume app is here
     else
       builder = AutomationBuilder.new
       builder.projectDir = options.xcode.projectDir
@@ -129,10 +129,10 @@ module Illuminator
       end
 
       # if app name is not specified, make sure that we will only have one to run
-      XcodeUtils.removeExistingApps(BuildArtifacts.instance.xcode) if appName.nil?
+      XcodeUtils.removeExistingApps(Illuminator::BuildArtifacts.instance.xcode) if appName.nil?
       if builder.buildForAutomation(options.xcode.sdk, hardwareID)
         puts 'Build succeded'.green
-        options.instruments.appLocation = BuildArtifacts.instance.appLocation(appName)
+        options.instruments.appLocation = Illuminator::BuildArtifacts.instance.appLocation(appName)
       else
         puts 'Build failed, check logs for results'.red
         exit builder.exitCode

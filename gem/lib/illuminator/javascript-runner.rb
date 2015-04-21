@@ -70,17 +70,17 @@ class JavascriptRunner
     @saltinel                   = Digest::SHA1.hexdigest (Time.now.to_i.to_s + Socket.gethostname)
     @illuminatorRoot            = Illuminator::HostUtils.realpath(File.join(File.dirname(__FILE__), "../../resources/js/"))
     @illuminatorScripts         = Illuminator::HostUtils.realpath(File.join(File.dirname(__FILE__), "../../resources/scripts/"))
-    @artifactsRoot              = BuildArtifacts.instance.root
-    @illuminatorInstrumentsRoot = BuildArtifacts.instance.instruments
-    @environmentFile            = BuildArtifacts.instance.illuminatorJsEnvironment
+    @artifactsRoot              = Illuminator::BuildArtifacts.instance.root
+    @illuminatorInstrumentsRoot = Illuminator::BuildArtifacts.instance.instruments
+    @environmentFile            = Illuminator::BuildArtifacts.instance.illuminatorJsEnvironment
 
     # prepare @fullConfig
     self.assembleConfig
 
-    self.renderTemplate '/resources/IlluminatorGeneratedRunnerForInstruments.erb', BuildArtifacts.instance.illuminatorJsRunner
-    self.renderTemplate '/resources/IlluminatorGeneratedEnvironment.erb', BuildArtifacts.instance.illuminatorJsEnvironment
+    self.renderTemplate '/resources/IlluminatorGeneratedRunnerForInstruments.erb', Illuminator::BuildArtifacts.instance.illuminatorJsRunner
+    self.renderTemplate '/resources/IlluminatorGeneratedEnvironment.erb', Illuminator::BuildArtifacts.instance.illuminatorJsEnvironment
 
-    Illuminator::HostUtils.saveJSON(@fullConfig, BuildArtifacts.instance.illuminatorConfigFile)
+    Illuminator::HostUtils.saveJSON(@fullConfig, Illuminator::BuildArtifacts.instance.illuminatorConfigFile)
   end
 
 

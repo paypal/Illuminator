@@ -34,13 +34,13 @@ module Illuminator
 
       @derivedDataIsArtifact = FALSE
 
-      resultPath = BuildArtifacts.instance.xcode
+      resultPath = Illuminator::BuildArtifacts.instance.xcode
       self.addEnvironmentVariable('CONFIGURATION_BUILD_DIR', "'#{resultPath}'")
       self.addEnvironmentVariable('CONFIGURATION_TEMP_DIR', "'#{resultPath}'")
     end
 
     def setBuildArtifactsRoot rootDir
-      BuildArtifacts.instance.setRoot(rootDir)
+      Illuminator::BuildArtifacts.instance.setRoot(rootDir)
     end
 
     def addParameter(parameterName = '',parameterValue = '')
@@ -67,7 +67,7 @@ module Illuminator
       # since derived data can take quite a lot of disk space, don't automatically store it
       #  in build-specific directory
       if @derivedDataIsArtifact
-        keyDefs['derivedDataPath'] = BuildArtifacts.instance.derivedData
+        keyDefs['derivedDataPath'] = Illuminator::BuildArtifacts.instance.derivedData
       end
 
       keyDefs.each do |key, value|
@@ -107,7 +107,7 @@ module Illuminator
 
 
     def logfilePath
-      logFile = File.join(BuildArtifacts.instance.console, 'xcodebuild.log')
+      logFile = File.join(Illuminator::BuildArtifacts.instance.console, 'xcodebuild.log')
     end
 
 
