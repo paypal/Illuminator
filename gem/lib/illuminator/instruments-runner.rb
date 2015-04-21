@@ -85,7 +85,7 @@ class InstrumentsRunner
     buildArtifactKeys = [:instruments]
     # get the directories without creating them (the 'true' arg), add them to our list
     buildArtifactKeys.each do |key|
-      dir = BuildArtifacts.instance.method(key).call(true)
+      dir = Illuminator::BuildArtifacts.instance.method(key).call(true)
       dirsToRemove << dir
     end
 
@@ -112,14 +112,14 @@ class InstrumentsRunner
   end
 
   def runOnce saltinel
-    reportPath = BuildArtifacts.instance.instruments
+    reportPath = Illuminator::BuildArtifacts.instance.instruments
 
     # add saltinel listener
     startDetector = StartDetector.new(saltinel)
     startDetector.eventSink = self
     self.addListener("startDetector", startDetector)
 
-    globalJSFile = BuildArtifacts.instance.illuminatorJsRunner
+    globalJSFile = Illuminator::BuildArtifacts.instance.illuminatorJsRunner
     xcodePath    = Illuminator::XcodeUtils.instance.getXcodePath
     templatePath = Illuminator::XcodeUtils.instance.getInstrumentsTemplatePath
 

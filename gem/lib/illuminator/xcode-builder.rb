@@ -18,6 +18,7 @@ module Illuminator
     attr_accessor :doTest
     attr_accessor :doBuild
     attr_accessor :doArchive
+    attr_accessor :derivedDataIsArtifact
 
     attr_reader :exitCode
 
@@ -30,10 +31,16 @@ module Illuminator
       @doBuild         = TRUE
       @doArchive       = FALSE
       @exitCode        = nil
+
+      @derivedDataIsArtifact = FALSE
+
+      resultPath = Illuminator::BuildArtifacts.instance.xcode
+      self.addEnvironmentVariable('CONFIGURATION_BUILD_DIR', "'#{resultPath}'")
+      self.addEnvironmentVariable('CONFIGURATION_TEMP_DIR', "'#{resultPath}'")
     end
 
     def setBuildArtifactsRoot rootDir
-      BuildArtifacts.instance.setRoot(rootDir)
+      Illuminator::BuildArtifacts.instance.setRoot(rootDir)
     end
 
     def addParameter(parameterName = '',parameterValue = '')
@@ -57,6 +64,12 @@ module Illuminator
         'xcconfig'      => @xcconfig,
       }
 
+      # since derived data can take quite a lot of disk space, don't automatically store it
+      #  in build-specific directory
+      if @derivedDataIsArtifact
+        keyDefs['derivedDataPath'] = Illuminator::BuildArtifacts.instance.derivedData
+      end
+
       keyDefs.each do |key, value|
         self.addParameter(key, value) unless value.nil?
       end
@@ -71,7 +84,7 @@ module Illuminator
       environmentVars = ''
       tasks = ''
 
-      @parameters.each      { |name, value| parameters << " -#{name} #{value}" }
+      @parameters.each      { |name, value| parameters << " -#{name} \"#{value}\"" }
       @environmentVars.each { |name, value| environmentVars << " #{name}=#{value}" }
 
       tasks << ' clean'    if @doClean
@@ -85,7 +98,7 @@ module Illuminator
       command << parameters << environmentVars << tasks
       command << " | tee '#{self.logfilePath}'"
       unless Illuminator::HostUtils.which("xcpretty").nil?  # use xcpretty if available
-        command << " | xcpretty -c -r junit -o #{BuildArtifacts.instance.xcprettyReportFile}"
+        command << " | xcpretty -c -r junit -o \"#{BuildArtifacts.instance.xcprettyReportFile}\""
       end
       command << ' && exit ${PIPESTATUS[0]}' unless usePipefail
 
@@ -94,7 +107,7 @@ module Illuminator
 
 
     def logfilePath
-      logFile = File.join(BuildArtifacts.instance.console, 'xcodebuild.log')
+      logFile = File.join(Illuminator::BuildArtifacts.instance.console, 'xcodebuild.log')
     end
 
 

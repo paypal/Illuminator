@@ -65,7 +65,7 @@ class AutomationRunner
                          :junitReportFile, :illuminatorJsRunner, :illuminatorJsEnvironment, :illuminatorConfigFile]
     # get the directories without creating them (the 'true' arg), add them to our list
     buildArtifactKeys.each do |key|
-      dir = BuildArtifacts.instance.method(key).call(true)
+      dir = Illuminator::BuildArtifacts.instance.method(key).call(true)
       dirsToRemove << dir
     end
 
@@ -179,7 +179,7 @@ class AutomationRunner
   end
 
   def saveJunitTestReport
-    f = File.open(BuildArtifacts.instance.junitReportFile, 'w')
+    f = File.open(Illuminator::BuildArtifacts.instance.junitReportFile, 'w')
     f.write(@testSuite.to_xml)
     f.close
   end
@@ -427,7 +427,7 @@ class AutomationRunner
     newOptions.illuminator.entryPoint      = "runTestsByName"
     newOptions.illuminator.test.names      = failedTests.map { |t| t.name }
 
-    Illuminator::HostUtils.saveJSON(newOptions.to_h, BuildArtifacts.instance.illuminatorRerunFailedTestsSettings)
+    Illuminator::HostUtils.saveJSON(newOptions.to_h, Illuminator::BuildArtifacts.instance.illuminatorRerunFailedTestsSettings)
   end
 
   def removeAnyAppCrashes()
@@ -466,7 +466,7 @@ class AutomationRunner
 
 
   def reportAnyAppCrashes()
-    crashReportsPath = BuildArtifacts.instance.crashReports
+    crashReportsPath = Illuminator::BuildArtifacts.instance.crashReports
     FileUtils.mkdir_p crashReportsPath unless File.directory?(crashReportsPath)
 
     crashes = Hash.new
@@ -504,9 +504,9 @@ class AutomationRunner
 
 
   def generateCoverage(gcWorkspace)
-    destinationFile      = BuildArtifacts.instance.coverageReportFile
-    xcodeArtifactsFolder = BuildArtifacts.instance.xcode
-    destinationPath      = BuildArtifacts.instance.objectFiles
+    destinationFile      = Illuminator::BuildArtifacts.instance.coverageReportFile
+    xcodeArtifactsFolder = Illuminator::BuildArtifacts.instance.xcode
+    destinationPath      = Illuminator::BuildArtifacts.instance.objectFiles
 
     excludeRegex = '.*(Debug|contrib).*'
     puts "Generating automation test coverage to #{destinationFile}".green

@@ -14,15 +14,12 @@ module Illuminator
       super
       @configuration = 'Debug'
 
-      resultPath = BuildArtifacts.instance.xcode
-      self.addEnvironmentVariable('CONFIGURATION_BUILD_DIR', "'#{resultPath}'")
-      self.addEnvironmentVariable('CONFIGURATION_TEMP_DIR', "'#{resultPath}'")
       self.addEnvironmentVariable('UIAUTOMATION_BUILD', true)
     end
 
 
     def buildForAutomation sdk, hardwareID
-      @xcconfig = "'#{File.dirname(__FILE__)}/../../resources/BuildConfiguration.xcconfig'"
+      @xcconfig = "#{File.dirname(__FILE__)}/../../resources/BuildConfiguration.xcconfig"
 
       preprocessorDefinitions = '$(value) UIAUTOMATION_BUILD=1'
       if hardwareID.nil?

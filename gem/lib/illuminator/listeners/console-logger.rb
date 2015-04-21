@@ -13,7 +13,7 @@ class ConsoleLogger < InstrumentsListener
   def prepareLogger
     return unless @logger.nil?
     @runNumber += 1
-    filename = File.join(BuildArtifacts.instance.console, "instruments#{@runNumber.to_s.rjust(3, "0")}.log")
+    filename = File.join(Illuminator::BuildArtifacts.instance.console, "instruments#{@runNumber.to_s.rjust(3, "0")}.log")
     FileUtils.rmtree filename
     @logger = Logger.new(filename)
   end
