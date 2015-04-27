@@ -959,16 +959,11 @@ extendPrototype(UIAElement, {
 
         var reduce_helper = function (elem, acc, prefix) {
             var scalars = ["frontMostApp", "mainWindow", "keyboard", "popover"];
-            var vectors = [];
-
-            // iOS 8.1 takes between 3 and 5 milliseconds each (????!?!?!) to evaluate these, so only do it for 7.x
-            if (isSimVersion(7)) {
-                vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images","keys",
+            var vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images","keys",
                            "links", "navigationBars", "pageIndicators", "pickers", "progressIndicators",
                            "scrollViews", "searchBars", "secureTextFields", "segmentedControls", "sliders",
                            "staticTexts", "switches", "tabBars", "tableViews", "textFields", "textViews",
                            "toolbars", "webViews", "windows"];
-            }
 
             // function to visit an element, and add it to an array of what was discovered
             var accessed = [];
