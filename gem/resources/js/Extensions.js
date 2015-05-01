@@ -515,6 +515,16 @@ function getElementsFromCriteria(criteria, parentElem, elemAccessor) {
         criteria = [criteria];
     }
 
+    // speed hack: backtrack from visibility=true in criteria to prune search tree
+    var rippleVisibility = false;
+    for (var i = criteria.length - 1; i >= 0; --i) {
+	if (rippleVisibility) {
+	    criteria[i].isVisible = true;
+	} else if (criteria[i].isVisible === true) {
+	    rippleVisibility = true;
+	}
+    }
+
     // perform a find in several stages
     var segmentedFind = function (criteriaArray, initialElem, initialAccessor) {
         var intermElems = {};
