@@ -16,7 +16,7 @@ class DeviceInstaller
 
   def _installUsingIosDeploy(appLocation, hardwareID)
     # TODO: actually watch the output of this command
-    cmd = "#{@installedInstallers['ios-deploy']} -b '#{@appLocation}' -i #{@hardwareID} -r -n"
+    cmd = "#{@installedInstallers['ios-deploy']} -b '#{appLocation}' -i #{hardwareID} -r -n"
     puts cmd.green
     puts `#{cmd}`
   end
