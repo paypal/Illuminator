@@ -16,7 +16,7 @@ class DeviceInstaller
 
   def _installUsingIosDeploy(appLocation, hardwareID)
     # TODO: actually watch the output of this command
-    cmd = "#{@installedInstallers['ios-deploy']} -b '#{@appLocation}' -i #{@hardwareID} -r -n"
+    cmd = "#{@installedInstallers['ios-deploy']} -b '#{appLocation}' -i #{hardwareID} -r -n"
     puts cmd.green
     puts `#{cmd}`
   end
@@ -34,7 +34,7 @@ class DeviceInstaller
     # run the appropriate helper for doing this
     puts "Installing #{appLocation} on device #{hardwareID} using #{specificMethod}"
     case specificMethod
-    when "ios-deploy"
+    when /ios-deploy$/
       self._installUsingIosDeploy(appLocation, hardwareID)
     else
       puts "None of the following utilities for app installation appear to be installed: #{@installedInstallers.keys.to_s}".red
