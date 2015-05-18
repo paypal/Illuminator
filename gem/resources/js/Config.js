@@ -84,5 +84,7 @@
     config.buildArtifacts.automatorJSON         = tmpDir + "/automator.json";
     config.buildArtifacts.automatorScenarioJSON = tmpDir + "/automatorScenarios.json";
     config.buildArtifacts.intendedTestList      = tmpDir + "/intendedTestList.json";
+    
+    config.automatorModality                    = "init";
 
 }).call(this);
