@@ -27,7 +27,6 @@ module Illuminator
         @arch = @arch || 'i386'
       else
         @sdk = sdk || 'iphoneos'
-        @arch = @arch || 'armv7'
         @destination = "id=#{hardwareID}"
         preprocessorDefinitions += " AUTOMATION_UDID=#{hardwareID}"
       end
