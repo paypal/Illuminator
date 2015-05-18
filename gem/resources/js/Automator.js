@@ -175,6 +175,7 @@ var debugAutomator = false;
      * Reset the automator state for a new test scenario to run
      */
     automator._resetState = function () {
+        config.automatorModality = "reset";
         automator._state.external = {};
         automator._state.internal = {"deferredFailures": []};
     };
@@ -720,6 +721,7 @@ var debugAutomator = false;
      */
     automator._evaluateScenario = function (scenario, message) {
 
+        config.automatorModality = "initScenario";
         var testname = scenario.title;
         UIALogger.logDebug("###############################################################");
         UIALogger.logStart(testname);
@@ -749,6 +751,7 @@ var debugAutomator = false;
         // wrap the iteration of the test steps in try/catch
         var step = null;
         try {
+            config.automatorModality = "executeScenario";
 
             // if we iterate all steps without exception, test passes
             for (var i = 0; i < scenario.steps.length; i++) {
@@ -785,6 +788,7 @@ var debugAutomator = false;
             }
 
         } catch (exception) {
+            config.automatorModality = "handleException";
             var failmsg = exception.message ? exception.message : exception.toString();
             var longmsg = (['Step ', i + 1, " of ", scenario.steps.length, " (",
                             step.action.screenName, ".", step.action.name,

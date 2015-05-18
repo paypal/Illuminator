@@ -972,7 +972,8 @@ extendPrototype(UIAElement, {
             var vectors = [];
 
             // iOS 8.1 takes between 3 and 5 milliseconds each (????!?!?!) to evaluate these, so only do it for 7.x
-            if (isSimVersion(7)) {
+            // also force the fully-annotated output when we logging errors
+            if (isSimVersion(7) || config.automatorModality == "handleException") {
                 vectors = ["activityIndicators", "buttons", "cells", "collectionViews", "images","keys",
                            "links", "navigationBars", "pageIndicators", "pickers", "progressIndicators",
                            "scrollViews", "searchBars", "secureTextFields", "segmentedControls", "sliders",
