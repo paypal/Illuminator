@@ -8,70 +8,70 @@ module Illuminator
     include Singleton
 
     def initialize
-      @xcodePath = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
-      @xcodeVersion = nil
-      @sdkPath = nil
-      @instrumentsPath = nil
-      @_simulatorDevicesText = nil
-      @simulatorDeviceTypes = nil
-      @simulatorRuntims = nil
+      @xcode_path              = `/usr/bin/xcode-select -print-path`.chomp.sub(/^\s+/, '')
+      @xcode_version           = nil
+      @sdk_path                = nil
+      @instruments_path        = nil
+      @_simulator_devices_text = nil
+      @simulator_device_types  = nil
+      @simulator_runtimes      = nil
     end
 
-    def getXcodePath
-      @xcodePath
+    def get_xcode_path
+      @xcode_path
     end
 
-    def getXcodeAppPath
-      Illuminator::HostUtils.realpath(File.join(@xcodePath, "../../"))
+    def get_xcode_app_path
+      Illuminator::HostUtils.realpath(File.join(@xcode_path, "../../"))
     end
 
-    def getXcodeSimctlPath
-      Illuminator::HostUtils.realpath(File.join(@xcodePath, "/usr/bin/simctl"))
+    def get_xcode_simctl_path
+      Illuminator::HostUtils.realpath(File.join(@xcode_path, "/usr/bin/simctl"))
     end
 
-    def getXcodeVersion
-      if @xcodeVersion.nil?
-        xcodeVersion = `xcodebuild -version`
+    def get_xcode_version
+      if @xcode_version.nil?
+        xcode_version = `xcodebuild -version`
         needle = 'Xcode (.*)'
-        match = xcodeVersion.match(needle)
-        @xcodeVersion = match.captures[0]
+        match = xcode_version.match(needle)
+        @xcode_version = match.captures[0]
       end
-      @xcodeVersion
+      @xcode_version
     end
 
-    def isXcodeMajorVersion ver
+    def is_xcode_major_version ver
       # should update this with 'version' gem
       needle = '(\d+)\.?(\d+)?'
-      match = self.getXcodeVersion.match(needle)
+      match = self.get_xcode_version.match(needle)
       return match.captures[0].to_i == ver
     end
 
     # Get the path to the SDK
-    def getSdkPath
-      @sdkPath ||= `/usr/bin/xcodebuild -version -sdk iphoneos | grep PlatformPath`.split(':')[1].chomp.sub(/^\s+/, '')
+    def get_sdk_path
+      @sdk_path ||= `/usr/bin/xcodebuild -version -sdk iphoneos | grep PlatformPath`.split(':')[1].chomp.sub(/^\s+/, '')
     end
 
     # Get the path to the instruments bundle
-    def getInstrumentsPath
-      if @instrumentsPath.nil?
-        if File.directory? "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/"
-          @instrumentsPath = "AutomationInstrument.xrplugin";
+    def get_instruments_path
+      if @instruments_path.nil?
+        if File.directory? "#{@xcode_path}/../Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/"
+          @instruments_path = "AutomationInstrument.xrplugin";
         else
           #fallback to old instruments bundle (pre Xcode6)
-          @instrumentsPath = "AutomationInstrument.bundle";
+          @instruments_path = "AutomationInstrument.bundle";
         end
       end
-      @instrumentsPath
+      @instruments_path
     end
 
     # Get the path to the instruments template
-    def getInstrumentsTemplatePath
-      instrumentsFolder = self.getInstrumentsPath
-      "#{@xcodePath}/../Applications/Instruments.app/Contents/PlugIns/#{instrumentsFolder}/Contents/Resources/Automation.tracetemplate"
+    def get_instruments_template_path
+      instruments_folder = self.get_instruments_path
+      "#{@xcode_path}/../Applications/Instruments.app/Contents/PlugIns/#{instruments_folder}/Contents/Resources/Automation.tracetemplate"
     end
 
-    def _getAllSimulatorInfo
-      info = `#{self.getXcodeSimctlPath} list`.split("\n")
+    def _get_all_simulator_info
+      info = `#{self.get_xcode_simctl_path} list`.split("\n")
 
       output = {"devices" => [], "runtimes" => []}
       pointer = nil
@@ -100,75 +100,75 @@ module Illuminator
         end
       end
 
-      @simulatorDeviceTypes = output["devices"]
-      @simulatorRuntimes = output["runtimes"]
+      @simulator_device_types = output["devices"]
+      @simulator_runtimes = output["runtimes"]
     end
 
-    def getSimulatorDeviceTypes
-      if @simulatorDeviceTypes.nil?
-        self._getAllSimulatorInfo
+    def get_simulator_device_types
+      if @simulator_device_types.nil?
+        self._get_all_simulator_info
       end
-      @simulatorDeviceTypes
+      @simulator_device_types
     end
 
-    def getSimulatorRuntimes
-      if @simulatorRuntimes.nil?
-        self._getAllSimulatorInfo
+    def get_simulator_runtimes
+      if @simulator_runtimes.nil?
+        self._get_all_simulator_info
       end
-      @simulatorRuntimes
+      @simulator_runtimes
     end
 
-    def getSimulatorDevices
-      if @_simulatorDevicesText.nil?
-        @_simulatorDevicesText = `instruments -s devices`
+    def get_simulator_devices
+      if @_simulator_devices_text.nil?
+        @_simulator_devices_text = `instruments -s devices`
       end
-      @_simulatorDevicesText
+      @_simulator_devices_text
     end
 
     # Based on the desired device and version, get the ID of the simulator that will be passed to instruments
-    def getSimulatorID (simDevice, simVersion)
-      devices = self.getSimulatorDevices
-      needle = simDevice + ' \(' + simVersion + ' Simulator\) \[(.*)\]'
+    def get_simulator_id (sim_device, sim_version)
+      devices = self.get_simulator_devices
+      needle = sim_device + ' \(' + sim_version + ' Simulator\) \[(.*)\]'
       match = devices.match(needle)
       if match
         puts "Found device match: #{match}".green
         return match.captures[0]
       elsif
-        puts "Did not find UDID of device '#{simDevice}' for version '#{simVersion}'".green
-        if XcodeUtils.instance.isXcodeMajorVersion 5
-          fallbackName = "#{simDevice} - Simulator - iOS #{simVersion}"
-          puts "Falling back to Xcode5 name #{fallbackName}".green
-          return fallbackName
+        puts "Did not find UDID of device '#{sim_device}' for version '#{sim_version}'".green
+        if XcodeUtils.instance.is_xcode_major_version 5
+          fallback_name = "#{sim_device} - Simulator - iOS #{sim_version}"
+          puts "Falling back to Xcode5 name #{fallback_name}".green
+          return fallback_name
         end
       end
 
       return nil
     end
 
-    def getCrashDirectory
+    def get_crash_directory
       return "#{ENV['HOME']}/Library/Logs/DiagnosticReports"
     end
 
     # Create a crash report
-    def createSymbolicatedCrashReport (appPath, crashPath, crashReportPath)
+    def create_symbolicated_crash_report (app_path, crash_path, crash_report_path)
       # find symbolicatecrash file, which is different depending on the Xcode version (we assume either 5 or 6)
-      frameworksPath = "#{@xcodePath}/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks"
-      symbolicatorPath = "#{frameworksPath}/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash"
-      if not File.exist?(symbolicatorPath)
-        symbolicatorPath = "#{frameworksPath}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
+      frameworks_path = "#{@xcode_path}/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks"
+      symbolicator_path = "#{frameworks_path}/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash"
+      if not File.exist?(symbolicator_path)
+        symbolicator_path = "#{frameworks_path}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
       end
-      if not File.exist?(symbolicatorPath)
-        symbolicatorPath = File.join(self.getXcodeAppPath, "Contents/SharedFrameworks/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash")
+      if not File.exist?(symbolicator_path)
+        symbolicator_path = File.join(self.get_xcode_app_path, "Contents/SharedFrameworks/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash")
       end
 
-      command =   "DEVELOPER_DIR='#{@xcodePath}' "
-      command <<  "'#{symbolicatorPath}' "
-      command <<  "-o '#{crashReportPath}' '#{crashPath}' '#{appPath}.dSYM' 2>&1"
+      command =   "DEVELOPER_DIR='#{@xcode_path}' "
+      command <<  "'#{symbolicator_path}' "
+      command <<  "-o '#{crash_report_path}' '#{crash_path}' '#{app_path}.dSYM' 2>&1"
 
       output = `#{command}`
 
       # log the output of the crash reporting if the file didn't appear
-      unless File.exist?(crashReportPath)
+      unless File.exist?(crash_report_path)
         puts command.green
         puts output
         return false
@@ -177,22 +177,22 @@ module Illuminator
     end
 
     # use the provided applescript to reset the content and settings of the simulator
-    def resetSimulator deviceID
-      command = "#{self.getXcodeSimctlPath} erase #{deviceID}"
+    def reset_simulator device_id
+      command = "#{self.get_xcode_simctl_path} erase #{device_id}"
       puts command.green
       puts `#{command}`
 
     end
 
     # remove any apps in the specified directory
-    def self.removeExistingApps xcodeOutputDir
-      Dir["#{xcodeOutputDir}/*.app"].each do |app|
+    def self.remove_existing_apps xcode_output_dir
+      Dir["#{xcode_output_dir}/*.app"].each do |app|
         puts "XcodeUtils: removing #{app}"
         FileUtils.rm_rf app
       end
     end
 
-    def self.killAllSimulatorProcesses
+    def self.kill_all_simulator_processes
       command = HostUtils.realpath(File.join(File.dirname(__FILE__), "../../resources/scripts/kill_all_sim_processes.sh"))
       puts "Running #{command}"
       puts `'#{command}'`

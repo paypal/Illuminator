@@ -4,24 +4,24 @@ require_relative './instruments-listener'
 
 module TestListenerEventSink
 
-  def testListenerGotTestStart name
+  def test_listener_got_test_start name
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
-  def testListenerGotTestPass name
+  def test_listener_got_test_pass name
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
-  def testListenerGotTestFail message
+  def test_listener_got_test_fail message
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
-  def testListenerGotTestError message
+  def test_listener_got_test_error message
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
 
-  def testListenerGotLine(status, message)
+  def test_listener_got_line(status, message)
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
@@ -30,29 +30,29 @@ end
 
 class TestListener < InstrumentsListener
 
-  attr_accessor :eventSink
+  attr_accessor :event_sink
 
   def receive(message)
-    # assume developer has set eventSink already
+    # assume developer has set event_sink already
 
     # signal test starts before general logging
-    @eventSink.testListenerGotTestStart message.message if message.status == :start
+    @event_sink.test_listener_got_test_start message.message if message.status == :start
 
     # log all lines
     if message.status == :unknown
-      @eventSink.testListenerGotLine nil, message.fullLine
+      @event_sink.test_listener_got_line nil, message.full_line
     else
-      @eventSink.testListenerGotLine message.status, message.message
+      @event_sink.test_listener_got_line message.status, message.message
     end
 
     # signal test ends after logs
-    @eventSink.testListenerGotTestPass message.message if message.status == :pass
-    @eventSink.testListenerGotTestFail message.message if message.status == :fail
-    @eventSink.testListenerGotTestError message.message if message.status == :error
+    @event_sink.test_listener_got_test_pass message.message if message.status == :pass
+    @event_sink.test_listener_got_test_fail message.message if message.status == :fail
+    @event_sink.test_listener_got_test_error message.message if message.status == :error
 
   end
 
-  def onAutomationFinished
+  def on_automation_finished
   end
 
 end

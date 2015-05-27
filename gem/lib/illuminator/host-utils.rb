@@ -18,9 +18,9 @@ module Illuminator
       return nil
     end
 
-    def self.saveJSON(hashObject, path)
+    def self.save_json(hash_object, path)
       f = File.open(path, 'w')
-      f << JSON.pretty_generate(hashObject)
+      f << JSON.pretty_generate(hash_object)
       f.close
     end
 

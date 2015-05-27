@@ -3,19 +3,19 @@ require_relative './saltinel-listener'
 
 module SaltinelAgentEventSink
 
-  def saltinelAgentGotScenarioList jsonPath
+  def saltinel_agent_got_scenario_list jsonPath
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
-  def saltinelAgentGotScenarioDefinitions jsonPath
+  def saltinel_agent_got_scenario_definitions jsonPath
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
-  def saltinelAgentGotStacktraceHint
+  def saltinel_agent_got_stacktrace_hint
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
-  def saltinelAgentGotRestartRequest
+  def saltinel_agent_got_restart_request
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
@@ -24,43 +24,43 @@ end
 # Saltinel Agent handles all known saltinel messages and runs callbacks
 class SaltinelAgent < SaltinelListener
 
-  attr_accessor :eventSink
+  attr_accessor :event_sink
 
-  def onInit
+  def on_init
     @recognizers = {
-      "recognizeTestList"       => /Saved intended test list to: (.*)/,
-      "recognizeTestDefs"       => /Saved scenario definitions to: (.*)/,
-      "recognizeStacktrace"     => /Stack trace follows:/,
-      "recognizeRestartRequest" => /Request instruments restart/,
+      "recognize_test_list"       => /Saved intended test list to: (.*)/,
+      "recognize_test_defs"       => /Saved scenario definitions to: (.*)/,
+      "recognize_stacktrace"      => /Stack trace follows:/,
+      "recognize_restart_request" => /Request instruments restart/,
     }
   end
 
-  def recognizeTestList regexResult
-    # assume developer has set eventSink already
-    @eventSink.saltinelAgentGotScenarioList(regexResult.to_a[1])
+  def recognize_test_list regexResult
+    # assume developer has set event_sink already
+    @event_sink.saltinel_agent_got_scenario_list(regexResult.to_a[1])
   end
 
-  def recognizeTestDefs regexResult
-    # assume developer has set eventSink already
-    @eventSink.saltinelAgentGotScenarioDefinitions(regexResult.to_a[1])
+  def recognize_test_defs regexResult
+    # assume developer has set event_sink already
+    @event_sink.saltinel_agent_got_scenario_definitions(regexResult.to_a[1])
   end
 
-  def recognizeStacktrace _
-    @eventSink.saltinelAgentGotStacktraceHint
+  def recognize_stacktrace _
+    @event_sink.saltinel_agent_got_stacktrace_hint
   end
 
-  def recognizeRestartRequest _
-    @eventSink.saltinelAgentGotRestartRequest
+  def recognize_restart_request _
+    @event_sink.saltinel_agent_got_restart_request
   end
 
-  def onSaltinel innerMessage
+  def on_saltinel inner_message
     @recognizers.each do |fn, regex|
-      result = regex.match(innerMessage)
+      result = regex.match(inner_message)
       self.send(fn, result) unless result.nil?
     end
   end
 
-  def onAutomationFinished
+  def on_automation_finished
   end
 
 end

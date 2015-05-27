@@ -9,36 +9,36 @@ class DeviceInstaller
   def initialize
     installers = ['ios-deploy']
 
-    @installedInstallers = {}
-    installers.each { |exe| @installedInstallers[exe] = Illuminator::HostUtils.which(exe) }
+    @installed_installers = {}
+    installers.each { |exe| @installed_installers[exe] = Illuminator::HostUtils.which(exe) }
   end
 
 
-  def _installUsingIosDeploy(appLocation, hardwareID)
+  def _install_using_ios_deploy(app_location, hardware_id)
     # TODO: actually watch the output of this command
-    cmd = "#{@installedInstallers['ios-deploy']} -b '#{appLocation}' -i #{hardwareID} -r -n"
+    cmd = "#{@installed_installers['ios-deploy']} -b '#{app_location}' -i #{hardware_id} -r -n"
     puts cmd.green
     puts `#{cmd}`
   end
 
 
-  def installOnDevice(appLocation, hardwareID, specificMethod = nil)
+  def install_on_device(app_location, hardware_id, specific_method = nil)
     # if nothing is specified, just get the first one that exists
-    if specificMethod.nil?
-      @installedInstallers.each do |name, path|
-        specificMethod = path
-        break unless specificMethod.nil?
+    if specific_method.nil?
+      @installed_installers.each do |name, path|
+        specific_method = path
+        break unless specific_method.nil?
       end
     end
 
     # run the appropriate helper for doing this
-    puts "Installing #{appLocation} on device #{hardwareID} using #{specificMethod}"
-    case specificMethod
+    puts "Installing #{app_location} on device #{hardware_id} using #{specific_method}"
+    case specific_method
     when /ios-deploy$/
-      self._installUsingIosDeploy(appLocation, hardwareID)
+      self._install_using_ios_deploy(app_location, hardware_id)
     else
-      puts "None of the following utilities for app installation appear to be installed: #{@installedInstallers.keys.to_s}".red
-      raise NotImplementedError, "No app installation available with name " + specificMethod.to_s
+      puts "None of the following utilities for app installation appear to be installed: #{@installed_installers.keys.to_s}".red
+      raise NotImplementedError, "No app installation available with name " + specific_method.to_s
     end
   end
 

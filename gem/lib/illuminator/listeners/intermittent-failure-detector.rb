@@ -3,7 +3,7 @@ require_relative './saltinel-listener'
 
 module IntermittentFailureDetectorEventSink
 
-  def intermittentFailureDetectorTriggered message
+  def intermittent_failure_detector_triggered message
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
@@ -14,30 +14,30 @@ end
 #  - etc
 class IntermittentFailureDetector < SaltinelListener
 
-  attr_accessor :eventSink
+  attr_accessor :event_sink
 
-  def onInit
-    @alreadyStarted = false
+  def on_init
+    @already_started = false
   end
 
   def trigger
-    @eventSink.intermittentFailureDetectorTriggered
+    @event_sink.intermittent_failure_detector_triggered
   end
 
   def receive message
     super # run the SaltinelListener processor
 
     # error cases that should trigger a restart
-    if /Automation Instrument ran into an exception while trying to run the script.  UIATargetHasGoneAWOLException/ =~ message.fullLine
+    if /Automation Instrument ran into an exception while trying to run the script.  UIATargetHasGoneAWOLException/ =~ message.full_line
       self.trigger "UIATargetHasGoneAWOLException"
     end
   end
 
-  def onSaltinel innerMessage
+  def on_saltinel inner_message
     # no cases yet
   end
 
-  def onAutomationFinished
+  def on_automation_finished
   end
 
 end

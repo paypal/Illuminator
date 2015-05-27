@@ -13,13 +13,13 @@ module Illuminator
     end
 
 
-    def checkRetestArgs
-      knownRetests = ["solo"]
+    def check_retest_args
+      known_retests = ["solo"]
 
       @_options["retest"] = [] if @_options["retest"].nil?
 
       @_options["retest"].each do |r|
-        if knownRetests.include? r
+        if known_retests.include? r
           # ok
         elsif /^\d+x$/.match(r)
           # ok (1x, 2x, 3x...)
@@ -29,7 +29,7 @@ module Illuminator
       end
     end
 
-    def getMaxRetests
+    def get_max_retests
       ret = 0
       @_options["retest"].each do |r|
         matches = /^(\d+)x$/.match(r)
@@ -40,39 +40,39 @@ module Illuminator
       ret
     end
 
-    def checkCleanArgs
-      knownCleans = ["xcode", "buildArtifacts", "derivedData", "noDelay"]
+    def check_clean_args
+      known_cleans = ["xcode", "buildArtifacts", "deriveData", "noDelay"]
 
       @_options["clean"] = [] if @_options["clean"].nil?
 
       @_options["clean"].each do |c|
-        unless knownCleans.include? c
+        unless known_cleans.include? c
           puts "Got unknown --clean specifier '#{c}'".yellow
         end
       end
     end
 
     # copy internal options storage into a options object
-    def copyParsedOptionsInto(illuminatorOptions)
-      self.checkCleanArgs
-      self.checkRetestArgs
+    def copy_parsed_options_into(illuminatorOptions)
+      self.check_clean_args
+      self.check_retest_args
 
       # load up known illuminatorOptions
       # we only load non-nil options, just in case there was already something in the illuminatorOptions obj
-      illuminatorOptions.buildArtifactsDir = @_options["buildArtifacts"] unless @_options["buildArtifacts"].nil?
+      illuminatorOptions.build_artifacts_dir = @_options["buildArtifacts"] unless @_options["buildArtifacts"].nil?
 
-      illuminatorOptions.xcode.appName        = @_options["appName"] unless @_options["appName"].nil?
+      illuminatorOptions.xcode.app_name       = @_options["app_name"] unless @_options["app_name"].nil?
       illuminatorOptions.xcode.sdk            = @_options["sdk"] unless @_options["sdk"].nil?
       illuminatorOptions.xcode.scheme         = @_options["scheme"] unless @_options["scheme"].nil?
       illuminatorOptions.xcode.workspace      = @_options["xcodeWorkspace"] unless @_options["xcodeWorkspace"].nil?
 
-      illuminatorOptions.illuminator.entryPoint      = @_options["entryPoint"] unless @_options["entryPoint"].nil?
-      illuminatorOptions.illuminator.test.randomSeed = @_options["randomSeed"].to_i unless @_options["randomSeed"].nil?
-      illuminatorOptions.illuminator.test.tags.any   = @_options["tagsAny"] unless @_options["tagsAny"].nil?
-      illuminatorOptions.illuminator.test.tags.all   = @_options["tagsAll"] unless @_options["tagsAll"].nil?
-      illuminatorOptions.illuminator.test.tags.none  = @_options["tagsNone"] unless @_options["tagsNone"].nil?
+      illuminatorOptions.illuminator.entry_point      = @_options["entry_point"] unless @_options["entry_point"].nil?
+      illuminatorOptions.illuminator.test.random_seed = @_options["random_seed"].to_i unless @_options["random_seed"].nil?
+      illuminatorOptions.illuminator.test.tags.any    = @_options["tags_any"] unless @_options["tags_any"].nil?
+      illuminatorOptions.illuminator.test.tags.all    = @_options["tags_all"] unless @_options["tags_all"].nil?
+      illuminatorOptions.illuminator.test.tags.none   = @_options["tags_none"] unless @_options["tags_none"].nil?
 
-      illuminatorOptions.illuminator.test.retest.attempts = getMaxRetests
+      illuminatorOptions.illuminator.test.retest.attempts = get_max_retests
       illuminatorOptions.illuminator.test.retest.solo     = @_options["retest"].include? "solo"
 
       illuminatorOptions.illuminator.clean.xcode     = @_options["clean"].include? "xcode"
@@ -80,35 +80,35 @@ module Illuminator
       illuminatorOptions.illuminator.clean.artifacts = @_options["clean"].include? "buildArtifacts"
       illuminatorOptions.illuminator.clean.noDelay   = @_options["clean"].include? "noDelay"
 
-      illuminatorOptions.illuminator.task.build    = (not @_options["skipBuild"]) unless @_options["skipBuild"].nil?
-      illuminatorOptions.illuminator.task.automate = (not @_options["skipAutomate"]) unless @_options["skipAutomate"].nil?
-      illuminatorOptions.illuminator.task.setSim   = (not @_options["skipSetSim"]) unless @_options["skipSetSim"].nil?
-      illuminatorOptions.illuminator.task.coverage = @_options["coverage"] unless @_options["coverage"].nil?
-      illuminatorOptions.illuminator.hardwareID    = @_options["hardwareID"] unless @_options["hardwareID"].nil?
+      illuminatorOptions.illuminator.task.build     = (not @_options["skipBuild"]) unless @_options["skipBuild"].nil?
+      illuminatorOptions.illuminator.task.automate  = (not @_options["skipAutomate"]) unless @_options["skipAutomate"].nil?
+      illuminatorOptions.illuminator.task.set_sim   = (not @_options["skipSetSim"]) unless @_options["skipSetSim"].nil?
+      illuminatorOptions.illuminator.task.coverage  = @_options["coverage"] unless @_options["coverage"].nil?
+      illuminatorOptions.illuminator.hardware_id    = @_options["hardware_id"] unless @_options["hardware_id"].nil?
 
-      illuminatorOptions.simulator.device    = @_options["simDevice"] unless @_options["simDevice"].nil?
-      illuminatorOptions.simulator.version   = @_options["simVersion"] unless @_options["simVersion"].nil?
-      illuminatorOptions.simulator.language  = @_options["simLanguage"] unless @_options["simLanguage"].nil?
-      illuminatorOptions.simulator.killAfter = (not @_options["skipKillAfter"]) unless @_options["skipKillAfter"].nil?
+      illuminatorOptions.simulator.device     = @_options["sim_device"] unless @_options["sim_device"].nil?
+      illuminatorOptions.simulator.version    = @_options["sim_version"] unless @_options["sim_version"].nil?
+      illuminatorOptions.simulator.language   = @_options["sim_language"] unless @_options["sim_language"].nil?
+      illuminatorOptions.simulator.kill_after = (not @_options["skipKillAfter"]) unless @_options["skipKillAfter"].nil?
 
-      illuminatorOptions.instruments.appLocation = @_options["appLocation"] unless @_options["appLocation"].nil?
-      illuminatorOptions.instruments.doVerbose   = @_options["verbose"] unless @_options["verbose"].nil?
-      illuminatorOptions.instruments.timeout     = @_options["timeout"].to_i unless @_options["timeout"].nil?
+      illuminatorOptions.instruments.app_location = @_options["app_location"] unless @_options["app_location"].nil?
+      illuminatorOptions.instruments.do_verbose   = @_options["verbose"] unless @_options["verbose"].nil?
+      illuminatorOptions.instruments.timeout      = @_options["timeout"].to_i unless @_options["timeout"].nil?
 
-      illuminatorOptions.javascript.testPath       = @_options["testPath"] unless @_options["testPath"].nil?
-      illuminatorOptions.javascript.implementation = @_options["implementation"] unless @_options["implementation"].nil?
+      illuminatorOptions.javascript.test_path       = @_options["test_path"] unless @_options["test_path"].nil?
+      illuminatorOptions.javascript.implementation  = @_options["implementation"] unless @_options["implementation"].nil?
 
-      knownKeys = Illuminator::ParserFactory.new.letterMap.values # get option keynames from a plain vanilla factory
+      known_keys = Illuminator::ParserFactory.new.letter_map.values # get option keynames from a plain vanilla factory
 
       # load up unknown illuminatorOptions
-      illuminatorOptions.appSpecific = @_options.select { |keyname, _| not (knownKeys.include? keyname) }
+      illuminatorOptions.app_specific = @_options.select { |keyname, _| not (known_keys.include? keyname) }
 
       return illuminatorOptions
     end
 
     def parse args
       leftovers = super(args)
-      return self.copyParsedOptionsInto(Illuminator::Options.new)
+      return self.copy_parsed_options_into(Illuminator::Options.new)
     end
 
   end
@@ -117,7 +117,7 @@ module Illuminator
 
   class ParserFactory
 
-    attr_reader :letterMap
+    attr_reader :letter_map
 
     # the currency of this parser factory is the "short" single-letter argument switch
     def initialize()
@@ -125,25 +125,25 @@ module Illuminator
       @switches = {}
 
       # build the list of how each parameter will be saved in the output
-      @letterMap = {
+      @letter_map = {
         'A' => 'buildArtifacts',
-        'x' => 'entryPoint',
-        'p' => 'testPath',
-        'a' => 'appName',
+        'x' => 'entry_point',
+        'p' => 'test_path',
+        'a' => 'app_name',
         'D' => 'xcodeProjectDir',
         'P' => 'xcodeProject',
         'W' => 'xcodeWorkspace',
-        't' => 'tagsAny',
-        'o' => 'tagsAll',
-        'n' => 'tagsNone',
+        't' => 'tags_any',
+        'o' => 'tags_all',
+        'n' => 'tags_none',
         'q' => 'sdk',
         's' => 'scheme',
-        'd' => 'hardwareID',
+        'd' => 'hardware_id',
         'i' => 'implementation',
-        'E' => 'appLocation',
-        'b' => 'simDevice',
-        'z' => 'simVersion',
-        'l' => 'simLanguage',
+        'E' => 'app_location',
+        'b' => 'sim_device',
+        'z' => 'sim_version',
+        'l' => 'sim_language',
         'f' => 'skipBuild',
         'B' => 'skipAutomate',
         'e' => 'skipSetSim',
@@ -152,11 +152,11 @@ module Illuminator
         'r' => 'retest',
         'v' => 'verbose',
         'm' => 'timeout',
-        'w' => 'randomSeed',
+        'w' => 'random_seed',
         'y' => 'clean',
       }
 
-      @letterProcessing = {
+      @letter_processing = {
         'p' => lambda {|p| Illuminator::HostUtils.realpath(p) },     # get real path to tests file
         'E' => lambda {|p| Illuminator::HostUtils.realpath(p) },     # get real path to app
         'y' => lambda {|p| p.split(',')},                            # split comma-separated string into array
@@ -166,7 +166,7 @@ module Illuminator
         'n' => lambda {|p| p.split(',')},                            # split comma-separated string into array
       }
 
-      @defaultValues = {
+      @default_values = {
         # 'D' => Dir.pwd,   # Since this effectively happens in xcode-builder, DON'T do it here too
         'A' => File.join(Dir.pwd, "buildArtifacts"),
         'b' => 'iPhone 5',
@@ -184,55 +184,55 @@ module Illuminator
     end
 
     # you must custom prepare before you can add custom switches... otherwise things get all stupid
-    def prepare(defaultValues = nil, letterMapUpdates = nil, letterProcessingUpdates = nil)
-      @letterMap = @letterMap.merge(letterMapUpdates) unless letterMapUpdates.nil?
-      @letterProcessing = @letterProcessing.merge(letterProcessingUpdates) unless letterProcessingUpdates.nil?
-      @defaultValues = @defaultValues.merge defaultValues unless defaultValues.nil?
+    def prepare(default_values = nil, letter_map_updates = nil, letter_processing_updates = nil)
+      @letter_map = @letter_map.merge(letter_map_updates) unless letter_map_updates.nil?
+      @letter_processing = @letter_processing.merge(letter_processing_updates) unless letter_processing_updates.nil?
+      @default_values = @default_values.merge default_values unless default_values.nil?
 
-      self.addSwitch('A', ['-A', '--buildArtifacts PATH', 'The directory in which to store build artifacts'])
-      self.addSwitch('x', ['-x', '--entryPoint LABEL', 'The execution entry point {runTestsByTag, runTestsByName, describe}'])
-      self.addSwitch('p', ['-p', '--testPath PATH', 'Path to js file with all tests imported'])
-      self.addSwitch('a', ['-a', '--appName APPNAME', "Name of the app to build / run"])
-      self.addSwitch('D', ['-D', '--xcodeProjectDirectory PATH', "Directory containing the Xcode project to build"])
-      self.addSwitch('P', ['-P', '--xcodeProject PROJECTNAME', "Project to build -- required if there are 2 in the same directory"])
-      self.addSwitch('W', ['-W', '--xcodeWorkspace WORKSPACENAME', "Workspace to build"])
-      self.addSwitch('t', ['-t', '--tags-any TAGSANY', 'Run tests with any of the given tags'])
-      self.addSwitch('o', ['-o', '--tags-all TAGSALL', 'Run tests with all of the given tags'])
-      self.addSwitch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])
-      self.addSwitch('q', ['-q', '--sdk SDK', 'SDK to build against'])
-      self.addSwitch('s', ['-s', '--scheme SCHEME', 'Build and run specific tests on given workspace scheme'])
-      self.addSwitch('d', ['-d', '--hardwareID ID', 'hardware id of device to run on instead of simulator'])
-      self.addSwitch('i', ['-i', '--implementation IMPL', 'Device tests implementation'])
-      self.addSwitch('E', ['-E', '--appLocation LOCATION', 'Location of app executable, if pre-built'])
-      self.addSwitch('b', ['-b', '--simDevice DEVICE', 'Run on given simulated device'])
-      self.addSwitch('z', ['-z', '--simVersion VERSION', 'Run on given simulated iOS version'])
-      self.addSwitch('l', ['-l', '--simLanguage LANGUAGE', 'Run on given simulated iOS language'])
-      self.addSwitch('f', ['-f', '--skip-build', 'Just automate; assume already built'])
-      self.addSwitch('B', ['-B', '--skip-automate', "Don't automate; build only"])
-      self.addSwitch('e', ['-e', '--skip-set-sim', 'Assume that simulator has already been chosen and properly reset'])
-      self.addSwitch('k', ['-k', '--skip-kill-after', 'Leave the simulator open after the run'])
-      self.addSwitch('y', ['-y', '--clean PLACES', 'Comma-separated list of places to clean {xcode, buildArtifacts, derivedData}'])
-      self.addSwitch('c', ['-c', '--coverage', 'Generate coverage files'])
-      self.addSwitch('r', ['-r', '--retest OPTIONS', 'Immediately retest failed tests with comma-separated options {1x, solo}'])
-      self.addSwitch('v', ['-v', '--verbose', 'Show verbose output from instruments'])
-      self.addSwitch('m', ['-m', '--timeout TIMEOUT', 'Seconds to wait for instruments tool to start tests'])
-      self.addSwitch('w', ['-w', '--random-seed SEED', 'Randomize test order based on given integer seed'])
+      self.add_switch('A', ['-A', '--buildArtifacts PATH', 'The directory in which to store build artifacts'])
+      self.add_switch('x', ['-x', '--entryPoint LABEL', 'The execution entry point {runTestsByTag, runTestsByName, describe}'])
+      self.add_switch('p', ['-p', '--test_path PATH', 'Path to js file with all tests imported'])
+      self.add_switch('a', ['-a', '--app_name APPNAME', "Name of the app to build / run"])
+      self.add_switch('D', ['-D', '--xcodeProjectDirectory PATH', "Directory containing the Xcode project to build"])
+      self.add_switch('P', ['-P', '--xcodeProject PROJECTNAME', "Project to build -- required if there are 2 in the same directory"])
+      self.add_switch('W', ['-W', '--xcodeWorkspace WORKSPACENAME', "Workspace to build"])
+      self.add_switch('t', ['-t', '--tags-any TAGSANY', 'Run tests with any of the given tags'])
+      self.add_switch('o', ['-o', '--tags-all TAGSALL', 'Run tests with all of the given tags'])
+      self.add_switch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])
+      self.add_switch('q', ['-q', '--sdk SDK', 'SDK to build against'])
+      self.add_switch('s', ['-s', '--scheme SCHEME', 'Build and run specific tests on given workspace scheme'])
+      self.add_switch('d', ['-d', '--hardware_id ID', 'hardware id of device to run on instead of simulator'])
+      self.add_switch('i', ['-i', '--implementation IMPL', 'Device tests implementation'])
+      self.add_switch('E', ['-E', '--app_location LOCATION', 'Location of app executable, if pre-built'])
+      self.add_switch('b', ['-b', '--simDevice DEVICE', 'Run on given simulated device'])
+      self.add_switch('z', ['-z', '--simVersion VERSION', 'Run on given simulated iOS version'])
+      self.add_switch('l', ['-l', '--simLanguage LANGUAGE', 'Run on given simulated iOS language'])
+      self.add_switch('f', ['-f', '--skip-build', 'Just automate; assume already built'])
+      self.add_switch('B', ['-B', '--skip-automate', "Don't automate; build only"])
+      self.add_switch('e', ['-e', '--skip-set-sim', 'Assume that simulator has already been chosen and properly reset'])
+      self.add_switch('k', ['-k', '--skip-kill-after', 'Leave the simulator open after the run'])
+      self.add_switch('y', ['-y', '--clean PLACES', 'Comma-separated list of places to clean {xcode, buildArtifacts, derived_data}'])
+      self.add_switch('c', ['-c', '--coverage', 'Generate coverage files'])
+      self.add_switch('r', ['-r', '--retest OPTIONS', 'Immediately retest failed tests with comma-separated options {1x, solo}'])
+      self.add_switch('v', ['-v', '--verbose', 'Show verbose output from instruments'])
+      self.add_switch('m', ['-m', '--timeout TIMEOUT', 'Seconds to wait for instruments tool to start tests'])
+      self.add_switch('w', ['-w', '--random-seed SEED', 'Randomize test order based on given integer seed'])
     end
 
     # add a parse switch for the given letter key, using the given options.
-    #   the parse action is defined by the existence of letterProcessing for the letter key,
+    #   the parse action is defined by the existence of letter_processing for the letter key,
     #   which by default is simple assignment
-    def addSwitch(letter, opts)
-      dest = self.getLetterDestination(letter)
+    def add_switch(letter, opts)
+      dest = self.get_letter_destination(letter)
 
       # alter opts to include the default values
       altered = false
-      if @defaultValues[letter].nil?
+      if @default_values[letter].nil?
         opts_with_default = opts
       else
         opts_with_default = opts.map do |item|
           if (!altered and item.chars.first != '-')
-            item += "   ::   Defaults to \"#{@defaultValues[letter]}\""
+            item += "   ::   Defaults to \"#{@default_values[letter]}\""
             altered = true
           end
           item
@@ -242,8 +242,8 @@ module Illuminator
       @switches[letter] = OpenStruct.new(:opts => opts_with_default,
                                          :block => lambda do |newval|
                                            # assign the parsed value to the output, processing it if necessary
-                                           if @letterProcessing[letter]
-                                             @options[dest] = @letterProcessing[letter].call(newval)
+                                           if @letter_processing[letter]
+                                             @options[dest] = @letter_processing[letter].call(newval)
                                            else
                                              @options[dest] = newval
                                            end
@@ -251,14 +251,14 @@ module Illuminator
     end
 
 
-    # letter destination defaults to the letter itself, but can be overwritten by letterMap
-    def getLetterDestination(letter)
-      return @letterMap[letter]? @letterMap[letter] : letter
+    # letter destination defaults to the letter itself, but can be overwritten by letter_map
+    def get_letter_destination(letter)
+      return @letter_map[letter]? @letter_map[letter] : letter
     end
 
 
     # factory function
-    def buildParser(options, letters = nil)
+    def build_parser(options, letters = nil)
       @options = options
 
       if letters.nil?
@@ -267,13 +267,13 @@ module Illuminator
 
       # helpful error message for bad chars
       bad_chars = letters.chars.to_a.select{|c| c != "#" and @switches[c].nil?}
-      raise ArgumentError, "buildParser got letters (" + letters + ") containing unknown option characters: " + bad_chars.to_s unless bad_chars.empty?
+      raise ArgumentError, "build_parser got letters (" + letters + ") containing unknown option characters: " + bad_chars.to_s unless bad_chars.empty?
 
       retval = Illuminator::Parser.new options
 
       # build a parser as specified by the user
       letters.each_char do |c|
-        options[self.getLetterDestination(c)] = @defaultValues[c] unless @defaultValues[c].nil?
+        options[self.get_letter_destination(c)] = @default_values[c] unless @default_values[c].nil?
 
         if c == '#'
           retval.separator('  ---------------------------------------------------------------------------------')

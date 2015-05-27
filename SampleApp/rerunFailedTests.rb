@@ -5,8 +5,8 @@ require 'pathname'
 # TODO: helpful message if file isn't supplied.
 # ARGV[0] should be a path ending in IlluminatorRerunFailedTestsSettings.json
 
-overrideOptions = lambda {|opts| opts}
+override_options = lambda {|opts| opts}
 
-success = Illuminator::reRun(ARGV[0], overrideOptions)
+success = Illuminator::rerun(ARGV[0], override_options)
 
 exit 1 unless success

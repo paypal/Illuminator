@@ -14,29 +14,29 @@ require_relative 'listeners/intermittent-failure-detector'
 class ParsedInstrumentsMessage
 
   attr_accessor :message
-  attr_accessor :fullLine
+  attr_accessor :full_line
   attr_accessor :status
   attr_accessor :date
   attr_accessor :time
   attr_accessor :tz
 
   # parse lines in the form:    2014-10-20 20:43:41 +0000 Default: BLAH BLAH BLAH ACTUAL MESSAGE
-  def self.fromLine (line)
+  def self.from_line (line)
     parsed = line.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) ([+-]\d{4}) ([^:]+): (.*)$/).to_a
-    _, dateString, timeString, tzString, statusString, msgString = parsed
+    _, date_string, time_string, tz_string, status_string, msg_string = parsed
 
     message = ParsedInstrumentsMessage.new
-    message.fullLine = line
-    message.message  = msgString
-    message.status   = self.parseStatus(statusString)
-    message.date     = dateString
-    message.time     = timeString
-    message.tz       = tzString
+    message.full_line = line
+    message.message   = msg_string
+    message.status    = self.parse_status(status_string)
+    message.date      = date_string
+    message.time      = time_string
+    message.tz        = tz_string
 
     message
   end
 
-  def self.parseStatus(status)
+  def self.parse_status(status)
     case status
       when /start/i    then :start
       when /stopped/i  then :stopped
@@ -61,88 +61,88 @@ class InstrumentsRunner
   include StartDetectorEventSink
   include IntermittentFailureDetectorEventSink
 
-  attr_accessor :appLocation
-  attr_accessor :hardwareID
-  attr_accessor :simDevice
-  attr_accessor :simLanguage
+  attr_accessor :app_location
+  attr_accessor :hardware_id
+  attr_accessor :sim_device
+  attr_accessor :sim_language
   attr_accessor :attempts
-  attr_accessor :startupTimeout
+  attr_accessor :startup_timeout
 
   attr_reader :started
 
   def initialize
     @listeners      = Hash.new
     @attempts       = 5
-    @startupTimeout = 30
+    @startup_timeout = 30
   end
 
-  def addListener (name, listener)
+  def add_listener (name, listener)
     @listeners[name] = listener
   end
 
   def cleanup
-    dirsToRemove = []
-    buildArtifactKeys = [:instruments]
+    dirs_to_remove = []
+    build_artifact_keys = [:instruments]
     # get the directories without creating them (the 'true' arg), add them to our list
-    buildArtifactKeys.each do |key|
+    build_artifact_keys.each do |key|
       dir = Illuminator::BuildArtifacts.instance.method(key).call(true)
-      dirsToRemove << dir
+      dirs_to_remove << dir
     end
 
     # remove directories in the list
-    dirsToRemove.each do |d|
+    dirs_to_remove.each do |d|
       dir = Illuminator::HostUtils.realpath d
       puts "InstrumentsRunner cleanup: removing #{dir}"
       FileUtils.rmtree dir
     end
   end
 
-  def startDetectorTriggered
-    @fullyStarted = true
+  def start_detector_triggered
+    @fully_started = true
   end
 
-  def intermittentFailureDetectorTriggered message
-    @fullyStarted = true
-    self.forceStop("Detected an intermittent failure condition - " + message)
+  def intermittent_failure_detector_triggered message
+    @fully_started = true
+    self.force_stop("Detected an intermittent failure condition - " + message)
   end
 
-  def forceStop why
+  def force_stop why
     puts "\n #{why}".red
-    @shouldAbort = true
+    @should_abort = true
   end
 
-  def runOnce saltinel
-    reportPath = Illuminator::BuildArtifacts.instance.instruments
+  def run_once saltinel
+    report_path = Illuminator::BuildArtifacts.instance.instruments
 
     # add saltinel listener
-    startDetector = StartDetector.new(saltinel)
-    startDetector.eventSink = self
-    self.addListener("startDetector", startDetector)
+    start_detector = StartDetector.new(saltinel)
+    start_detector.event_sink = self
+    self.add_listener("start_detector", start_detector)
 
-    globalJSFile = Illuminator::BuildArtifacts.instance.illuminatorJsRunner
-    xcodePath    = Illuminator::XcodeUtils.instance.getXcodePath
-    templatePath = Illuminator::XcodeUtils.instance.getInstrumentsTemplatePath
+    global_js_file = Illuminator::BuildArtifacts.instance.illuminator_js_runner
+    xcode_path     = Illuminator::XcodeUtils.instance.get_xcode_path
+    template_path  = Illuminator::XcodeUtils.instance.get_instruments_template_path
 
-    command = "env DEVELOPER_DIR='#{xcodePath}' /usr/bin/instruments"
-    if hardwareID
-      command << " -w '" + @hardwareID + "'"
-    elsif simDevice
-      command << " -w '" + @simDevice + "'"
+    command = "env DEVELOPER_DIR='#{xcode_path}' /usr/bin/instruments"
+    if hardware_id
+      command << " -w '" + @hardware_id + "'"
+    elsif sim_device
+      command << " -w '" + @sim_device + "'"
     end
 
-    command << " -t '#{templatePath}' "
-    command << "'#{@appLocation}'"
-    command << " -e UIASCRIPT '#{globalJSFile}'"
-    command << " -e UIARESULTSPATH '#{reportPath}'"
+    command << " -t '#{template_path}' "
+    command << "'#{@app_location}'"
+    command << " -e UIASCRIPT '#{global_js_file}'"
+    command << " -e UIARESULTSPATH '#{report_path}'"
 
-    command << " #{@simLanguage}" if @simLanguage
+    command << " #{@sim_language}" if @sim_language
 
     directory = Dir.pwd
     ret = nil
     # change directories and successfully change back
     begin
-      Dir.chdir(reportPath)
-      ret = self.runInstrumentsCommand command
+      Dir.chdir(report_path)
+      ret = self.run_instruments_command command
     ensure
       Dir.chdir(directory)
     end
@@ -150,7 +150,7 @@ class InstrumentsRunner
   end
 
 
-  def killInstruments(r, w, pid)
+  def kill_instruments(r, w, pid)
     puts "killing Instruments (pid #{pid})...".red
     begin
       Process.kill(9, pid)
@@ -162,15 +162,15 @@ class InstrumentsRunner
   end
 
 
-  def runInstrumentsCommand (command)
-    @fullyStarted = false
-    @shouldAbort  = false
+  def run_instruments_command (command)
+    @fully_started = false
+    @should_abort  = false
     puts command.green
     remaining_attempts = @attempts
 
     # launch & re-launch instruments until it triggers the StartDetector
-    while (not @fullyStarted) && remaining_attempts > 0 do
-      successfulRun = true
+    while (not @fully_started) && remaining_attempts > 0 do
+      successful_run = true
       remaining_attempts = remaining_attempts - 1
       puts "\nRelaunching instruments.  #{remaining_attempts} retries left".red unless (remaining_attempts + 1) == @attempts
 
@@ -178,28 +178,28 @@ class InstrumentsRunner
       begin
         PTY.spawn(*command) do |r, w, pid|
 
-          doneReadingOutput = false
+          done_reading_output = false
           # select on the output and send it to the listeners
-          while not doneReadingOutput do
-            if @shouldAbort
-              successfulRun = false
-              doneReadingOutput = true
-              self.killInstruments(r, w, pid)
+          while not done_reading_output do
+            if @should_abort
+              successful_run = false
+              done_reading_output = true
+              self.kill_instruments(r, w, pid)
 
-            elsif IO.select([r], nil, nil, @startupTimeout) then
+            elsif IO.select([r], nil, nil, @startup_timeout) then
               line = r.readline.rstrip
-              @listeners.each { |_, listener| listener.receive(ParsedInstrumentsMessage.fromLine(line)) }
+              @listeners.each { |_, listener| listener.receive(ParsedInstrumentsMessage.from_line(line)) }
               if line =~ /Instruments Trace Error/i
-                successfulRun = false
-                doneReadingOutput = true
+                successful_run = false
+                done_reading_output = true
               end
-            elsif not @fullyStarted
-              successfulRun = false
-              doneReadingOutput = true
-              puts "\n Timeout #{@startupTimeout} reached without any output - ".red
-              self.killInstruments(r, w, pid)
+            elsif not @fully_started
+              successful_run = false
+              done_reading_output = true
+              puts "\n Timeout #{@startup_timeout} reached without any output - ".red
+              self.kill_instruments(r, w, pid)
               puts "killing simulator processes...".red
-              Illuminator::XcodeUtils.killAllSimulatorProcesses
+              Illuminator::XcodeUtils.kill_all_simulator_processes
               # TODO: might be necessary to delete any app crashes at this point
             else
               # We failed to get output for @startuptTimeout, but that's probably OK since we've successfully started
@@ -213,16 +213,16 @@ class InstrumentsRunner
       rescue EOFError
       rescue PTY::ChildExited
         STDERR.puts 'Instruments exited unexpectedly'
-        if @fullyStarted
-          successfulRun = false
-          doneReadingOutput = true
+        if @fully_started
+          successful_run = false
+          done_reading_output = true
         end
       ensure
-        @listeners.each { |_, listener| listener.onAutomationFinished }
+        @listeners.each { |_, listener| listener.on_automation_finished }
       end
     end
 
-    return successfulRun
+    return successful_run
   end
 
 end
