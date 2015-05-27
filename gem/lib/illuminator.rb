@@ -89,13 +89,14 @@ module Illuminator
   def self.run_with_options(originalOptions)
 
     options = Options.new(originalOptions.to_h) # immediately create a copy of the options, because we may mangle them
+
+    # validate some inputs
+    return false unless Framework.validate_options(options)
+
     Illuminator::BuildArtifacts.instance.set_root options.build_artifacts_dir
 
     hardware_id = options.illuminator.hardware_id
     app_name    = options.xcode.app_name
-
-    # validate some inputs
-    return false unless Framework.validate_options(options)
 
     # do any initial cleaning
     clean_dirs = {
