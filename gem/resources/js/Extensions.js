@@ -1654,7 +1654,7 @@ extendPrototype(UIAHost, {
         default: throw new TypeError("writeToFile expected data in string form, got type " + (typeof data));
         }
 
-        var chunkSize = Math.floor(262144 * 0.74) - (path.length + 100); // `getconf ARG_MAX`, adjusted for b64
+        var chunkSize = Math.floor(262144 * 0.73) - (path.length + 100); // `getconf ARG_MAX`, adjusted for b64
 
         var writeHelper = function (b64stuff, outputPath) {
             var result = target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c",

@@ -7,11 +7,12 @@ require_relative './host-utils'
 module Illuminator
 
   class Parser < OptionParser
+    attr_reader :positional_args
+
     def initialize options
       super
       @_options = options
     end
-
 
     def check_retest_args
       known_retests = ["solo"]
@@ -107,7 +108,7 @@ module Illuminator
     end
 
     def parse args
-      leftovers = super(args)
+      @positional_args = super(args)
       return self.copy_parsed_options_into(Illuminator::Options.new)
     end
 
