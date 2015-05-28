@@ -379,7 +379,7 @@ function isHardSelector(selector) {
 function newUIAElementNil() {
     try {
         UIATarget.localTarget().pushTimeout(0);
-        return UIATarget.localTarget().frontMostApp().windows().firstWithPredicate("name == 'Illuminator' and name == 'newUIAELementNil()'");
+        return UIATarget.localTarget().frontMostApp().windows().firstWithPredicate("name == 'Illuminator' and name == 'newUIAElementNil()'");
     } catch(e) {
         throw e;
     } finally {
