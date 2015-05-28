@@ -208,10 +208,7 @@ class InstrumentsRunner
           end
         end
 
-      rescue Errno::EIO
-      rescue Errno::ECHILD
-      rescue EOFError
-      rescue PTY::ChildExited
+      rescue Errno::EIO, Errno::ECHILD, EOFError, PTY::ChildExited
         STDERR.puts 'Instruments exited unexpectedly'
         if @fully_started
           successful_run = false
