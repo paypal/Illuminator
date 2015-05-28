@@ -61,25 +61,25 @@ end
 # success: boolean whether it all went well
 # failmsg: what to say went wrong
 # checkpoints: some stuff to print out, debug info
-# outputData: the actual results
+# output_data: the actual results
 def print_result_and_exit(success, failmsg, checkpoints, response=nil)
-  outputData = {}
-  outputData["checkpoints"] = checkpoints
-  outputData["response"] = response unless response.nil?
-  outputData["success"] = success
-  outputData["message"] = failmsg
-  puts JSON.pretty_generate(outputData)
+  output_data = {}
+  output_data["checkpoints"] = checkpoints
+  output_data["response"] = response unless response.nil?
+  output_data["success"] = success
+  output_data["message"] = failmsg
+  puts JSON.pretty_generate(output_data)
   exit(success ? 0 : 1)
 end
 
 
-def get_host_port_of_hardwareID(hardwareID, timeout_seconds)
+def get_host_port_of_hardware_id(hardware_id, timeout_seconds)
   service = DNSSD::Service.new
   host, port = nil, nil
   begin
     Timeout::timeout(timeout_seconds) do
       service.browse '_bridge._tcp' do |result|
-        if result.name.eql? "UIAutomationBridge_#{hardwareID}"
+        if result.name.eql? "UIAutomationBridge_#{hardware_id}"
           resolver = DNSSD::Service.new
           resolver.resolve result do |r|
             host = r.target
@@ -162,18 +162,18 @@ unless options["argument"].nil?
 end
 
 # build the request that will go the server
-requestHash = {}
-requestHash['argument'] = options["jsonArgument"] unless options["jsonArgument"].nil?
-requestHash["selector"] = options["selector"]
-requestHash["callUID"] = options["callUID"]
-request = requestHash.to_json
+request_hash = {}
+request_hash['argument'] = options["jsonArgument"] unless options["jsonArgument"].nil?
+request_hash["selector"] = options["selector"]
+request_hash["callUID"] = options["callUID"]
+request = request_hash.to_json
 
 
 # get the host/port according to whether we are using hardware
 host, port = '127.0.0.1', 4200
 unless options["hardwareID"].nil?
   checkpoints["hardwareID"] = false
-  host, port = get_host_port_of_hardwareID(options["hardwareID"], 3)
+  host, port = get_host_port_of_hardware_id(options["hardwareID"], 3)
   if host.nil? or port.nil?
     print_result_and_exit(false, "Failed to get host/port for hardware ID", checkpoints)
   end
@@ -182,16 +182,16 @@ end
 
 # connect
 checkpoints["connection"] = false
-socketStream, errMessage = connect host, port
-if socketStream.nil?
-    print_result_and_exit(false, errMessage, checkpoints)
+socket_stream, err_message = connect host, port
+if socket_stream.nil?
+    print_result_and_exit(false, err_message, checkpoints)
 end
 checkpoints["connection"] = true
 
 begin
   # send request
   checkpoints["request"] = false
-  socketStream.write(request)
+  socket_stream.write(request)
  
   checkpoints["request"] = true
 
@@ -204,7 +204,7 @@ begin
       char = nil
       begin
         timeout(0.1) do
-          char = socketStream.getc
+          char = socket_stream.getc
         end
       rescue Timeout::Error
         # nothing
@@ -232,7 +232,7 @@ rescue Timeout::Error
 rescue Exception => e
   print_result_and_exit(false, "Error while waiting for response: #{e.inspect()}", checkpoints)
 ensure
-  socketStream.close
+  socket_stream.close
 end
 
 resp = JSON.parse(response)

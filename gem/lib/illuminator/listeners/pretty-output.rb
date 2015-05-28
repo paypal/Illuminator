@@ -20,7 +20,7 @@ class PrettyOutput < InstrumentsListener
 
   end
 
-  def onAutomationFinished
+  def on_automation_finished
   end
 
 end

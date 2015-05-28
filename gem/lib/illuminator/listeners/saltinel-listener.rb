@@ -7,20 +7,20 @@ class SaltinelListener < InstrumentsListener
 
   def initialize saltinel
     @saltinel = saltinel
-    self.onInit
+    self.on_init
   end
 
-  def onInit
+  def on_init
   end
 
   def receive (message)
-    unSalted = /^#{@saltinel} (.*) #{@saltinel}/.match(message.message)
-    self.onSaltinel(unSalted.to_a[1]) unless unSalted.nil?
+    unsalted = /^#{@saltinel} (.*) #{@saltinel}/.match(message.message)
+    self.on_saltinel(unsalted.to_a[1]) unless unsalted.nil?
   end
 
-  def onSaltinel innerMessage
-    puts "CAUGHT SALTINEL MESSAGE in #{self.class.name}.onSaltinel".red
-    puts innerMessage.green
+  def on_saltinel inner_message
+    puts "CAUGHT SALTINEL MESSAGE in #{self.class.name}.on_saltinel".red
+    puts inner_message.green
   end
 
 end

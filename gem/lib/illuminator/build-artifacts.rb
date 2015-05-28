@@ -8,109 +8,109 @@ module Illuminator
 
     def initialize
       @_root = nil
-      @artifactsHaveBeenCreated = false
+      @artifacts_have_been_created = false
     end
 
-    def setRoot(dir_raw)
+    def set_root(dir_raw)
       dir = Illuminator::HostUtils.realpath(dir_raw)
-      if @_root != dir and @artifactsHaveBeenCreated
+      if @_root != dir and @artifacts_have_been_created
         puts "Warning: changing BuildArtifacts root to '#{dir}' after creating artifacts in '#{@_root}'".red
       end
       @_root = dir
     end
 
-    def _setupAndUse(dir, skipSetup)
+    def _setup_and_use(dir, skip_setup)
       raise TypeError, "The buildArtifact root directory is nil; perhaps it was not set" if @_root.nil?
-      unless skipSetup or File.directory?(dir)
+      unless skip_setup or File.directory?(dir)
         FileUtils.mkdir_p dir
-        @artifactsHaveBeenCreated = true
+        @artifacts_have_been_created = true
       end
       dir
     end
 
     ################## Directories
 
-    def root(skipSetup = false)
-      self._setupAndUse @_root, skipSetup
+    def root(skip_setup = false)
+      self._setup_and_use @_root, skip_setup
     end
 
-    def xcode(skipSetup = false)
-      self._setupAndUse "#{@_root}/xcode", skipSetup
+    def xcode(skip_setup = false)
+      self._setup_and_use "#{@_root}/xcode", skip_setup
     end
 
-    def derivedData(skipSetup = false)
-      self._setupAndUse "#{@_root}/xcodeDerivedData", skipSetup
+    def derived_data(skip_setup = false)
+      self._setup_and_use "#{@_root}/xcodeDerivedData", skip_setup
     end
 
-    def instruments(skipSetup = false)
-      self._setupAndUse "#{@_root}/instruments", skipSetup
+    def instruments(skip_setup = false)
+      self._setup_and_use "#{@_root}/instruments", skip_setup
     end
 
-    def crashReports(skipSetup = false)
-      self._setupAndUse "#{@_root}/crashReports", skipSetup
+    def crash_reports(skip_setup = false)
+      self._setup_and_use "#{@_root}/crashReports", skip_setup
     end
 
-    def objectFiles(skipSetup = false)
-      self._setupAndUse "#{@_root}/objectFiles", skipSetup
+    def object_files(skip_setup = false)
+      self._setup_and_use "#{@_root}/objectFiles", skip_setup
     end
 
-    def console(skipSetup = false)
-      self._setupAndUse "#{@_root}/console", skipSetup
+    def console(skip_setup = false)
+      self._setup_and_use "#{@_root}/console", skip_setup
     end
 
-    def UIAutomation(skipSetup = false)
-      self._setupAndUse "#{@_root}/UIAutomation-outputs", skipSetup
+    def ui_automation(skip_setup = false)
+      self._setup_and_use "#{@_root}/UIAutomation-outputs", skip_setup
     end
 
-    def state(skipSetup = false)
-      self._setupAndUse "#{@_root}/Illuminator-state", skipSetup
+    def state(skip_setup = false)
+      self._setup_and_use "#{@_root}/Illuminator-state", skip_setup
     end
 
 
     ################## FILES
 
-    def appLocation(appName = nil)
-      appOutputDirectory = self.xcode
-      if appName.nil?
+    def app_location(app_name = nil)
+      app_output_directory = self.xcode
+      if app_name.nil?
         # assume that only one app exists and use that
-        return Dir["#{appOutputDirectory}/*.app"][0]
+        return Dir["#{app_output_directory}/*.app"][0]
       else
-        return "#{appOutputDirectory}/#{appName}.app"
+        return "#{app_output_directory}/#{app_name}.app"
       end
     end
 
-    def xcprettyReportFile(skipSetup = false)
-      self._setupAndUse "#{@_root}/xcpretty", skipSetup
+    def xcpretty_report_file(skip_setup = false)
+      self._setup_and_use "#{@_root}/xcpretty", skip_setup
       "#{@_root}/xcpretty/report.xml"
     end
 
-    def coverageReportFile(skipSetup = false)
-      self._setupAndUse @_root, skipSetup
+    def coverage_report_file(skip_setup = false)
+      self._setup_and_use @_root, skip_setup
       "#{@_root}/coverage.xml"
     end
 
-    def illuminatorJsRunner(skipSetup = false)
-      self._setupAndUse @_root, skipSetup
+    def illuminator_js_runner(skip_setup = false)
+      self._setup_and_use @_root, skip_setup
       "#{@_root}/IlluminatorGeneratedRunnerForInstruments.js"
     end
 
-    def illuminatorJsEnvironment(skipSetup = false)
-      self._setupAndUse @_root, skipSetup
+    def illuminator_js_environment(skip_setup = false)
+      self._setup_and_use @_root, skip_setup
       "#{@_root}/IlluminatorGeneratedEnvironment.js"
     end
 
-    def illuminatorConfigFile(skipSetup = false)
-      self._setupAndUse @_root, skipSetup
+    def illuminator_config_file(skip_setup = false)
+      self._setup_and_use @_root, skip_setup
       "#{@_root}/IlluminatorGeneratedConfig.json"
     end
 
-    def junitReportFile(skipSetup = false)
-      self._setupAndUse @_root, skipSetup
+    def junit_report_file(skip_setup = false)
+      self._setup_and_use @_root, skip_setup
       "#{@_root}/IlluminatorJUnitReport.xml"
     end
 
-    def illuminatorRerunFailedTestsSettings(skipSetup = false)
-      self._setupAndUse @_root, skipSetup
+    def illuminator_rerun_failed_tests_settings(skip_setup = false)
+      self._setup_and_use @_root, skip_setup
       "#{@_root}/IlluminatorRerunFailedTestsSettings.json"
     end
 

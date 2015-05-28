@@ -3,7 +3,7 @@ require_relative './saltinel-listener'
 
 module StartDetectorEventSink
 
-  def startDetectorTriggered
+  def start_detector_triggered
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
@@ -15,16 +15,16 @@ end
 #  - etc
 class StartDetector < SaltinelListener
 
-  attr_accessor :eventSink
+  attr_accessor :event_sink
 
-  def onInit
-    @alreadyStarted = false
+  def on_init
+    @already_started = false
   end
 
   def trigger
-    # assume developer has set eventSink already
-    @eventSink.startDetectorTriggered unless @alreadyStarted
-    @alreadyStarted = true
+    # assume developer has set event_sink already
+    @event_sink.start_detector_triggered unless @already_started
+    @already_started = true
   end
 
   def receive message
@@ -34,19 +34,19 @@ class StartDetector < SaltinelListener
     self.trigger if :error == message.status and /Script threw an uncaught JavaScript error:/ =~ message.message
 
     # Instruments usage error generally means we can't recover... unless it's a device booting issue
-    if /^Instruments Usage Error :/ =~ message.fullLine
-      unless /^Instruments Usage Error : Timed out waiting for device to boot:/ =~ message.fullLine
+    if /^Instruments Usage Error :/ =~ message.full_line
+      unless /^Instruments Usage Error : Timed out waiting for device to boot:/ =~ message.full_line
         self.trigger
       end
     end
   end
 
-  def onSaltinel innerMessage
-    self.trigger if /Saved intended test list to/ =~ innerMessage
-    self.trigger if /Successful launch/ =~ innerMessage
+  def on_saltinel inner_message
+    self.trigger if /Saved intended test list to/ =~ inner_message
+    self.trigger if /Successful launch/ =~ inner_message
   end
 
-  def onAutomationFinished
+  def on_automation_finished
   end
 
 end

@@ -3,7 +3,7 @@ require_relative 'instruments-listener'
 
 module StopDetectorEventSink
 
-  def stopDetectorTriggered
+  def stop_detector_triggered
     puts "  +++ If you're seeing this, #{self.class.name}.#{__method__} was not overridden"
   end
 
@@ -15,11 +15,11 @@ end
 #  - etc
 class StopDetector < InstrumentsListener
 
-  attr_accessor :eventSink
+  attr_accessor :event_sink
 
   def trigger
-    # assume developer has set eventSink already
-    @eventSink.stopDetectorTriggered
+    # assume developer has set event_sink already
+    @event_sink.stop_detector_triggered
   end
 
   def receive message
@@ -27,7 +27,7 @@ class StopDetector < InstrumentsListener
     self.trigger if :stopped == message.status
   end
 
-  def onAutomationFinished
+  def on_automation_finished
   end
 
 end

@@ -1,3 +1,4 @@
 source 'https://rubygems.org'
 gem 'illuminator', :path => '../'
 gem 'cocoapods'
+gem 'rubocop'

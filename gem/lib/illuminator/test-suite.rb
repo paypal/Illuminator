@@ -2,56 +2,56 @@ require 'date'
 
 class TestSuite
 
-  attr_reader :testCases
+  attr_reader :test_cases
   attr_reader :implementation
 
   def initialize(implementation)
     @implementation = implementation
-    @testCases      = []
-    @caseLookup     = {}
+    @test_cases     = []
+    @case_lookup    = {}
   end
 
-  def addTestCase(className, name)
-    test = TestCase.new(@implementation, className, name)
-    @testCases << test
-    @caseLookup[name] = test
+  def add_test_case(class_name, name)
+    test = TestCase.new(@implementation, class_name, name)
+    @test_cases << test
+    @case_lookup[name] = test
   end
 
-  def [](testCaseName)
-    @caseLookup[testCaseName]
+  def [](test_case_name)
+    @case_lookup[test_case_name]
   end
 
   # TODO: fix naming, some of these return test cases and some return arrays of names
 
-  def unStartedTests
+  def unstarted_tests
     ret = Array.new
-    @testCases.each { |t| ret << t.name unless t.ran? }
+    @test_cases.each { |t| ret << t.name unless t.ran? }
     ret
   end
 
-  def finishedTests
+  def finished_tests
     ret = Array.new
-    @testCases.each { |t| ret << t.name if t.ran? }
+    @test_cases.each { |t| ret << t.name if t.ran? }
     ret
   end
 
-  def allTests
-    @testCases.dup
+  def all_tests
+    @test_cases.dup
   end
 
-  def passedTests
-    @testCases.select { |t| t.passed? }
+  def passed_tests
+    @test_cases.select { |t| t.passed? }
   end
 
-  def unPassedTests
-    @testCases.select { |t| not t.passed? }
+  def unpassed_tests
+    @test_cases.select { |t| not t.passed? }
   end
 
   def to_xml
     output = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' << "\n"
 
     output << "<testsuite>\n"
-    @testCases.each { |test| output << test.to_xml }
+    @test_cases.each { |test| output << test.to_xml }
     output << "</testsuite>" << "\n"
     output
   end
@@ -59,14 +59,14 @@ end
 
 class TestCase
   attr_reader :name
-  attr_reader :className
+  attr_reader :class_name
   attr_reader :implementation
 
   attr_accessor :stacktrace
 
-  def initialize(implementation, className, name)
+  def initialize(implementation, class_name, name)
     @implementation = implementation
-    @className      = className
+    @class_name     = class_name
     @name           = name
     self.reset!
   end
@@ -76,60 +76,60 @@ class TestCase
   end
 
   def reset!
-    @stdout       = []
-    @stacktrace   = ""
-    @failMessage  = ""
-    @failTag      = nil
-    @timeStart    = nil
-    @timeFinish   = nil
+    @stdout        = []
+    @stacktrace    = ""
+    @fail_message  = ""
+    @fail_tag      = nil
+    @time_start    = nil
+    @time_finish   = nil
   end
 
   def start!
-    @timeStart = Time.now
+    @time_start = Time.now
   end
 
   def pass!
-    @timeFinish = Time.now
+    @time_finish = Time.now
   end
 
   def fail message
-    @timeFinish  = Time.now
-    @failTag     = "failure"
-    @failMessage = message
+    @time_finish  = Time.now
+    @fail_tag     = "failure"
+    @fail_message = message
   end
 
   def error message
-    @timeFinish  = Time.now
-    @failTag     = "error"
-    @failMessage = message
+    @time_finish  = Time.now
+    @fail_tag     = "error"
+    @fail_message = message
   end
 
   def ran?
-    not (@timeStart.nil? or @timeFinish.nil?)
+    not (@time_start.nil? or @time_finish.nil?)
   end
 
   def passed?
-    @failTag.nil?
+    @fail_tag.nil?
   end
 
   # this is NOT the opposite of passed!  this does not count errored tests
   def failed?
-    @failTag == "failure"
+    @fail_tag == "failure"
   end
 
   def errored?
-    @failTag == "error"
+    @fail_tag == "error"
   end
 
   def time
-    return 0 if @timeFinish.nil?
-    @timeFinish - @timeStart
+    return 0 if @time_finish.nil?
+    @time_finish - @time_start
   end
 
   def to_xml
     attrs = {
       "name"      => @name,
-      "classname" => "#{@implementation}.#{@className}",
+      "classname" => "#{@implementation}.#{@class_name}",
       "time"      => self.time,
     }
 
@@ -139,15 +139,15 @@ class TestCase
 
     if not self.ran?
       output << "    <skipped />\n"
-    elsif (not @failTag.nil?)
+    elsif (not @fail_tag.nil?)
       fattrs = {
-        "message" => @failMessage,
+        "message" => @fail_message,
       }
 
-      output << "    <#{@failTag}"
+      output << "    <#{@fail_tag}"
       fattrs.each { |key, value| output << " #{key}=#{value.to_s.encode(:xml => :attr)}" }
       output << ">#{@stacktrace.to_s.encode(:xml => :text)}" << "\n"
-      output << "    </#{@failTag}>" << "\n"
+      output << "    </#{@fail_tag}>" << "\n"
     end
 
     output << "    <system-out>#{@stdout.map { |m| m.encode(:xml => :text) }.join("\n")}" << "\n"

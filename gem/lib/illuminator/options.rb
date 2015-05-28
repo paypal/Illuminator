@@ -34,13 +34,13 @@ module Illuminator
       return unless hash.nil?
 
       # stub out all the branches
-      self.xcode       = RecursiveOpenStruct.new
-      self.instruments = RecursiveOpenStruct.new
-      self.simulator   = RecursiveOpenStruct.new
-      self.javascript  = RecursiveOpenStruct.new
-      self.illuminator = RecursiveOpenStruct.new
-      self.appSpecific = nil    # all unknown options will go here
-      self.buildArtifactsDir = nil
+      self.xcode        = RecursiveOpenStruct.new
+      self.instruments  = RecursiveOpenStruct.new
+      self.simulator    = RecursiveOpenStruct.new
+      self.javascript   = RecursiveOpenStruct.new
+      self.illuminator  = RecursiveOpenStruct.new
+      self.app_specific = nil    # all unknown options will go here
+      self.build_artifacts_dir = nil
 
       self.illuminator.clean  = RecursiveOpenStruct.new
       self.illuminator.task   = RecursiveOpenStruct.new
@@ -50,16 +50,16 @@ module Illuminator
       self.illuminator.test.retest = RecursiveOpenStruct.new
 
       # name all the keys (just for visibiilty)
-      self.xcode.projectDir = nil
+      self.xcode.project_dir = nil
       self.xcode.project = nil
-      self.xcode.appName = nil
+      self.xcode.app_name = nil
       self.xcode.sdk = nil
       self.xcode.workspace = nil
       self.xcode.scheme = nil
-      self.xcode.environmentVars = nil
+      self.xcode.environment_vars = nil
 
-      self.illuminator.entryPoint = nil
-      self.illuminator.test.randomSeed = nil
+      self.illuminator.entry_point = nil
+      self.illuminator.test.random_seed = nil
       self.illuminator.test.tags.any = nil
       self.illuminator.test.tags.all = nil
       self.illuminator.test.tags.none = nil
@@ -69,26 +69,26 @@ module Illuminator
       self.illuminator.clean.xcode = nil
       self.illuminator.clean.derived = nil
       self.illuminator.clean.artifacts = nil
-      self.illuminator.clean.noDelay = nil
+      self.illuminator.clean.no_delay = nil
       self.illuminator.task.build = nil
       self.illuminator.task.automate = nil
-      self.illuminator.task.setSim = nil
+      self.illuminator.task.set_sim = nil
       self.illuminator.task.coverage = nil
-      self.illuminator.hardwareID = nil
+      self.illuminator.hardware_id = nil
 
       self.simulator.device = nil
       self.simulator.version = nil
       self.simulator.language = nil
-      self.simulator.killAfter = nil
+      self.simulator.kill_after = nil
 
-      self.instruments.doVerbose = nil
+      self.instruments.do_verbose = nil
       self.instruments.timeout = nil
       self.instruments.attempts = nil
-      self.instruments.appLocation = nil  # normally, this is where we build to
+      self.instruments.app_location = nil  # normally, this is where we build to
 
-      self.javascript.testPath = nil
+      self.javascript.test_path = nil
       self.javascript.implementation = nil
-      self.javascript.appSpecificConfig = nil
+      self.javascript.app_specific_config = nil
     end
 
   end

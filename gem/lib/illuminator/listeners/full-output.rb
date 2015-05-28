@@ -4,10 +4,10 @@ require_relative './instruments-listener'
 class FullOutput < InstrumentsListener
 
   def receive (message)
-    puts message.fullLine
+    puts message.full_line
   end
 
-  def onAutomationFinished
+  def on_automation_finished
   end
 
 end

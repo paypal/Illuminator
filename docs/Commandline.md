@@ -67,49 +67,49 @@ require 'illuminator'
 # Change directory to sample app and use that for the project dir
 Dir.chdir File.expand_path(File.dirname(__FILE__))
 
-allTestPath = 'SampleTests/tests/AllTests.js'
-allTestPath = Illuminator::HostUtils.realpath(allTestPath)
+all_test_path = 'SampleTests/tests/AllTests.js'
+all_test_path = Illuminator::HostUtils.realpath(all_test_path)
 
 # Hard-coded options
 
 options = Illuminator::Options.new
-options.buildArtifactsDir = File.join(Dir.pwd, "buildArtifacts")
-options.xcode.appName = 'AutomatorSampleApp'
+options.build_artifacts_dir = File.join(Dir.pwd, "buildArtifacts")
+options.xcode.app_name = 'AutomatorSampleApp'
 options.xcode.scheme = 'AutomatorSampleApp'
 options.xcode.workspace = 'AutomatorSampleApp.xcworkspace'
-options.xcode.projectDir = Dir.pwd
+options.xcode.project_dir = Dir.pwd
 
 
-options.illuminator.entryPoint = 'runTestsByTag'
+options.illuminator.entry_point = 'runTestsByTag'
 options.illuminator.test.tags.any = ['smoke']
 options.illuminator.clean.xcode = true
 options.illuminator.clean.artifacts = true
-options.illuminator.clean.noDelay = true
+options.illuminator.clean.no_delay = true
 options.illuminator.task.build = true
 options.illuminator.task.automate = true
-options.illuminator.task.setSim = true
+options.illuminator.task.set_sim = true
 options.simulator.device = 'iPhone 5'
 options.simulator.language = 'en'
-options.simulator.killAfter = true
+options.simulator.kill_after = true
 
-options.instruments.doVerbose = false
+options.instruments.do_verbose = false
 options.instruments.timeout = 30
 
-options.javascript.testPath = allTestPath
+options.javascript.test_path = all_test_path
 options.javascript.implementation = 'iPhone'
 
-if Illuminator::XcodeUtils.instance.isXcodeMajorVersion 5
+if Illuminator::XcodeUtils.instance.is_xcode_major_version 5
   options.simulator.device = 'iPhone Retina (4-inch)'
 end
 
 options.simulator.version = '8.1'
-success8 = Illuminator::runWithOptions options
+success8 = Illuminator::run_with_options options
 
 options.illuminator.clean.xcode = false
 options.illuminator.clean.artifacts = false
 options.illuminator.task.build = false
 options.simulator.version = '7.1'
-success7 = Illuminator::runWithOptions options
+success7 = Illuminator::run_with_options options
 
 exit 1 unless success7 and success8
 ```
@@ -117,7 +117,7 @@ exit 1 unless success7 and success8
 In short:
 1. the options object is created with `Illuminator::Options.new`
 2. the object is filled in with values _(see below)_
-3. the framework is run with those options: `Illuminator::runWithOptions options'
+3. the framework is run with those options: `Illuminator::run_with_options options'
 4. the framework returns a result which in turn is returned to the shell
 
 
@@ -126,20 +126,20 @@ Illuminator Options
 
 The following options are defined in Illuminator (assuming `options = Illuminator::Options.new`).
 
-#### `options.buildArtifactsDir`
+#### `options.build_artifacts_dir`
 
 The output directory for all Xcode, Instruments, Illuminator, and app-specific javascript artifacts.  This directory will be automatically created if it does not exist.
 
 
 ### Xcode options
 
-#### `options.xcode.projectDir` (string)
+#### `options.xcode.project_dir` (string)
 The path containing the Xcode project to build.
 
 #### `options.xcode.project` (string)
-The project name to build, available in the directory identified by the `projectDir` parameter.  This argument is optional unless you have more than one project in that directory.
+The project name to build, available in the directory identified by the `project_dir` parameter.  This argument is optional unless you have more than one project in that directory.
 
-#### `options.xcode.appName` (string)
+#### `options.xcode.app_name` (string)
 The name of the application that will be built by Xcode (and run by Instruments)
 
 #### `options.xcode.workspace` (string)
@@ -151,19 +151,19 @@ The SDK that will be used by Xcode.  This defaults to `iphonesimulator` for simu
 #### `options.xcode.scheme` (string)
 The scheme to build, corresponding to a scheme in the given Xcode project.
 
-#### `options.xcode.environmentVars` (hash)
+#### `options.xcode.environment_vars` (hash)
 A hash of any project-specific environment variables that should be specified on the `xcodebuild` command line.
 
 
 ### Illuminator options
 
-#### `options.illuminator.entryPoint` (string)
+#### `options.illuminator.entry_point` (string)
 The major function that will be performed by Illuminator -- can be one of `runTestsByTag`, `runTestsByName`, `describe`.
 * `runTestsByTag` parses the three `.test.tags.*` options (below) to decide which set of tests should be run
 * `runTestsByName` uses the `.test.names` option for the list of tests to run
 * `describe` simply prints out descriptions of the test environment for documentation or debugging purposes.
 
-#### `options.illuminator.test.randomSeed` (integer)
+#### `options.illuminator.test.random_seed` (integer)
 If provided, Illuminator uses this value as a seed to randomize the order of the test runs.
 
 #### `options.illuminator.test.tags.any` (string array)
@@ -191,9 +191,9 @@ This option specfies that `xcodebuild` should clean the project before building.
 This option specifies that the `DerivedData` directory should be deleted before building.
 
 #### `options.illuminator.clean.artifacts` (boolean)
-This option specifies that the entire Illuminator `buildArtifactsDir` should be deleted before building.
+This option specifies that the entire Illuminator `build_artifacts_dir` should be deleted before building.
 
-#### `options.illuminator.clean.noDelay` (boolean)
+#### `options.illuminator.clean.no_delay` (boolean)
 This option specifes that the default 3-second command-line countdown (giving you a chance to abort any directory deletions) will be skipped.
 
 #### `options.illuminator.task.build` (boolean)
@@ -202,13 +202,13 @@ This option specifies that the Xcode project should be built before automating, 
 #### `options.illuminator.task.automate` (boolean)
 This option specifies that the Instruments automation should run.
 
-#### `options.illuminator.task.setSim` (boolean)
+#### `options.illuminator.task.set_sim` (boolean)
 This option specifies that Illuminator should select and reset the simulator from the command line.
 
 #### `options.illuminator.task.coverage` (boolean)
 This option specifies that `gcovr` should be run after the automation completes, to determine coverage.  This coverage report will only include the last set of tests that ran without crashing.
 
-#### `options.illuminator.hardwareID` (string)
+#### `options.illuminator.hardware_id` (string)
 This option specifies that the automation should run on physical hardware, specified by the ID.
 
 
@@ -223,13 +223,13 @@ This option selects the iOS version of the simulator.
 #### `options.simulator.language` (string)
 This option selects the language of the simulator (currently unsupported).
 
-#### `options.simulator.killAfter` (boolean)
+#### `options.simulator.kill_after` (boolean)
 This option specifies whether to close the simulator after automation is complete.
 
 
 ### Instruments options
 
-#### `options.instruments.doVerbose` (boolean)
+#### `options.instruments.do_verbose` (boolean)
 This option specifies whether verbose output (vs pretty output) of Instruments is sent to the console.  Full output of Instruments is logged to disk regardless.
 
 #### `options.instruments.timeout` (integer)
@@ -240,15 +240,15 @@ The number of times to attempt starting and restarting Instruments before giving
 > Under Xcode 5, this number needed to be set as high as 30.  No joke.
 
 
-#### `options.instruments.appLocation` (string)
-The location of the compiled application that Instruments will automate.  This option should be specified if you are automating a pre-built binary; otherwise, Illuminator defaults to using the application that it built itself and will expect to find it in `options.buildArtifactsDir`.
+#### `options.instruments.app_location` (string)
+The location of the compiled application that Instruments will automate.  This option should be specified if you are automating a pre-built binary; otherwise, Illuminator defaults to using the application that it built itself and will expect to find it in `options.build_artifacts_dir`.
 
 ### Javascript options
 
-#### `options.javascript.testPath` (string)
-The location of the Javascript file containing your top-level entry point.  This file should define (or import) all the tests that you have defined.  The specific tests to run will be determined by the `entryPoint`.
+#### `options.javascript.test_path` (string)
+The location of the Javascript file containing your top-level entry point.  This file should define (or import) all the tests that you have defined.  The specific tests to run will be determined by the `entry_point`.
 
-#### `options.javascript.appSpecificConfig` (hash)
+#### `options.javascript.app_specific_config` (hash)
 A hash of values that will be passed into the Javascript environment, made available under `config.customConfig`.  Yes, **Illuminator can pass structured values directly from Ruby, through Instruments, into Javascript**.
 
 #### `options.javascript.implementation` (string)
@@ -269,54 +269,54 @@ require 'pathname'
 options = {}
 
 # Set up the default parser
-parserFactory = Illuminator::ParserFactory.new
+parser_factory = Illuminator::ParserFactory.new
 
 # Prepare the parser.  We will add the switch -g, aka --word-starting-with-g
 #   and override -p, aka --ipad to be a simple switch for iPad testing
 
                        # default values for all the named switches
-parserFactory.prepare({"g" => "gundalow", "i" => "myImplementation", "s" => "iPhone", "a" => "My App", "b" => 'iPhone Retina (4-inch)'},
+parser_factory.prepare({"g" => "gundalow", "i" => "myImplementation", "s" => "iPhone", "a" => "My App", "b" => 'iPhone Retina (4-inch)'},
                        # the keys in the output array that will store the values for these command line switches
                       {"g" => "word-starting-with-g", "p" => "do-ipad"},
                        # Custom processing for any switches.  Since we're overriding 'p', we need to nil-out any processing function for it
                       {"p" => nil})
 # Add our custom switch, and the replacement switch
-parserFactory.addSwitch("g", ["-g", "--word-starting-with-g WORD", "A word starting with G, for fun"])
-parserFactory.addSwitch("p", ["-p", "--do-ipad", "Run ipad implementation"])
+parser_factory.add_switch("g", ["-g", "--word-starting-with-g WORD", "A word starting with G, for fun"])
+parser_factory.add_switch("p", ["-p", "--do-ipad", "Run ipad implementation"])
 
 # build the parser using letters from IlluminatorArgumentParsing plus our custom ones
-parser = parserFactory.buildParser({}, "xtondispaE#bzl#fBeky#crvmw#g")
+parser = parser_factory.build_parser({}, "xtondispaE#bzl#fBeky#crvmw#g")
 
 # Now use the parser to get input arguments
 options = parser.parse ARGV
 
 
-options.javascript.testPath = Illuminator::HostUtils.realpath("path/to/my/AllTests.js")
+options.javascript.test_path = Illuminator::HostUtils.realpath("path/to/my/AllTests.js")
 
 # Storing our custom value in custom javascript config
 storage = {}
-storage["gWord"] = options.appSpecific["word-starting-with-g"]
-options.javascript.appSpecificConfig = storage
+storage["gWord"] = options.app_specific["word-starting-with-g"]
+options.javascript.app_specific_config = storage
 
 # Setting up several settings at once if iPad was specfied ##########################################
 
-if options.appSpecific["do-ipad"]
-  options.xcode.appName = "My App HD"
+if options.app_specific["do-ipad"]
+  options.xcode.app_name = "My App HD"
   options.xcode.scheme = "iPad"
   options.javascript.implementation = "iPad"
   unless options.simulator.device.start_with? "iPad"
     options.simulator.device = 'iPad'
-    if XcodeUtils.instance.isXcodeMajorVersion 6
+    if XcodeUtils.instance.is_xcode_major_version 6
       options.simulator.device = "iPad 2"
     end
   end
 end
 
 # Run it
-success = Illuminator::runWithOptions options
+success = Illuminator::run_with_options options
 exit 1 unless success
 ```
 
 The strangest piece of this code is probably the `"xtondispaE#bzl#fBeky#crvmw#g"`.  This tells the Parser Factor which command line switches to use (by their single-letter code), and the order in which to list them in the help file (`#` indicating separators).
 
-The second-strangest piece of code is probably the `parserFactory.prepare` line.  If you're reading this far, you should [make contact via one of the Help channels listed in the README](../README.md) and ask for help, so that I can improve this documentation based on your questions.  But the comments in [IlluminatorArgumentParsing.rb](../scripts/classes/IlluminatorArgumentParsing.rb) should help somewhat.
+The second-strangest piece of code is probably the `parser_factory.prepare` line.  If you're reading this far, you should [make contact via one of the Help channels listed in the README](../README.md) and ask for help, so that I can improve this documentation based on your questions.  But the comments in [IlluminatorArgumentParsing.rb](../scripts/classes/IlluminatorArgumentParsing.rb) should help somewhat.

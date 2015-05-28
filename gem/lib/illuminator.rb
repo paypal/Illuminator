@@ -14,14 +14,14 @@ module Illuminator
 
   class Framework
 
-    def self.willClean options
+    def self.will_clean options
       return true if options.illuminator.clean.derived
       return true if options.illuminator.clean.artifacts
       return true if options.illuminator.clean.xcode
       return false
     end
 
-    def self.cleanCountdown
+    def self.clean_countdown
       countdown = "3....2....1...."
       print "Cleaning in ".yellow
       countdown.split("").each do |c|
@@ -31,7 +31,7 @@ module Illuminator
       print "\n"
     end
 
-    def self.validateOptions(options)
+    def self.validate_options(options)
       noproblems = true
 
       # so we can call BS on the user
@@ -42,18 +42,18 @@ module Illuminator
 
       # some things to check
       things = {
-        "Build artifacts directory" => options.buildArtifactsDir,
+        "Build artifacts directory" => options.build_artifacts_dir,
       }
 
       # now check them
       things.each { |k, v| bs.call "#{k} was not specified" if v.nil? }
 
       # fail quickly if simulator device and/or version are wrong
-      if options.illuminator.hardwareID.nil?
+      if options.illuminator.hardware_id.nil?
         device = options.simulator.device
         version = options.simulator.version
-        devices = XcodeUtils.instance.getSimulatorDeviceTypes()
-        versions = XcodeUtils.instance.getSimulatorRuntimes()
+        devices = XcodeUtils.instance.get_simulator_device_types()
+        versions = XcodeUtils.instance.get_simulator_runtimes()
 
 
         unless devices.include? device
@@ -70,11 +70,11 @@ module Illuminator
       if options.illuminator.task.automate
         bs.call "Implementation was not specified" if options.javascript.implementation.nil?
 
-        if options.javascript.testPath.nil?
+        if options.javascript.test_path.nil?
           bs.call "Javascript test definitions file was not specified"
         else
-          unless File.exists? options.javascript.testPath
-            bs.call "Could not find specified javascript test definitions file at '#{options.javascript.testPath}'"
+          unless File.exists? options.javascript.test_path
+            bs.call "Could not find specified javascript test definitions file at '#{options.javascript.test_path}'"
           end
         end
       end
@@ -86,84 +86,85 @@ module Illuminator
 
 
 
-  def self.runWithOptions(originalOptions)
+  def self.run_with_options(originalOptions)
 
     options = Options.new(originalOptions.to_h) # immediately create a copy of the options, because we may mangle them
-    Illuminator::BuildArtifacts.instance.setRoot options.buildArtifactsDir
-
-    hardwareID = options.illuminator.hardwareID
-    appName    = options.xcode.appName
 
     # validate some inputs
-    return false unless Framework.validateOptions(options)
+    return false unless Framework.validate_options(options)
+
+    Illuminator::BuildArtifacts.instance.set_root options.build_artifacts_dir
+
+    hardware_id = options.illuminator.hardware_id
+    app_name    = options.xcode.app_name
 
     # do any initial cleaning
-    cleanDirs = {
+    clean_dirs = {
       HostUtils.realpath("~/Library/Developer/Xcode/DerivedData") => options.illuminator.clean.derived,
       Illuminator::BuildArtifacts.instance.root(true)             => options.illuminator.clean.artifacts,
     }
-    Framework.cleanCountdown if Framework.willClean(options) and (not options.illuminator.clean.noDelay)
-    cleanDirs.each do |d, doClean|
+    Framework.clean_countdown if Framework.will_clean(options) and (not options.illuminator.clean.no_delay)
+    clean_dirs.each do |d, do_clean|
       dir = HostUtils.realpath d
-      if doClean
+      if do_clean
         puts "Illuminator cleanup: removing #{dir}"
         FileUtils.rmtree dir
       end
     end
 
     # Initialize builder and build
-    if (not options.instruments.appLocation.nil?)
-      puts "Skipping build because appLocation was provided".yellow if options.illuminator.task.build
-      options.instruments.appLocation = HostUtils::realpath(options.instruments.appLocation)
+    if (not options.instruments.app_location.nil?)
+      puts "Skipping build because app_location was provided".yellow if options.illuminator.task.build
+      options.instruments.app_location = HostUtils::realpath(options.instruments.app_location)
     elsif (not options.illuminator.task.build)
-      options.instruments.appLocation = Illuminator::BuildArtifacts.instance.appLocation(appName) # assume app is here
+      options.instruments.app_location = Illuminator::BuildArtifacts.instance.app_location(app_name) # assume app is here
     else
       builder = AutomationBuilder.new
-      builder.projectDir = options.xcode.projectDir
+      builder.project_dir = options.xcode.project_dir
       builder.project    = options.xcode.project
       builder.scheme     = options.xcode.scheme
       builder.workspace  = options.xcode.workspace
-      builder.doClean    = options.illuminator.clean.xcode
-      unless options.xcode.environmentVars.nil?
-        options.xcode.environmentVars.each { |name, value| builder.addEnvironmentVariable(name, value) }
+      builder.do_clean    = options.illuminator.clean.xcode
+      unless options.xcode.environment_vars.nil?
+        options.xcode.environment_vars.each { |name, value| builder.add_environment_variable(name, value) }
       end
 
       # if app name is not specified, make sure that we will only have one to run
-      XcodeUtils.removeExistingApps(Illuminator::BuildArtifacts.instance.xcode) if appName.nil?
-      if builder.buildForAutomation(options.xcode.sdk, hardwareID)
+      XcodeUtils.remove_existing_apps(Illuminator::BuildArtifacts.instance.xcode) if app_name.nil?
+      if builder.build_for_automation(options.xcode.sdk, hardware_id)
         puts 'Build succeded'.green
-        options.instruments.appLocation = Illuminator::BuildArtifacts.instance.appLocation(appName)
+        options.instruments.app_location = Illuminator::BuildArtifacts.instance.app_location(app_name)
       else
         puts 'Build failed, check logs for results'.red
-        exit builder.exitCode
+        exit builder.exit_code
       end
     end
 
     return true unless options.illuminator.task.automate
 
     # Install on real device
-    unless hardwareID.nil?
-      DeviceInstaller.instance.installOnDevice(options.instruments.appLocation, hardwareID)
+    unless hardware_id.nil?
+      DeviceInstaller.instance.install_on_device(options.instruments.app_location, hardware_id)
     end
 
     # Initialize automation
     runner = AutomationRunner.new
-    runner.appName = appName
+    runner.app_name = app_name
     runner.cleanup
-    return runner.runWithOptions(options)
+    return runner.run_with_options(options)
 
   end
 
-  # overrideOptions is a lambda function that acts on the options object
-  def self.reRun(configPath, overrideOptions = nil)
+  # override_options is a lambda function that acts on the options object
+  def self.rerun(config_path, override_options = nil)
 
     # load config from supplied path
-    jsonConfig = IO.read(configPath)
+    json_config = IO.read(config_path)
 
     # process any overrides
-    options = overrideOptions.(Illuminator::Options.new(JSON.parse(jsonConfig))) unless overrideOptions.nil?
+    options = override_options.(Illuminator::Options.new(JSON.parse(json_config))) unless override_options.nil?
 
-    return runWithOptions options
+    return run_with_options options
   end
 
 

@@ -10,50 +10,50 @@ module Illuminator
     attr_accessor :sdk
     attr_accessor :arch
     attr_accessor :scheme
-    attr_accessor :projectDir
+    attr_accessor :project_dir
     attr_accessor :workspace
     attr_accessor :destination
     attr_accessor :xcconfig
-    attr_accessor :doClean
-    attr_accessor :doTest
-    attr_accessor :doBuild
-    attr_accessor :doArchive
-    attr_accessor :derivedDataIsArtifact
+    attr_accessor :do_clean
+    attr_accessor :do_test
+    attr_accessor :do_build
+    attr_accessor :do_archive
+    attr_accessor :derived_data_is_artifact
 
-    attr_reader :exitCode
+    attr_reader :exit_code
 
     def initialize
-      @parameters      = Hash.new
-      @environmentVars = Hash.new
-      @projectDir      = nil
-      @doClean         = FALSE
-      @doTest          = FALSE
-      @doBuild         = TRUE
-      @doArchive       = FALSE
-      @exitCode        = nil
+      @parameters       = Hash.new
+      @environment_vars = Hash.new
+      @project_dir      = nil
+      @do_clean         = FALSE
+      @do_test          = FALSE
+      @do_build         = TRUE
+      @do_archive       = FALSE
+      @exit_code        = nil
 
-      @derivedDataIsArtifact = FALSE
+      @derived_data_is_artifact = FALSE
 
-      resultPath = Illuminator::BuildArtifacts.instance.xcode
-      self.addEnvironmentVariable('CONFIGURATION_BUILD_DIR', "'#{resultPath}'")
-      self.addEnvironmentVariable('CONFIGURATION_TEMP_DIR', "'#{resultPath}'")
+      result_path = Illuminator::BuildArtifacts.instance.xcode
+      self.add_environment_variable('CONFIGURATION_BUILD_DIR', "'#{result_path}'")
+      self.add_environment_variable('CONFIGURATION_TEMP_DIR', "'#{result_path}'")
     end
 
-    def setBuildArtifactsRoot rootDir
-      Illuminator::BuildArtifacts.instance.setRoot(rootDir)
+    def set_build_artifacts_root root_dir
+      Illuminator::BuildArtifacts.instance.set_root(root_dir)
     end
 
-    def addParameter(parameterName = '',parameterValue = '')
-      @parameters[parameterName] = parameterValue
+    def add_parameter(parameter_name = '',parameter_value = '')
+      @parameters[parameter_name] = parameter_value
     end
 
-    def addEnvironmentVariable(parameterName = '',parameterValue = '')
-      @environmentVars[parameterName] = parameterValue
+    def add_environment_variable(parameter_name = '',parameter_value = '')
+      @environment_vars[parameter_name] = parameter_value
     end
 
-    def _assembleConfig
+    def _assemble_config
       # put standard parameters into parameters
-      keyDefs = {
+      key_defs = {
         'project'       => @project,
         'configuration' => @configuration,
         'sdk'           => @sdk,
@@ -66,52 +66,52 @@ module Illuminator
 
       # since derived data can take quite a lot of disk space, don't automatically store it
       #  in build-specific directory
-      if @derivedDataIsArtifact
-        keyDefs['derivedDataPath'] = Illuminator::BuildArtifacts.instance.derivedData
+      if @derived_data_is_artifact
+        key_defs['derived_dataPath'] = Illuminator::BuildArtifacts.instance.derived_data
       end
 
-      keyDefs.each do |key, value|
-        self.addParameter(key, value) unless value.nil?
+      key_defs.each do |key, value|
+        self.add_parameter(key, value) unless value.nil?
       end
     end
 
 
-    def _buildCommand
-      usePipefail = false  # debug option
-      self._assembleConfig
+    def _build_command
+      use_pipefail = false  # debug option
+      self._assemble_config
 
       parameters = ''
-      environmentVars = ''
+      environment_vars = ''
       tasks = ''
 
       @parameters.each      { |name, value| parameters << " -#{name} \"#{value}\"" }
-      @environmentVars.each { |name, value| environmentVars << " #{name}=#{value}" }
+      @environment_vars.each { |name, value| environment_vars << " #{name}=#{value}" }
 
-      tasks << ' clean'    if @doClean
-      tasks << ' build'    if @doBuild
-      tasks << ' archive'  if @doArchive
-      tasks << ' test'     if @doTest
+      tasks << ' clean'    if @do_clean
+      tasks << ' build'    if @do_build
+      tasks << ' archive'  if @do_archive
+      tasks << ' test'     if @do_test
 
       command = ''
-      command << 'set -o pipefail && ' if usePipefail
+      command << 'set -o pipefail && ' if use_pipefail
       command << 'xcodebuild'
-      command << parameters << environmentVars << tasks
-      command << " | tee '#{self.logfilePath}'"
+      command << parameters << environment_vars << tasks
+      command << " | tee '#{self.logfile_path}'"
       unless Illuminator::HostUtils.which("xcpretty").nil?  # use xcpretty if available
-        command << " | xcpretty -c -r junit -o \"#{BuildArtifacts.instance.xcprettyReportFile}\""
+        command << " | xcpretty -c -r junit -o \"#{BuildArtifacts.instance.xcpretty_report_file}\""
       end
-      command << ' && exit ${PIPESTATUS[0]}' unless usePipefail
+      command << ' && exit ${PIPESTATUS[0]}' unless use_pipefail
 
       command
     end
 
 
-    def logfilePath
-      logFile = File.join(Illuminator::BuildArtifacts.instance.console, 'xcodebuild.log')
+    def logfile_path
+      log_file = File.join(Illuminator::BuildArtifacts.instance.console, 'xcodebuild.log')
     end
 
 
-    def _executeBuildCommand command
+    def _execute_build_command command
       puts command.green
       process = IO.popen(command) do |io|
         io.each {|line| puts line}
@@ -119,22 +119,22 @@ module Illuminator
       end
 
       ec = $?
-      @exitCode = ec.exitstatus
-      return @exitCode == 0
+      @exit_code = ec.exitstatus
+      return @exit_code == 0
     end
 
 
     def build
-      command = self._buildCommand
+      command = self._build_command
 
       # switch to a directory (if desired) and build
       directory = Dir.pwd
       retval = nil
       begin
-        Dir.chdir(@projectDir) unless @projectDir.nil?
-        retval = self._executeBuildCommand command
+        Dir.chdir(@project_dir) unless @project_dir.nil?
+        retval = self._execute_build_command command
       ensure
-        Dir.chdir(directory) unless @projectDir.nil?
+        Dir.chdir(directory) unless @project_dir.nil?
       end
 
       retval

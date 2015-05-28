@@ -14,23 +14,23 @@ module Illuminator
       super
       @configuration = 'Debug'
 
-      self.addEnvironmentVariable('UIAUTOMATION_BUILD', true)
+      self.add_environment_variable('UIAUTOMATION_BUILD', true)
     end
 
 
-    def buildForAutomation sdk, hardwareID
+    def build_for_automation sdk, hardware_id
       @xcconfig = "#{File.dirname(__FILE__)}/../../resources/BuildConfiguration.xcconfig"
 
-      preprocessorDefinitions = '$(value) UIAUTOMATION_BUILD=1'
-      if hardwareID.nil?
+      preprocessor_definitions = '$(value) UIAUTOMATION_BUILD=1'
+      if hardware_id.nil?
         @sdk = sdk || 'iphonesimulator'
         @arch = @arch || 'i386'
       else
         @sdk = sdk || 'iphoneos'
-        @destination = "id=#{hardwareID}"
-        preprocessorDefinitions += " AUTOMATION_UDID=#{hardwareID}"
+        @destination = "id=#{hardware_id}"
+        preprocessor_definitions += " AUTOMATION_UDID=#{hardware_id}"
       end
-      self.addEnvironmentVariable('GCC_PREPROCESSOR_DEFINITIONS', "'#{preprocessorDefinitions}'")
+      self.add_environment_variable('GCC_PREPROCESSOR_DEFINITIONS', "'#{preprocessor_definitions}'")
 
       self.build
     end
