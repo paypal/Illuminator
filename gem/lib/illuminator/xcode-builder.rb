@@ -67,7 +67,7 @@ module Illuminator
       # since derived data can take quite a lot of disk space, don't automatically store it
       #  in build-specific directory
       if @derived_data_is_artifact
-        key_defs['derived_dataPath'] = Illuminator::BuildArtifacts.instance.derived_data
+        key_defs['derivedDataPath'] = Illuminator::BuildArtifacts.instance.derived_data
       end
 
       key_defs.each do |key, value|
