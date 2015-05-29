@@ -42,7 +42,7 @@ module Illuminator
     end
 
     def check_clean_args
-      known_cleans = ["xcode", "buildArtifacts", "deriveData", "noDelay"]
+      known_cleans = ["xcode", "buildArtifacts", "derivedData", "noDelay"]
 
       @_options["clean"] = [] if @_options["clean"].nil?
 
@@ -212,7 +212,7 @@ module Illuminator
       self.add_switch('B', ['-B', '--skip-automate', "Don't automate; build only"])
       self.add_switch('e', ['-e', '--skip-set-sim', 'Assume that simulator has already been chosen and properly reset'])
       self.add_switch('k', ['-k', '--skip-kill-after', 'Leave the simulator open after the run'])
-      self.add_switch('y', ['-y', '--clean PLACES', 'Comma-separated list of places to clean {xcode, buildArtifacts, derived_data}'])
+      self.add_switch('y', ['-y', '--clean PLACES', 'Comma-separated list of places to clean {xcode, buildArtifacts, derivedData}'])
       self.add_switch('c', ['-c', '--coverage', 'Generate coverage files'])
       self.add_switch('r', ['-r', '--retest OPTIONS', 'Immediately retest failed tests with comma-separated options {1x, solo}'])
       self.add_switch('v', ['-v', '--verbose', 'Show verbose output from instruments'])
