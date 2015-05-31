@@ -35,7 +35,7 @@ class DeviceInstaller
     puts "Installing #{app_location} on device #{hardware_id} using #{specific_method}"
     case specific_method
     when /ios-deploy$/
-      self._install_using_ios_deploy(app_location, hardware_id)
+      _install_using_ios_deploy(app_location, hardware_id)
     else
       puts "None of the following utilities for app installation appear to be installed: #{@installed_installers.keys.to_s}".red
       raise NotImplementedError, "No app installation available with name " + specific_method.to_s

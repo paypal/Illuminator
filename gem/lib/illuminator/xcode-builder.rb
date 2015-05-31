@@ -35,8 +35,8 @@ module Illuminator
       @derived_data_is_artifact = FALSE
 
       result_path = Illuminator::BuildArtifacts.instance.xcode
-      self.add_environment_variable('CONFIGURATION_BUILD_DIR', "'#{result_path}'")
-      self.add_environment_variable('CONFIGURATION_TEMP_DIR', "'#{result_path}'")
+      add_environment_variable('CONFIGURATION_BUILD_DIR', "'#{result_path}'")
+      add_environment_variable('CONFIGURATION_TEMP_DIR', "'#{result_path}'")
     end
 
     def set_build_artifacts_root root_dir
@@ -71,14 +71,14 @@ module Illuminator
       end
 
       key_defs.each do |key, value|
-        self.add_parameter(key, value) unless value.nil?
+        add_parameter(key, value) unless value.nil?
       end
     end
 
 
     def _build_command
       use_pipefail = false  # debug option
-      self._assemble_config
+      _assemble_config
 
       parameters = ''
       environment_vars = ''
@@ -96,7 +96,7 @@ module Illuminator
       command << 'set -o pipefail && ' if use_pipefail
       command << 'xcodebuild'
       command << parameters << environment_vars << tasks
-      command << " | tee '#{self.logfile_path}'"
+      command << " | tee '#{logfile_path}'"
       unless Illuminator::HostUtils.which("xcpretty").nil?  # use xcpretty if available
         command << " | xcpretty -c -r junit -o \"#{BuildArtifacts.instance.xcpretty_report_file}\""
       end
@@ -125,14 +125,14 @@ module Illuminator
 
 
     def build
-      command = self._build_command
+      command = _build_command
 
       # switch to a directory (if desired) and build
       directory = Dir.pwd
       retval = nil
       begin
         Dir.chdir(@project_dir) unless @project_dir.nil?
-        retval = self._execute_build_command command
+        retval = _execute_build_command command
       ensure
         Dir.chdir(directory) unless @project_dir.nil?
       end

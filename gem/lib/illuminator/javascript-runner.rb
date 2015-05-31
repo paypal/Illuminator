@@ -75,10 +75,10 @@ class JavascriptRunner
     @environment_file             = Illuminator::BuildArtifacts.instance.illuminator_js_environment
 
     # prepare @full_config
-    self.assemble_config
+    assemble_config
 
-    self.render_template '/resources/IlluminatorGeneratedRunnerForInstruments.erb', Illuminator::BuildArtifacts.instance.illuminator_js_runner
-    self.render_template '/resources/IlluminatorGeneratedEnvironment.erb', Illuminator::BuildArtifacts.instance.illuminator_js_environment
+    render_template '/resources/IlluminatorGeneratedRunnerForInstruments.erb', Illuminator::BuildArtifacts.instance.illuminator_js_runner
+    render_template '/resources/IlluminatorGeneratedEnvironment.erb', Illuminator::BuildArtifacts.instance.illuminator_js_environment
 
     Illuminator::HostUtils.save_json(@full_config, Illuminator::BuildArtifacts.instance.illuminator_config_file)
   end
