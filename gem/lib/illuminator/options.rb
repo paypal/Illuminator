@@ -34,61 +34,61 @@ module Illuminator
       return unless hash.nil?
 
       # stub out all the branches
-      @xcode        = RecursiveOpenStruct.new
-      @instruments  = RecursiveOpenStruct.new
-      @simulator    = RecursiveOpenStruct.new
-      @javascript   = RecursiveOpenStruct.new
-      @illuminator  = RecursiveOpenStruct.new
-      @app_specific = nil    # all unknown options will go here
-      @build_artifacts_dir = nil
+      self.xcode        = RecursiveOpenStruct.new
+      self.instruments  = RecursiveOpenStruct.new
+      self.simulator    = RecursiveOpenStruct.new
+      self.javascript   = RecursiveOpenStruct.new
+      self.illuminator  = RecursiveOpenStruct.new
+      self.app_specific = nil    # all unknown options will go here
+      self.build_artifacts_dir = nil
 
-      @illuminator.clean  = RecursiveOpenStruct.new
-      @illuminator.task   = RecursiveOpenStruct.new
-      @illuminator.test   = RecursiveOpenStruct.new
+      self.illuminator.clean  = RecursiveOpenStruct.new
+      self.illuminator.task   = RecursiveOpenStruct.new
+      self.illuminator.test   = RecursiveOpenStruct.new
 
-      @illuminator.test.tags   = RecursiveOpenStruct.new
-      @illuminator.test.retest = RecursiveOpenStruct.new
+      self.illuminator.test.tags   = RecursiveOpenStruct.new
+      self.illuminator.test.retest = RecursiveOpenStruct.new
 
       # name all the keys (just for visibiilty)
-      @xcode.project_dir = nil
-      @xcode.project = nil
-      @xcode.app_name = nil
-      @xcode.sdk = nil
-      @xcode.workspace = nil
-      @xcode.scheme = nil
-      @xcode.environment_vars = nil
+      self.xcode.project_dir = nil
+      self.xcode.project = nil
+      self.xcode.app_name = nil
+      self.xcode.sdk = nil
+      self.xcode.workspace = nil
+      self.xcode.scheme = nil
+      self.xcode.environment_vars = nil
 
-      @illuminator.entry_point = nil
-      @illuminator.test.random_seed = nil
-      @illuminator.test.tags.any = nil
-      @illuminator.test.tags.all = nil
-      @illuminator.test.tags.none = nil
-      @illuminator.test.names = nil
-      @illuminator.test.retest.attempts = nil
-      @illuminator.test.retest.solo = nil
-      @illuminator.clean.xcode = nil
-      @illuminator.clean.derived = nil
-      @illuminator.clean.artifacts = nil
-      @illuminator.clean.no_delay = nil
-      @illuminator.task.build = nil
-      @illuminator.task.automate = nil
-      @illuminator.task.set_sim = nil
-      @illuminator.task.coverage = nil
-      @illuminator.hardware_id = nil
+      self.illuminator.entry_point = nil
+      self.illuminator.test.random_seed = nil
+      self.illuminator.test.tags.any = nil
+      self.illuminator.test.tags.all = nil
+      self.illuminator.test.tags.none = nil
+      self.illuminator.test.names = nil
+      self.illuminator.test.retest.attempts = nil
+      self.illuminator.test.retest.solo = nil
+      self.illuminator.clean.xcode = nil
+      self.illuminator.clean.derived = nil
+      self.illuminator.clean.artifacts = nil
+      self.illuminator.clean.no_delay = nil
+      self.illuminator.task.build = nil
+      self.illuminator.task.automate = nil
+      self.illuminator.task.set_sim = nil
+      self.illuminator.task.coverage = nil
+      self.illuminator.hardware_id = nil
 
-      @simulator.device = nil
-      @simulator.version = nil
-      @simulator.language = nil
-      @simulator.kill_after = nil
+      self.simulator.device = nil
+      self.simulator.version = nil
+      self.simulator.language = nil
+      self.simulator.kill_after = nil
 
-      @instruments.do_verbose = nil
-      @instruments.timeout = nil
-      @instruments.attempts = nil
-      @instruments.app_location = nil  # normally, this is where we build to
+      self.instruments.do_verbose = nil
+      self.instruments.timeout = nil
+      self.instruments.attempts = nil
+      self.instruments.app_location = nil  # normally, this is where we build to
 
-      @javascript.test_path = nil
-      @javascript.implementation = nil
-      @javascript.app_specific_config = nil
+      self.javascript.test_path = nil
+      self.javascript.implementation = nil
+      self.javascript.app_specific_config = nil
     end
 
   end
