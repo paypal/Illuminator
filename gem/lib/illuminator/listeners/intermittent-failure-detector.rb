@@ -28,7 +28,8 @@ class IntermittentFailureDetector < SaltinelListener
     super # run the SaltinelListener processor
 
     # error cases that should trigger a restart
-    if /Automation Instrument ran into an exception while trying to run the script.  UIATargetHasGoneAWOLException/ =~ message.full_line
+    p = /Automation Instrument ran into an exception while trying to run the script.  UIATargetHasGoneAWOLException/
+    if p =~ message.full_line
       trigger "UIATargetHasGoneAWOLException"
     end
   end

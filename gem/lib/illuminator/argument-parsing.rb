@@ -268,7 +268,9 @@ module Illuminator
 
       # helpful error message for bad chars
       bad_chars = letters.chars.to_a.select{|c| c != "#" and @switches[c].nil?}
-      raise ArgumentError, "build_parser got letters (" + letters + ") containing unknown option characters: " + bad_chars.to_s unless bad_chars.empty?
+      unless bad_chars.empty?
+        raise ArgumentError, "build_parser got letters (#{letters}) containing unknown option characters: #{bad_chars.to_s}"
+      end
 
       retval = Illuminator::Parser.new options
 

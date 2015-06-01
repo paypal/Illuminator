@@ -427,7 +427,8 @@ class AutomationRunner
     new_options.illuminator.entry_point      = "runTestsByName"
     new_options.illuminator.test.names       = failed_tests.map { |t| t.name }
 
-    Illuminator::HostUtils.save_json(new_options.to_h, Illuminator::BuildArtifacts.instance.illuminator_rerun_failed_tests_settings)
+    Illuminator::HostUtils.save_json(new_options.to_h,
+                                     Illuminator::BuildArtifacts.instance.illuminator_rerun_failed_tests_settings)
   end
 
   def remove_any_app_crashes()
@@ -450,7 +451,8 @@ class AutomationRunner
     # write something useful depending on what crash reports are found
     case crashes.keys.length
     when 0
-      stacktrace_text = "No crash reports found in #{Illuminator::XcodeUtils.instance.get_crash_directory}, perhaps the app exited cleanly instead"
+      d = Illuminator::XcodeUtils.instance.get_crash_directory
+      stacktrace_text = "No crash reports found in #{d}, perhaps the app exited cleanly instead"
     when 1
       stacktrace_text = crashes[crashes.keys[0]]
     else

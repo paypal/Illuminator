@@ -66,8 +66,10 @@ module Illuminator
 
     # Get the path to the instruments template
     def get_instruments_template_path
-      instruments_folder = get_instruments_path
-      "#{@xcode_path}/../Applications/Instruments.app/Contents/PlugIns/#{instruments_folder}/Contents/Resources/Automation.tracetemplate"
+      File.join(@xcode_path,
+                "../Applications/Instruments.app/Contents/PlugIns",
+                get_instruments_path,
+                "Contents/Resources/Automation.tracetemplate")
     end
 
     def _get_all_simulator_info
@@ -158,7 +160,8 @@ module Illuminator
         symbolicator_path = "#{frameworks_path}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
       end
       if not File.exist?(symbolicator_path)
-        symbolicator_path = File.join(get_xcode_app_path, "Contents/SharedFrameworks/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash")
+        symbolicator_path = File.join(get_xcode_app_path,
+                                      "Contents/SharedFrameworks/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash")
       end
 
       command =   "DEVELOPER_DIR='#{@xcode_path}' "
