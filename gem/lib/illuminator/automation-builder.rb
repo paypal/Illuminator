@@ -14,7 +14,7 @@ module Illuminator
       super
       @configuration = 'Debug'
 
-      self.add_environment_variable('UIAUTOMATION_BUILD', true)
+      add_environment_variable('UIAUTOMATION_BUILD', true)
     end
 
 
@@ -30,9 +30,9 @@ module Illuminator
         @destination = "id=#{hardware_id}"
         preprocessor_definitions += " AUTOMATION_UDID=#{hardware_id}"
       end
-      self.add_environment_variable('GCC_PREPROCESSOR_DEFINITIONS', "'#{preprocessor_definitions}'")
+      add_environment_variable('GCC_PREPROCESSOR_DEFINITIONS', "'#{preprocessor_definitions}'")
 
-      self.build
+      build
     end
 
   end

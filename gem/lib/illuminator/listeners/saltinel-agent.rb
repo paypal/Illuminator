@@ -56,7 +56,7 @@ class SaltinelAgent < SaltinelListener
   def on_saltinel inner_message
     @recognizers.each do |fn, regex|
       result = regex.match(inner_message)
-      self.send(fn, result) unless result.nil?
+      send(fn, result) unless result.nil?
     end
   end
 

@@ -19,7 +19,7 @@ class ConsoleLogger < InstrumentsListener
   end
 
   def receive (message)
-    self.prepare_logger
+    prepare_logger
     @logger << message.full_line
     @logger << "\n"
   end

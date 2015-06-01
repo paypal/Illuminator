@@ -55,8 +55,8 @@ module Illuminator
 
     # copy internal options storage into a options object
     def copy_parsed_options_into(illuminatorOptions)
-      self.check_clean_args
-      self.check_retest_args
+      check_clean_args
+      check_retest_args
 
       # load up known illuminatorOptions
       # we only load non-nil options, just in case there was already something in the illuminatorOptions obj
@@ -109,7 +109,7 @@ module Illuminator
 
     def parse args
       @positional_args = super(args)
-      return self.copy_parsed_options_into(Illuminator::Options.new)
+      return copy_parsed_options_into(Illuminator::Options.new)
     end
 
   end
@@ -190,41 +190,41 @@ module Illuminator
       @letter_processing = @letter_processing.merge(letter_processing_updates) unless letter_processing_updates.nil?
       @default_values = @default_values.merge default_values unless default_values.nil?
 
-      self.add_switch('A', ['-A', '--buildArtifacts PATH', 'The directory in which to store build artifacts'])
-      self.add_switch('x', ['-x', '--entryPoint LABEL', 'The execution entry point {runTestsByTag, runTestsByName, describe}'])
-      self.add_switch('p', ['-p', '--test_path PATH', 'Path to js file with all tests imported'])
-      self.add_switch('a', ['-a', '--app_name APPNAME', "Name of the app to build / run"])
-      self.add_switch('D', ['-D', '--xcodeProjectDirectory PATH', "Directory containing the Xcode project to build"])
-      self.add_switch('P', ['-P', '--xcodeProject PROJECTNAME', "Project to build -- required if there are 2 in the same directory"])
-      self.add_switch('W', ['-W', '--xcodeWorkspace WORKSPACENAME', "Workspace to build"])
-      self.add_switch('t', ['-t', '--tags-any TAGSANY', 'Run tests with any of the given tags'])
-      self.add_switch('o', ['-o', '--tags-all TAGSALL', 'Run tests with all of the given tags'])
-      self.add_switch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])
-      self.add_switch('q', ['-q', '--sdk SDK', 'SDK to build against'])
-      self.add_switch('s', ['-s', '--scheme SCHEME', 'Build and run specific tests on given workspace scheme'])
-      self.add_switch('d', ['-d', '--hardware_id ID', 'hardware id of device to run on instead of simulator'])
-      self.add_switch('i', ['-i', '--implementation IMPL', 'Device tests implementation'])
-      self.add_switch('E', ['-E', '--app_location LOCATION', 'Location of app executable, if pre-built'])
-      self.add_switch('b', ['-b', '--simDevice DEVICE', 'Run on given simulated device'])
-      self.add_switch('z', ['-z', '--simVersion VERSION', 'Run on given simulated iOS version'])
-      self.add_switch('l', ['-l', '--simLanguage LANGUAGE', 'Run on given simulated iOS language'])
-      self.add_switch('f', ['-f', '--skip-build', 'Just automate; assume already built'])
-      self.add_switch('B', ['-B', '--skip-automate', "Don't automate; build only"])
-      self.add_switch('e', ['-e', '--skip-set-sim', 'Assume that simulator has already been chosen and properly reset'])
-      self.add_switch('k', ['-k', '--skip-kill-after', 'Leave the simulator open after the run'])
-      self.add_switch('y', ['-y', '--clean PLACES', 'Comma-separated list of places to clean {xcode, buildArtifacts, derivedData}'])
-      self.add_switch('c', ['-c', '--coverage', 'Generate coverage files'])
-      self.add_switch('r', ['-r', '--retest OPTIONS', 'Immediately retest failed tests with comma-separated options {1x, solo}'])
-      self.add_switch('v', ['-v', '--verbose', 'Show verbose output from instruments'])
-      self.add_switch('m', ['-m', '--timeout TIMEOUT', 'Seconds to wait for instruments tool to start tests'])
-      self.add_switch('w', ['-w', '--random-seed SEED', 'Randomize test order based on given integer seed'])
+      add_switch('A', ['-A', '--buildArtifacts PATH', 'The directory in which to store build artifacts'])
+      add_switch('x', ['-x', '--entryPoint LABEL', 'The execution entry point {runTestsByTag, runTestsByName, describe}'])
+      add_switch('p', ['-p', '--test_path PATH', 'Path to js file with all tests imported'])
+      add_switch('a', ['-a', '--app_name APPNAME', "Name of the app to build / run"])
+      add_switch('D', ['-D', '--xcodeProjectDirectory PATH', "Directory containing the Xcode project to build"])
+      add_switch('P', ['-P', '--xcodeProject PROJECTNAME', "Project to build -- required if there are 2 in the same directory"])
+      add_switch('W', ['-W', '--xcodeWorkspace WORKSPACENAME', "Workspace to build"])
+      add_switch('t', ['-t', '--tags-any TAGSANY', 'Run tests with any of the given tags'])
+      add_switch('o', ['-o', '--tags-all TAGSALL', 'Run tests with all of the given tags'])
+      add_switch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])
+      add_switch('q', ['-q', '--sdk SDK', 'SDK to build against'])
+      add_switch('s', ['-s', '--scheme SCHEME', 'Build and run specific tests on given workspace scheme'])
+      add_switch('d', ['-d', '--hardware_id ID', 'hardware id of device to run on instead of simulator'])
+      add_switch('i', ['-i', '--implementation IMPL', 'Device tests implementation'])
+      add_switch('E', ['-E', '--app_location LOCATION', 'Location of app executable, if pre-built'])
+      add_switch('b', ['-b', '--simDevice DEVICE', 'Run on given simulated device'])
+      add_switch('z', ['-z', '--simVersion VERSION', 'Run on given simulated iOS version'])
+      add_switch('l', ['-l', '--simLanguage LANGUAGE', 'Run on given simulated iOS language'])
+      add_switch('f', ['-f', '--skip-build', 'Just automate; assume already built'])
+      add_switch('B', ['-B', '--skip-automate', "Don't automate; build only"])
+      add_switch('e', ['-e', '--skip-set-sim', 'Assume that simulator has already been chosen and properly reset'])
+      add_switch('k', ['-k', '--skip-kill-after', 'Leave the simulator open after the run'])
+      add_switch('y', ['-y', '--clean PLACES', 'Comma-separated list of places to clean {xcode, buildArtifacts, derivedData}'])
+      add_switch('c', ['-c', '--coverage', 'Generate coverage files'])
+      add_switch('r', ['-r', '--retest OPTIONS', 'Immediately retest failed tests with comma-separated options {1x, solo}'])
+      add_switch('v', ['-v', '--verbose', 'Show verbose output from instruments'])
+      add_switch('m', ['-m', '--timeout TIMEOUT', 'Seconds to wait for instruments tool to start tests'])
+      add_switch('w', ['-w', '--random-seed SEED', 'Randomize test order based on given integer seed'])
     end
 
     # add a parse switch for the given letter key, using the given options.
     #   the parse action is defined by the existence of letter_processing for the letter key,
     #   which by default is simple assignment
     def add_switch(letter, opts)
-      dest = self.get_letter_destination(letter)
+      dest = get_letter_destination(letter)
 
       # alter opts to include the default values
       altered = false
@@ -268,13 +268,15 @@ module Illuminator
 
       # helpful error message for bad chars
       bad_chars = letters.chars.to_a.select{|c| c != "#" and @switches[c].nil?}
-      raise ArgumentError, "build_parser got letters (" + letters + ") containing unknown option characters: " + bad_chars.to_s unless bad_chars.empty?
+      unless bad_chars.empty?
+        raise ArgumentError, "build_parser got letters (#{letters}) containing unknown option characters: #{bad_chars.to_s}"
+      end
 
       retval = Illuminator::Parser.new options
 
       # build a parser as specified by the user
       letters.each_char do |c|
-        options[self.get_letter_destination(c)] = @default_values[c] unless @default_values[c].nil?
+        options[get_letter_destination(c)] = @default_values[c] unless @default_values[c].nil?
 
         if c == '#'
           retval.separator('  ---------------------------------------------------------------------------------')

@@ -24,7 +24,7 @@ class StopDetector < InstrumentsListener
 
   def receive message
     # error cases that indicate successful stop but involve errors that won't be fixed by a restart
-    self.trigger if :stopped == message.status
+    trigger if :stopped == message.status
   end
 
   def on_automation_finished

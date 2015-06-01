@@ -1,7 +1,7 @@
 language: objective-c
 install: bundle install --jobs=3 --retry=3 --gemfile SampleApp/Gemfile
 script:
-   - rubocop -D --only Style/MethodName,Style/VariableName .
+   - rubocop -D --only Style/MethodName,Style/VariableName,Metrics/LineLength .
    - cd SampleApp
    - pod install
    - ruby smokeTests.rb

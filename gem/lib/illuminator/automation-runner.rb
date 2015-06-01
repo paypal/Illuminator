@@ -103,7 +103,7 @@ class AutomationRunner
       class_name     = test_file_name.sub(".", "_") + "." + test_fn_name
       @test_suite.add_test_case(class_name, n)
     end
-    self.save_junit_test_report
+    save_junit_test_report
   end
 
   def saltinel_agent_got_restart_request
@@ -140,7 +140,7 @@ class AutomationRunner
     puts "ILLUMINATOR FAILURE TO SORT TESTS".red unless name == @current_test
     @test_suite[name].pass!
     @current_test = nil
-    self.save_junit_test_report
+    save_junit_test_report
   end
 
   def test_listener_got_test_fail message
@@ -157,7 +157,7 @@ class AutomationRunner
       @test_suite[@current_test].fail message
       @test_suite[@current_test].stacktrace = @stack_trace_lines.join("\n")
       @current_test = nil
-      self.save_junit_test_report
+      save_junit_test_report
     end
   end
 
@@ -167,7 +167,7 @@ class AutomationRunner
     @test_suite[@current_test].fail message
     @test_suite[@current_test].stacktrace = @stack_trace_lines.join("\n")
     @current_test = nil
-    self.save_junit_test_report
+    save_junit_test_report
   end
 
   def test_listener_got_line(status, message)
@@ -291,7 +291,7 @@ class AutomationRunner
     @test_suite = nil
 
     # run the first time
-    self.execute_entire_test_suite(options, target_device_id, nil)
+    execute_entire_test_suite(options, target_device_id, nil)
 
     # rerun if specified.  do not rerun if @testsuite wasn't received (indicating setup problems)
     unless options.illuminator.test.retest.attempts.nil? or @test_suite.nil?
@@ -303,14 +303,14 @@ class AutomationRunner
         # run them in batch mode if desired
         unless options.illuminator.test.retest.solo
           puts "Retrying failed tests in batch, attempt #{att} of #{options.illuminator.test.retest.attempts}"
-          self.execute_entire_test_suite(options, target_device_id, unpassed_tests)
+          execute_entire_test_suite(options, target_device_id, unpassed_tests)
         else
           puts "Retrying failed tests individually, attempt #{att} of #{options.illuminator.test.retest.attempts}"
 
           unpassed_tests.each_with_index do |t, index|
             test_num = index + 1
             puts "Solo attempt for test #{test_num} of #{unpassed_tests.length}"
-            self.execute_entire_test_suite(options, target_device_id, [t])
+            execute_entire_test_suite(options, target_device_id, [t])
           end
         end
       end
@@ -326,10 +326,10 @@ class AutomationRunner
         if Illuminator::HostUtils.which("gcovr").nil?
           puts "Skipping requested coverage generation because gcovr does not appear to be in the PATH".yellow
         else
-          self.generate_coverage gcovr_workspace
+          generate_coverage gcovr_workspace
         end
       end
-      self.save_failed_tests_config(options, @test_suite.unpassed_tests)
+      save_failed_tests_config(options, @test_suite.unpassed_tests)
     end
 
     Illuminator::XcodeUtils.kill_all_simulator_processes if options.simulator.kill_after
@@ -337,7 +337,7 @@ class AutomationRunner
     if "describe" == options.illuminator.entry_point
       return true       # no tests needed to run
     else
-      self.summarize_test_results @test_suite
+      summarize_test_results @test_suite
     end
 
     # TODO: exit code should be an integer, and each of these should be cases
@@ -353,20 +353,20 @@ class AutomationRunner
     # loop until all test cases are covered.
     # we won't get the actual test list until partway through -- from a listener callback
     begin
-      self.remove_any_app_crashes
+      remove_any_app_crashes
       @app_crashed = false
       @instruments_stopped = false
 
       # Setup javascript to run the appropriate list of tests (initial or leftover)
       if @test_suite.nil?
         # very first attempt
-        self.configure_javascript_runner(options, target_device_id)
+        configure_javascript_runner(options, target_device_id)
       elsif specific_tests.nil?
         # not first attempt, but we haven't made it all the way through yet
-        self.configure_javascript_rerunner(@test_suite.unstarted_tests, @test_suite.finished_tests.length)
+        configure_javascript_rerunner(@test_suite.unstarted_tests, @test_suite.finished_tests.length)
       else
         # we assume that we've already gone through and have been given specific tests to check out
-        self.configure_javascript_rerunner(specific_tests, 0)
+        configure_javascript_rerunner(specific_tests, 0)
       end
 
       # Setup new saltinel listener (will overwrite the old one if it exists)
@@ -376,7 +376,7 @@ class AutomationRunner
 
       @instruments_runner.run_once @javascript_runner.saltinel
       if @app_crashed
-        self.handle_app_crash
+        handle_app_crash
       end
 
     end while not (@test_suite.nil? or @test_suite.unstarted_tests.empty? or @instruments_stopped)
@@ -427,7 +427,8 @@ class AutomationRunner
     new_options.illuminator.entry_point      = "runTestsByName"
     new_options.illuminator.test.names       = failed_tests.map { |t| t.name }
 
-    Illuminator::HostUtils.save_json(new_options.to_h, Illuminator::BuildArtifacts.instance.illuminator_rerun_failed_tests_settings)
+    Illuminator::HostUtils.save_json(new_options.to_h,
+                                     Illuminator::BuildArtifacts.instance.illuminator_rerun_failed_tests_settings)
   end
 
   def remove_any_app_crashes()
@@ -445,12 +446,13 @@ class AutomationRunner
     end
 
     # assume a crash report exists, and look for it
-    crashes = self.report_any_app_crashes
+    crashes = report_any_app_crashes
 
     # write something useful depending on what crash reports are found
     case crashes.keys.length
     when 0
-      stacktrace_text = "No crash reports found in #{Illuminator::XcodeUtils.instance.get_crash_directory}, perhaps the app exited cleanly instead"
+      d = Illuminator::XcodeUtils.instance.get_crash_directory
+      stacktrace_text = "No crash reports found in #{d}, perhaps the app exited cleanly instead"
     when 1
       stacktrace_text = crashes[crashes.keys[0]]
     else
@@ -460,7 +462,7 @@ class AutomationRunner
 
     @test_suite[@current_test].stacktrace = stacktrace_text
     @current_test = nil
-    self.save_junit_test_report
+    save_junit_test_report
   end
 
 
@@ -535,7 +537,7 @@ class AutomationRunner
     end
 
     command = "gcovr -r '#{gcWorkspace}' --exclude='#{exclude_regex}' --xml '#{destination_path}' > '#{destination_file}'"
-    self.run_annotated_command(command)
+    run_annotated_command(command)
 
   end
 end

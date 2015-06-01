@@ -42,7 +42,7 @@ module Illuminator
     def is_xcode_major_version ver
       # should update this with 'version' gem
       needle = '(\d+)\.?(\d+)?'
-      match = self.get_xcode_version.match(needle)
+      match = get_xcode_version.match(needle)
       return match.captures[0].to_i == ver
     end
 
@@ -66,12 +66,14 @@ module Illuminator
 
     # Get the path to the instruments template
     def get_instruments_template_path
-      instruments_folder = self.get_instruments_path
-      "#{@xcode_path}/../Applications/Instruments.app/Contents/PlugIns/#{instruments_folder}/Contents/Resources/Automation.tracetemplate"
+      File.join(@xcode_path,
+                "../Applications/Instruments.app/Contents/PlugIns",
+                get_instruments_path,
+                "Contents/Resources/Automation.tracetemplate")
     end
 
     def _get_all_simulator_info
-      info = `#{self.get_xcode_simctl_path} list`.split("\n")
+      info = `#{get_xcode_simctl_path} list`.split("\n")
 
       output = {"devices" => [], "runtimes" => []}
       pointer = nil
@@ -106,14 +108,14 @@ module Illuminator
 
     def get_simulator_device_types
       if @simulator_device_types.nil?
-        self._get_all_simulator_info
+        _get_all_simulator_info
       end
       @simulator_device_types
     end
 
     def get_simulator_runtimes
       if @simulator_runtimes.nil?
-        self._get_all_simulator_info
+        _get_all_simulator_info
       end
       @simulator_runtimes
     end
@@ -127,7 +129,7 @@ module Illuminator
 
     # Based on the desired device and version, get the ID of the simulator that will be passed to instruments
     def get_simulator_id (sim_device, sim_version)
-      devices = self.get_simulator_devices
+      devices = get_simulator_devices
       needle = sim_device + ' \(' + sim_version + ' Simulator\) \[(.*)\]'
       match = devices.match(needle)
       if match
@@ -158,7 +160,8 @@ module Illuminator
         symbolicator_path = "#{frameworks_path}/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash"
       end
       if not File.exist?(symbolicator_path)
-        symbolicator_path = File.join(self.get_xcode_app_path, "Contents/SharedFrameworks/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash")
+        symbolicator_path = File.join(get_xcode_app_path,
+                                      "Contents/SharedFrameworks/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash")
       end
 
       command =   "DEVELOPER_DIR='#{@xcode_path}' "
@@ -178,7 +181,7 @@ module Illuminator
 
     # use the provided applescript to reset the content and settings of the simulator
     def reset_simulator device_id
-      command = "#{self.get_xcode_simctl_path} erase #{device_id}"
+      command = "#{get_xcode_simctl_path} erase #{device_id}"
       puts command.green
       puts `#{command}`
 

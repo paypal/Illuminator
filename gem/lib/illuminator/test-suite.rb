@@ -68,7 +68,7 @@ class TestCase
     @implementation = implementation
     @class_name     = class_name
     @name           = name
-    self.reset!
+    reset!
   end
 
   def <<(stdoutLine)
@@ -130,14 +130,14 @@ class TestCase
     attrs = {
       "name"      => @name,
       "classname" => "#{@implementation}.#{@class_name}",
-      "time"      => self.time,
+      "time"      => time,
     }
 
     output = "  <testcase"
     attrs.each { |key, value| output << " #{key}=#{value.to_s.encode(:xml => :attr)}" }
     output << ">\n"
 
-    if not self.ran?
+    if not ran?
       output << "    <skipped />\n"
     elsif (not @fail_tag.nil?)
       fattrs = {

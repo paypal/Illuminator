@@ -7,7 +7,7 @@ class SaltinelListener < InstrumentsListener
 
   def initialize saltinel
     @saltinel = saltinel
-    self.on_init
+    on_init
   end
 
   def on_init
@@ -15,7 +15,7 @@ class SaltinelListener < InstrumentsListener
 
   def receive (message)
     unsalted = /^#{@saltinel} (.*) #{@saltinel}/.match(message.message)
-    self.on_saltinel(unsalted.to_a[1]) unless unsalted.nil?
+    on_saltinel(unsalted.to_a[1]) unless unsalted.nil?
   end
 
   def on_saltinel inner_message

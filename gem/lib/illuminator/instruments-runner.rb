@@ -28,7 +28,7 @@ class ParsedInstrumentsMessage
     message = ParsedInstrumentsMessage.new
     message.full_line = line
     message.message   = msg_string
-    message.status    = self.parse_status(status_string)
+    message.status    = parse_status(status_string)
     message.date      = date_string
     message.time      = time_string
     message.tz        = tz_string
@@ -103,7 +103,7 @@ class InstrumentsRunner
 
   def intermittent_failure_detector_triggered message
     @fully_started = true
-    self.force_stop("Detected an intermittent failure condition - " + message)
+    force_stop("Detected an intermittent failure condition - " + message)
   end
 
   def force_stop why
@@ -117,7 +117,7 @@ class InstrumentsRunner
     # add saltinel listener
     start_detector = StartDetector.new(saltinel)
     start_detector.event_sink = self
-    self.add_listener("start_detector", start_detector)
+    add_listener("start_detector", start_detector)
 
     global_js_file = Illuminator::BuildArtifacts.instance.illuminator_js_runner
     xcode_path     = Illuminator::XcodeUtils.instance.get_xcode_path
@@ -142,7 +142,7 @@ class InstrumentsRunner
     # change directories and successfully change back
     begin
       Dir.chdir(report_path)
-      ret = self.run_instruments_command command
+      ret = run_instruments_command command
     ensure
       Dir.chdir(directory)
     end
@@ -184,7 +184,7 @@ class InstrumentsRunner
             if @should_abort
               successful_run = false
               done_reading_output = true
-              self.kill_instruments(r, w, pid)
+              kill_instruments(r, w, pid)
 
             elsif IO.select([r], nil, nil, @startup_timeout) then
               line = r.readline.rstrip
@@ -197,7 +197,7 @@ class InstrumentsRunner
               successful_run = false
               done_reading_output = true
               puts "\n Timeout #{@startup_timeout} reached without any output - ".red
-              self.kill_instruments(r, w, pid)
+              kill_instruments(r, w, pid)
               puts "killing simulator processes...".red
               Illuminator::XcodeUtils.kill_all_simulator_processes
               # TODO: might be necessary to delete any app crashes at this point
