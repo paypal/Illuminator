@@ -111,6 +111,7 @@ class InstrumentsRunner
     @should_abort = true
   end
 
+  # Build the proper command and run it
   def run_once saltinel
     report_path = Illuminator::BuildArtifacts.instance.instruments
 
@@ -150,6 +151,7 @@ class InstrumentsRunner
   end
 
 
+  # kill the instruments child process
   def kill_instruments(r, w, pid)
     puts "killing Instruments (pid #{pid})...".red
     begin
@@ -161,7 +163,7 @@ class InstrumentsRunner
     end
   end
 
-
+  # Run an instruments command until it looks like it started successfully or failed non-intermittently
   def run_instruments_command (command)
     @fully_started = false
     @should_abort  = false
@@ -208,7 +210,9 @@ class InstrumentsRunner
           end
         end
 
-      rescue Errno::EIO, Errno::ECHILD, EOFError, PTY::ChildExited
+      rescue EOFError
+        # normal termination
+      rescue Errno::ECHILD, Errno::EIO, PTY::ChildExited
         STDERR.puts 'Instruments exited unexpectedly'
         if @fully_started
           successful_run = false
