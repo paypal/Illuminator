@@ -10,8 +10,8 @@ module StopDetectorEventSink
 end
 
 # StopDetector monitors the logs for things that indicate that instruments should be stopped (user errors)
-#  - the saltinel for the intended test list
-#  - a javascript error
+#  - a message that automation has stopped
+#  - a message that the user needs to enter credentials
 #  - etc
 class StopDetector < InstrumentsListener
 

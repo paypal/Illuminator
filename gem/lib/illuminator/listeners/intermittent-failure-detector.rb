@@ -20,8 +20,8 @@ class IntermittentFailureDetector < SaltinelListener
     @already_started = false
   end
 
-  def trigger
-    @event_sink.intermittent_failure_detector_triggered
+  def trigger message
+    @event_sink.intermittent_failure_detector_triggered message
   end
 
   def receive message
@@ -31,6 +31,11 @@ class IntermittentFailureDetector < SaltinelListener
     p = /Automation Instrument ran into an exception while trying to run the script.  UIATargetHasGoneAWOLException/
     if p =~ message.full_line
       trigger "UIATargetHasGoneAWOLException"
+    end
+
+    p = /Fail: Could not start script, target application is not frontmost./
+    if p =~ message.fill_line
+      trigger "Could not start script, target application is not frontmost"
     end
   end
 
