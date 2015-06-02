@@ -24,7 +24,16 @@ class StopDetector < InstrumentsListener
 
   def receive message
     # error cases that indicate successful stop but involve errors that won't be fixed by a restart
+
+    # like if instruments says it stopped
     trigger if :stopped == message.status
+
+    # or if instruments prompts for username/password
+    p1 = "instruments: Instruments wants permission to analyze other processes."
+    p2 = "Please enter an administrator username and password to allow this."
+    p = /#{p1} #{p2}/
+    trigger if p =~ message.full_line
+
   end
 
   def on_automation_finished
