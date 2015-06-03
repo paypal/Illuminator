@@ -6,6 +6,7 @@ require_relative './xcode-utils'
 require_relative './build-artifacts'
 require_relative 'listeners/start-detector'
 require_relative 'listeners/intermittent-failure-detector'
+require_relative 'listeners/trace-error-detector'
 
 ####################################################################################################
 # status
@@ -60,6 +61,7 @@ end
 class InstrumentsRunner
   include StartDetectorEventSink
   include IntermittentFailureDetectorEventSink
+  include TraceErrorDetectorEventSink
 
   attr_accessor :app_location
   attr_accessor :hardware_id
@@ -103,7 +105,16 @@ class InstrumentsRunner
 
   def intermittent_failure_detector_triggered message
     @fully_started = true
-    force_stop("Detected an intermittent failure condition - " + message)
+    force_stop("Detected an intermittent failure condition - #{message}")
+  end
+
+  def trace_error_detector_triggered(fatal, message)
+    puts "Detected a trace error - #{message}".yellow
+    if fatal
+      @should_abort = true
+    else
+      @should_reset_everything = true
+    end
   end
 
   def force_stop why
@@ -111,23 +122,34 @@ class InstrumentsRunner
     @should_abort = true
   end
 
-  # Build the proper command and run it
-  def run_once saltinel
-    report_path = Illuminator::BuildArtifacts.instance.instruments
 
+  def add_necessary_instruments_listeners(saltinel)
     # add saltinel listener
     start_detector = StartDetector.new(saltinel)
     start_detector.event_sink = self
     add_listener("start_detector", start_detector)
+
+    # add trace error listener
+    trace_detector = TraceErrorDetector.new
+    trace_detector.event_sink = self
+    add_listener("trace_error_detector", trace_detector)
+  end
+
+
+  # Build the proper command and run it
+  def run_once saltinel
+    report_path = Illuminator::BuildArtifacts.instance.instruments
+
+    add_necessary_instruments_listeners(saltinel)
 
     global_js_file = Illuminator::BuildArtifacts.instance.illuminator_js_runner
     xcode_path     = Illuminator::XcodeUtils.instance.get_xcode_path
     template_path  = Illuminator::XcodeUtils.instance.get_instruments_template_path
 
     command = "env DEVELOPER_DIR='#{xcode_path}' /usr/bin/instruments"
-    if hardware_id
+    if !@hardware_id.nil?
       command << " -w '" + @hardware_id + "'"
-    elsif sim_device
+    elsif !@sim_device.nil?
       command << " -w '" + @sim_device + "'"
     end
 
@@ -172,6 +194,7 @@ class InstrumentsRunner
 
     # launch & re-launch instruments until it triggers the StartDetector
     while (not @fully_started) && remaining_attempts > 0 do
+      @should_reset_everything = false
       successful_run = true
       remaining_attempts = remaining_attempts - 1
       puts "\nRelaunching instruments.  #{remaining_attempts} retries left".red unless (remaining_attempts + 1) == @attempts
@@ -188,20 +211,25 @@ class InstrumentsRunner
               done_reading_output = true
               kill_instruments(r, w, pid)
 
+            elsif @should_reset_everything
+              successful_run = false
+              done_reading_output = true
+              kill_instruments(r, w, pid)
+              unless @sim_device.nil?
+                Illuminator::XcodeUtils.kill_all_simulator_processes @sim_device
+                Illuminator::XcodeUtils.instance.reset_simulator @sim_device
+              end
+
             elsif IO.select([r], nil, nil, @startup_timeout) then
               line = r.readline.rstrip
               @listeners.each { |_, listener| listener.receive(ParsedInstrumentsMessage.from_line(line)) }
-              if line =~ /Instruments Trace Error/i
-                successful_run = false
-                done_reading_output = true
-              end
             elsif not @fully_started
               successful_run = false
               done_reading_output = true
               puts "\n Timeout #{@startup_timeout} reached without any output - ".red
               kill_instruments(r, w, pid)
               puts "killing simulator processes...".red
-              Illuminator::XcodeUtils.kill_all_simulator_processes
+              Illuminator::XcodeUtils.kill_all_simulator_processes @sim_device
               # TODO: might be necessary to delete any app crashes at this point
             else
               # We failed to get output for @startuptTimeout, but that's probably OK since we've successfully started

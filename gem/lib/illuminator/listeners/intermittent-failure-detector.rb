@@ -34,7 +34,7 @@ class IntermittentFailureDetector < SaltinelListener
     end
 
     p = /Fail: Could not start script, target application is not frontmost./
-    if p =~ message.fill_line
+    if p =~ message.full_line
       trigger "Could not start script, target application is not frontmost"
     end
   end
