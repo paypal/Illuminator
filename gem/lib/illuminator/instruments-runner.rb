@@ -125,9 +125,9 @@ class InstrumentsRunner
     template_path  = Illuminator::XcodeUtils.instance.get_instruments_template_path
 
     command = "env DEVELOPER_DIR='#{xcode_path}' /usr/bin/instruments"
-    if hardware_id
+    if !@hardware_id.nil?
       command << " -w '" + @hardware_id + "'"
-    elsif sim_device
+    elsif !@sim_device.nil?
       command << " -w '" + @sim_device + "'"
     end
 
