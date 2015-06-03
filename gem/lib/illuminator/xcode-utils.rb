@@ -187,6 +187,12 @@ module Illuminator
 
     end
 
+    def shutdown_simulator device_id
+      command = "#{get_xcode_simctl_path} shutdown #{device_id}"
+      puts command.green
+      puts `#{command}`
+    end
+
     # remove any apps in the specified directory
     def self.remove_existing_apps xcode_output_dir
       Dir["#{xcode_output_dir}/*.app"].each do |app|
@@ -195,7 +201,8 @@ module Illuminator
       end
     end
 
-    def self.kill_all_simulator_processes
+    def self.kill_all_simulator_processes(device_id = nil)
+      XcodeUtils.instance.shutdown_simulator(device_id) unless device_id.nil?
       command = HostUtils.realpath(File.join(File.dirname(__FILE__), "../../resources/scripts/kill_all_sim_processes.sh"))
       puts "Running #{command}"
       puts `'#{command}'`
