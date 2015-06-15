@@ -211,7 +211,7 @@ module Illuminator
     def self.kill_all_instruments_processes
       command = "killall -9 instruments"
       puts "Running #{command}"
-      puts `'#{command}'`
+      puts `#{command}`
     end
 
   end
