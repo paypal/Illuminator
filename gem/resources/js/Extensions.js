@@ -1935,8 +1935,10 @@ extendPrototype(UIATableView, {
             }
             var ret = getSomethingFn(this);
             if (isNotNilElement(ret)) {
-                ret.scrollToVisible();
-                delay(delayToPreventUIAutomationBug);
+                if (!ret.isVisible()) {
+                    ret.scrollToVisible();
+                    delay(delayToPreventUIAutomationBug);
+                }
                 return ret;
             }
 
