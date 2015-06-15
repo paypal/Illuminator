@@ -185,6 +185,7 @@ class InstrumentsRunner
     end
   end
 
+
   # Run an instruments command until it looks like it started successfully or failed non-intermittently
   def run_instruments_command (command)
     @fully_started = false
@@ -197,6 +198,9 @@ class InstrumentsRunner
       @should_reset_everything = false
       successful_run = true
       remaining_attempts = remaining_attempts - 1
+
+      Illuminator::XcodeUtils.kill_all_instruments_processes  # because sometimes they stick around and add up
+
       puts "\nRelaunching instruments.  #{remaining_attempts} retries left".red unless (remaining_attempts + 1) == @attempts
 
       # spawn process and catch unexpected exits
@@ -234,6 +238,7 @@ class InstrumentsRunner
             else
               # We failed to get output for @startuptTimeout, but that's probably OK since we've successfully started
               # TODO: if we need to enforce a maximum time spent without output, this is where the counter would go
+              puts "Instruments seems to have started but has not produced output in #{@startup_timeout} seconds".yellow
             end
           end
         end
