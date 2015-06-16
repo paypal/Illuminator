@@ -26,6 +26,13 @@ class TraceErrorDetector < InstrumentsListener
       trigger(false, message.full_line.split(' : ')[1..-1].join)
     end
 
+    # one time fatal
+    first_time = "instruments: Instruments wants permission to analyze other processes. "
+    first_time += "Please enter an administrator username and password to allow this."
+    if message.full_line =~ /#{first_time}/
+      trigger(true, "Instruments wants permission to analyze other processes.  Please run instruments manually to permit this.")
+    end
+
   end
 
   def on_automation_finished

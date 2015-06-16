@@ -111,6 +111,7 @@ class InstrumentsRunner
   def trace_error_detector_triggered(fatal, message)
     puts "Detected a trace error - #{message}".yellow
     if fatal
+      @fatal_error = true
       @should_abort = true
     else
       @should_reset_everything = true
@@ -190,11 +191,12 @@ class InstrumentsRunner
   def run_instruments_command (command)
     @fully_started = false
     @should_abort  = false
+    @fatal_error   = false
     puts command.green
     remaining_attempts = @attempts
 
     # launch & re-launch instruments until it triggers the StartDetector
-    while (not @fully_started) && remaining_attempts > 0 do
+    while (not @fatal_error) && (not @fully_started) && remaining_attempts > 0 do
       @should_reset_everything = false
       successful_run = true
       remaining_attempts = remaining_attempts - 1
