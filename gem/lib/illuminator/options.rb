@@ -83,6 +83,7 @@ module Illuminator
 
       self.instruments.do_verbose = nil
       self.instruments.timeout = nil
+      self.instruments.max_silence = nil
       self.instruments.attempts = nil
       self.instruments.app_location = nil  # normally, this is where we build to
 

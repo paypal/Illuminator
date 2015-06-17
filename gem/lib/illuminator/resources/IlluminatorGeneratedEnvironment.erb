@@ -3,6 +3,10 @@
  * It provides global path information that would be problematic to introduce through config values
  *  (especially given that the config comes from a file)
  */
+
+// Based on the way UIAutomation processes imports, this will be the first line of code to actually execute
+UIALogger.logDebug("Illuminator has launched.");
+
 var IlluminatorRootDirectory = "<%= @illuminator_root %>";
 var IlluminatorScriptsDirectory = "<%= @illuminator_scripts %>";
 var IlluminatorBuildArtifactsDirectory = "<%= @artifacts_root %>";

@@ -63,12 +63,13 @@ class InstrumentsRunner
   include IntermittentFailureDetectorEventSink
   include TraceErrorDetectorEventSink
 
-  attr_accessor :app_location
-  attr_accessor :hardware_id
-  attr_accessor :sim_device
-  attr_accessor :sim_language
-  attr_accessor :attempts
-  attr_accessor :startup_timeout
+  attr_accessor :app_location     # the app to run
+  attr_accessor :hardware_id      # hardware id specifier
+  attr_accessor :sim_device       # sim device id specifier
+  attr_accessor :sim_language     # sim language (unsupported currently)
+  attr_accessor :attempts         # number of times to try running instruments before giving up
+  attr_accessor :startup_timeout  # amount of time to wait for initial instruments output
+  attr_accessor :max_silence      # if instruments goes silent for this long, we kill it.
 
   attr_reader :started
 
@@ -208,6 +209,7 @@ class InstrumentsRunner
       # spawn process and catch unexpected exits
       begin
         PTY.spawn(*command) do |r, w, pid|
+          silence_duration = 0
 
           done_reading_output = false
           # select on the output and send it to the listeners
@@ -238,9 +240,14 @@ class InstrumentsRunner
               Illuminator::XcodeUtils.kill_all_simulator_processes @sim_device
               # TODO: might be necessary to delete any app crashes at this point
             else
-              # We failed to get output for @startuptTimeout, but that's probably OK since we've successfully started
-              # TODO: if we need to enforce a maximum time spent without output, this is where the counter would go
+              # We failed to get output for @startupTimeout, but that's probably OK since we've successfully started
+              # But we still enforce a maximum time spent without output
+
+              silence_duration += @startup_timeout  # (the amount of time we waited for a select)
               puts "Instruments seems to have started but has not produced output in #{@startup_timeout} seconds".yellow
+              if @max_silence < silence_duration
+                @should_abort = true
+              end
             end
           end
         end

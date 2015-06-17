@@ -232,6 +232,44 @@ class AutomationRunner
   end
 
 
+  def configure_instruments_runner_listeners(options)
+    test_listener = TestListener.new
+    test_listener.event_sink = self
+    @instruments_runner.add_listener("test_listener", test_listener)
+
+    stop_detector = StopDetector.new
+    stop_detector.event_sink = self
+    @instruments_runner.add_listener("stop_detector", stop_detector)
+
+    # listener to provide screen output
+    if options.instruments.do_verbose
+      @instruments_runner.add_listener("consoleoutput", FullOutput.new)
+    else
+      @instruments_runner.add_listener("consoleoutput", PrettyOutput.new)
+    end
+  end
+
+  def configure_instruments_runner(options)
+    # set up instruments and get target device ID
+    @instruments_runner.startup_timeout = options.instruments.timeout
+    @instruments_runner.hardware_id     = options.illuminator.hardware_id
+    @instruments_runner.app_location    = @app_location
+
+    if options.illuminator.hardware_id.nil?
+      @instruments_runner.sim_language  = options.simulator.language
+      @instruments_runner.sim_device    = Illuminator::XcodeUtils.instance.get_simulator_id(options.simulator.device,
+                                                                                            options.simulator.version)
+    end
+
+    # max silence is the timeout times 5 unless otherwise specified
+    @instruments_runner.max_silence = options.instruments.max_silence
+    @instruments_runner.max_silence ||= options.instruments.timeout * 5
+
+    # setup listeners on instruments
+    configure_instruments_runner_listeners(options)
+  end
+
+
   def run_with_options(options)
     gcovr_workspace = Dir.pwd
 
@@ -242,42 +280,20 @@ class AutomationRunner
 
     @app_name        = options.xcode.app_name
     @app_location    = options.instruments.app_location
-    @implementation = options.javascript.implementation
+    @implementation  = options.javascript.implementation
 
     # set up instruments and get target device ID
-    @instruments_runner.startup_timeout = options.instruments.timeout
-    @instruments_runner.hardware_id     = options.illuminator.hardware_id
-    @instruments_runner.app_location    = @app_location
+    configure_instruments_runner(options)
     unless options.illuminator.hardware_id.nil?
       puts "Using hardware_id = '#{options.illuminator.hardware_id}' instead of simulator".green
       target_device_id = options.illuminator.hardware_id
     else
-      @instruments_runner.sim_language  = options.simulator.language
-      @instruments_runner.sim_device    = Illuminator::XcodeUtils.instance.get_simulator_id(options.simulator.device,
-                                                                                        options.simulator.version)
       if @instruments_runner.sim_device.nil?
         puts "Could not find a simulator for device='#{options.simulator.device}', version='#{options.simulator.version}'".red
         puts Illuminator::XcodeUtils.instance.get_simulator_devices.yellow
         return false
       end
       target_device_id = @instruments_runner.sim_device
-    end
-
-    # setup listeners on instruments
-    test_listener = TestListener.new
-    test_listener.event_sink = self
-    @instruments_runner.add_listener("test_listener", test_listener)
-
-    stop_detector = StopDetector.new
-    stop_detector.event_sink = self
-    @instruments_runner.add_listener("stop_detector", stop_detector)
-
-
-    # listener to provide screen output
-    if options.instruments.do_verbose
-      @instruments_runner.add_listener("consoleoutput", FullOutput.new)
-    else
-      @instruments_runner.add_listener("consoleoutput", PrettyOutput.new)
     end
 
     # reset the simulator if desired
@@ -347,6 +363,22 @@ class AutomationRunner
     return true
   end
 
+  # This function is for preventing infinite loops in the test run that could be caused by (e.g.)
+  #  - an instruments max_silence error that happens ever time.
+  def handle_unsuccessful_instruments_run
+    return if @test_suite.nil?
+    return if @current_test.nil?
+
+    if @restarted_tests[@current_test]
+      @test_suite[@current_test].error("Illuminator could not get this test to complete")
+      save_junit_test_report
+      @current_test = nil
+    else
+      @restarted_tests[@current_test] = true
+    end
+  end
+
+
   # run a test suite, restarting if necessary
   def execute_entire_test_suite(options, target_device_id, specific_tests)
 
@@ -374,9 +406,12 @@ class AutomationRunner
       agent_listener.event_sink = self
       @instruments_runner.add_listener("saltinelAgent", agent_listener)
 
-      @instruments_runner.run_once @javascript_runner.saltinel
+      ran_successfully = @instruments_runner.run_once @javascript_runner.saltinel
+
       if @app_crashed
         handle_app_crash
+      elsif !ran_successfully
+        handle_unsuccessful_instruments_run
       end
 
     end while not (@test_suite.nil? or @test_suite.unstarted_tests.empty? or @instruments_stopped)
