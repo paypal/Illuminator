@@ -24,15 +24,11 @@ class TestSuite
   # TODO: fix naming, some of these return test cases and some return arrays of names
 
   def unstarted_tests
-    ret = Array.new
-    @test_cases.each { |t| ret << t.name unless t.ran? }
-    ret
+    @test_cases.reject { |t| t.ran? }.map { |t| t.name }
   end
 
   def finished_tests
-    ret = Array.new
-    @test_cases.each { |t| ret << t.name if t.ran? }
-    ret
+    @test_cases.select { |t| t.ran? } .map { |t| t.name }
   end
 
   def all_tests
