@@ -94,6 +94,7 @@ options.simulator.kill_after = true
 
 options.instruments.do_verbose = false
 options.instruments.timeout = 30
+options.instruments.max_silence = nil  # defaults to timeout * 5
 
 options.javascript.test_path = all_test_path
 options.javascript.implementation = 'iPhone'
@@ -239,6 +240,8 @@ The number of seconds to spend waiting for Instruments to start up and begin exe
 The number of times to attempt starting and restarting Instruments before giving up.
 > Under Xcode 5, this number needed to be set as high as 30.  No joke.
 
+#### `options.instruments.max_silence` (integer)
+The number of seconds to spend waiting for Instruments to produce output, before simply killing it.  This will unstick instruments in cases where the iOS simulator is closed -- instruments will hang.
 
 #### `options.instruments.app_location` (string)
 The location of the compiled application that Instruments will automate.  This option should be specified if you are automating a pre-built binary; otherwise, Illuminator defaults to using the application that it built itself and will expect to find it in `options.build_artifacts_dir`.
