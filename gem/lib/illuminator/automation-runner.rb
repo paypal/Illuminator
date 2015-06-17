@@ -16,7 +16,6 @@ require_relative 'listeners/full-output'
 require_relative 'listeners/console-logger'
 require_relative 'listeners/test-listener'
 require_relative 'listeners/saltinel-agent'
-require_relative 'listeners/stop-detector'
 
 ####################################################################################################
 # runner
@@ -31,7 +30,6 @@ require_relative 'listeners/stop-detector'
 class AutomationRunner
   include SaltinelAgentEventSink
   include TestListenerEventSink
-  include StopDetectorEventSink
 
   attr_accessor :app_name
   attr_accessor :app_location
@@ -121,10 +119,6 @@ class AutomationRunner
 
   def saltinel_agent_got_stacktrace_hint
     @stack_trace_record = true
-  end
-
-  def stop_detector_triggered
-    @instruments_stopped = true
   end
 
   def test_listener_got_test_start name
@@ -237,10 +231,6 @@ class AutomationRunner
     test_listener.event_sink = self
     @instruments_runner.add_listener("test_listener", test_listener)
 
-    stop_detector = StopDetector.new
-    stop_detector.event_sink = self
-    @instruments_runner.add_listener("stop_detector", stop_detector)
-
     # listener to provide screen output
     if options.instruments.do_verbose
       @instruments_runner.add_listener("consoleoutput", FullOutput.new)
@@ -269,9 +259,30 @@ class AutomationRunner
     configure_instruments_runner_listeners(options)
   end
 
+  def configure_target_device(options)
+    unless options.illuminator.hardware_id.nil?
+      puts "Using hardware_id = '#{options.illuminator.hardware_id}' instead of simulator".green
+      target_device_id = options.illuminator.hardware_id
+    else
+      if @instruments_runner.sim_device.nil?
+        msg = "Could not find a simulator for device='#{options.simulator.device}', version='#{options.simulator.version}'"
+        puts msg.red
+        puts Illuminator::XcodeUtils.instance.get_simulator_devices.yellow
+        raise ArgumentError, msg
+      end
+      target_device_id = @instruments_runner.sim_device
+    end
+
+    # reset the simulator if desired
+    Illuminator::XcodeUtils.kill_all_simulator_processes
+    if options.illuminator.hardware_id.nil? and options.illuminator.task.set_sim
+      Illuminator::XcodeUtils.instance.reset_simulator target_device_id
+    end
+
+    target_device_id
+  end
 
   def run_with_options(options)
-    gcovr_workspace = Dir.pwd
 
     # Sanity checks
     raise ArgumentError, 'Entry point was not supplied'       if options.illuminator.entry_point.nil?
@@ -284,83 +295,54 @@ class AutomationRunner
 
     # set up instruments and get target device ID
     configure_instruments_runner(options)
-    unless options.illuminator.hardware_id.nil?
-      puts "Using hardware_id = '#{options.illuminator.hardware_id}' instead of simulator".green
-      target_device_id = options.illuminator.hardware_id
-    else
-      if @instruments_runner.sim_device.nil?
-        puts "Could not find a simulator for device='#{options.simulator.device}', version='#{options.simulator.version}'".red
-        puts Illuminator::XcodeUtils.instance.get_simulator_devices.yellow
-        return false
-      end
-      target_device_id = @instruments_runner.sim_device
-    end
-
-    # reset the simulator if desired
-    Illuminator::XcodeUtils.kill_all_simulator_processes
-    if options.illuminator.hardware_id.nil? and options.illuminator.task.set_sim
-      Illuminator::XcodeUtils.instance.reset_simulator target_device_id
-    end
+    target_device_id = configure_target_device(options)
 
     start_time = Time.now
-
     @test_suite = nil
 
     # run the first time
-    execute_entire_test_suite(options, target_device_id, nil)
+    instruments_exit_status = execute_entire_test_suite(options, target_device_id, nil)
 
     # rerun if specified.  do not rerun if @testsuite wasn't received (indicating setup problems)
-    unless options.illuminator.test.retest.attempts.nil? or @test_suite.nil?
-      # retry any failed tests
-      for i in 0..(options.illuminator.test.retest.attempts - 1)
-        att = i + 1
-        unpassed_tests = @test_suite.unpassed_tests.map { |t| t.name }
-
-        # run them in batch mode if desired
-        unless options.illuminator.test.retest.solo
-          puts "Retrying failed tests in batch, attempt #{att} of #{options.illuminator.test.retest.attempts}"
-          execute_entire_test_suite(options, target_device_id, unpassed_tests)
-        else
-          puts "Retrying failed tests individually, attempt #{att} of #{options.illuminator.test.retest.attempts}"
-
-          unpassed_tests.each_with_index do |t, index|
-            test_num = index + 1
-            puts "Solo attempt for test #{test_num} of #{unpassed_tests.length}"
-            execute_entire_test_suite(options, target_device_id, [t])
-          end
-        end
-      end
+    unless options.illuminator.test.retest.attempts.nil? or @test_suite.nil? or instruments_exit_status.fatal_error
+      execute_test_suite_reruns(options, target_device_id)
     end
 
+    # annotate the run
     total_time = Time.at(Time.now - start_time).gmtime.strftime("%H:%M:%S")
     puts "Automation completed in #{total_time}".green
 
-
-    # DONE LOOPING
-    unless @test_suite.nil?
-      if options.illuminator.task.coverage #TODO: only if there are no crashes?
-        if Illuminator::HostUtils.which("gcovr").nil?
-          puts "Skipping requested coverage generation because gcovr does not appear to be in the PATH".yellow
-        else
-          generate_coverage gcovr_workspace
-        end
-      end
-      save_failed_tests_config(options, @test_suite.unpassed_tests)
-    end
+    perform_coverage(options)
 
     Illuminator::XcodeUtils.kill_all_simulator_processes if options.simulator.kill_after
 
+    # summarize test results to the console if desired
     if "describe" == options.illuminator.entry_point
       return true       # no tests needed to run
     else
       summarize_test_results @test_suite
     end
 
+    save_failed_tests_config(options, @test_suite.unpassed_tests) unless @test_suite.nil?
+
     # TODO: exit code should be an integer, and each of these should be cases
     return false if @test_suite.nil?                        # no tests were received
     return false if 0 == @test_suite.passed_tests.length    # no tests passed, or none ran
     return false if 0 < @test_suite.unpassed_tests.length   # 1 or more tests failed
     return true
+  end
+
+  # perform coverage if desired and possible
+  def perform_coverage(options)
+    unless @test_suite.nil?
+      if options.illuminator.task.coverage #TODO: only if there are no crashes?
+        if Illuminator::HostUtils.which("gcovr").nil?
+          puts "Skipping requested coverage generation because gcovr does not appear to be in the PATH".yellow
+        else
+          generate_coverage Dir.pwd
+        end
+      end
+    end
   end
 
   # This function is for preventing infinite loops in the test run that could be caused by (e.g.)
@@ -384,6 +366,7 @@ class AutomationRunner
 
     # loop until all test cases are covered.
     # we won't get the actual test list until partway through -- from a listener callback
+    exit_status = nil
     begin
       remove_any_app_crashes
       @app_crashed = false
@@ -406,16 +389,40 @@ class AutomationRunner
       agent_listener.event_sink = self
       @instruments_runner.add_listener("saltinelAgent", agent_listener)
 
-      ran_successfully = @instruments_runner.run_once @javascript_runner.saltinel
+      exit_status = @instruments_runner.run_once(@javascript_runner.saltinel)
 
       if @app_crashed
         handle_app_crash
-      elsif !ran_successfully
+      elsif !exit_status.normal
         handle_unsuccessful_instruments_run
       end
 
-    end while not (@test_suite.nil? or @test_suite.unstarted_tests.empty? or @instruments_stopped)
+    end while not (@test_suite.nil? or @test_suite.unstarted_tests.empty? or exit_status.fatal_error)
+    # as long as we have a test suite with unfinished tests, and no fatal errors, keep going
 
+    exit_status
+  end
+
+
+  def execute_test_suite_reruns(options, target_device_id)
+    # retry any failed tests
+    for att in 1..options.illuminator.test.retest.attempts
+      unpassed_tests = @test_suite.unpassed_tests.map { |t| t.name }
+
+      # run them in batch mode if desired
+      unless options.illuminator.test.retest.solo
+        puts "Retrying failed tests in batch, attempt #{att} of #{options.illuminator.test.retest.attempts}"
+        execute_entire_test_suite(options, target_device_id, unpassed_tests)
+      else
+        puts "Retrying failed tests individually, attempt #{att} of #{options.illuminator.test.retest.attempts}"
+
+        unpassed_tests.each_with_index do |t, index|
+          test_num = index + 1
+          puts "Solo attempt for test #{test_num} of #{unpassed_tests.length}"
+          execute_entire_test_suite(options, target_device_id, [t])
+        end
+      end
+    end
   end
 
 

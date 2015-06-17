@@ -40,7 +40,7 @@ class TestSuite
   end
 
   def unpassed_tests
-    @test_cases.select { |t| not t.passed? }
+    @test_cases.reject { |t| t.passed? }
   end
 
   def to_xml
