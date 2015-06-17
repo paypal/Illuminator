@@ -246,7 +246,7 @@ class InstrumentsRunner
               silence_duration += @startup_timeout  # (the amount of time we waited for a select)
               puts "Instruments seems to have started but has not produced output in #{@startup_timeout} seconds".yellow
               if @max_silence < silence_duration
-                @should_reset_everything = true
+                @should_abort = true
               end
             end
           end

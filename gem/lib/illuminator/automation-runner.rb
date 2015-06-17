@@ -363,6 +363,22 @@ class AutomationRunner
     return true
   end
 
+  # This function is for preventing infinite loops in the test run that could be caused by (e.g.)
+  #  - an instruments max_silence error that happens ever time.
+  def handle_unsuccessful_instruments_run
+    return if @test_suite.nil?
+    return if @current_test.nil?
+
+    if @restarted_tests[@current_test]
+      @test_suite[@current_test].error("Illuminator could not get this test to complete")
+      save_junit_test_report
+      @current_test = nil
+    else
+      @restarted_tests[@current_test] = true
+    end
+  end
+
+
   # run a test suite, restarting if necessary
   def execute_entire_test_suite(options, target_device_id, specific_tests)
 
@@ -390,9 +406,12 @@ class AutomationRunner
       agent_listener.event_sink = self
       @instruments_runner.add_listener("saltinelAgent", agent_listener)
 
-      @instruments_runner.run_once @javascript_runner.saltinel
+      ran_successfully = @instruments_runner.run_once @javascript_runner.saltinel
+
       if @app_crashed
         handle_app_crash
+      elsif !ran_successfully
+        handle_unsuccessful_instruments_run
       end
 
     end while not (@test_suite.nil? or @test_suite.unstarted_tests.empty? or @instruments_stopped)
