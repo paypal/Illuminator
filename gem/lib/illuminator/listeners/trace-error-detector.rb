@@ -20,8 +20,11 @@ class TraceErrorDetector < InstrumentsListener
   end
 
   def receive message
-    if message.full_line =~ /Instruments Trace Error : Target failed to run: Unable to install app with path:/
+    itr = "Instruments Trace Error : Target failed to run:"
+    if message.full_line =~ /#{itr} Unable to install app with path:/
       trigger(false, "Failed to install app because #{message.full_line.split(': ')[-1]}")
+    elsif message.full_line =~ /#{itr} The operation couldn’t be completed./
+      trigger(false, "An operation couldn't be completed because #{message.full_line.split(': ')[-1]}")
     elsif message.full_line =~ /Instruments Trace Error/i
       trigger(false, message.full_line.split(' : ')[1..-1].join)
     end
