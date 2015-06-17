@@ -5,6 +5,7 @@ require 'pty'
 require_relative './xcode-utils'
 require_relative './build-artifacts'
 require_relative 'listeners/start-detector'
+require_relative 'listeners/stop-detector'
 require_relative 'listeners/intermittent-failure-detector'
 require_relative 'listeners/trace-error-detector'
 
@@ -54,12 +55,21 @@ class ParsedInstrumentsMessage
 
 end
 
+
+class InstrumentsExitStatus
+  attr_accessor :normal       # whether the command finished under normal circumstances (eventually)
+  attr_accessor :fatal_error  # whether the command finished in a way that restarting won't fix
+  attr_accessor :fatal_reason # a message about why the command can't be restarted
+end
+
+
 ####################################################################################################
 # command builder
 ####################################################################################################
 
 class InstrumentsRunner
   include StartDetectorEventSink
+  include StopDetectorEventSink
   include IntermittentFailureDetectorEventSink
   include TraceErrorDetectorEventSink
 
@@ -104,6 +114,15 @@ class InstrumentsRunner
     @fully_started = true
   end
 
+  def stop_detector_triggered(fatal, message)
+    if !fatal
+      @should_abort = true
+    else
+      @fatal_error = true
+      @fatal_reason = message
+    end
+  end
+
   def intermittent_failure_detector_triggered message
     @fully_started = true
     force_stop("Detected an intermittent failure condition - #{message}")
@@ -113,7 +132,7 @@ class InstrumentsRunner
     puts "Detected a trace error - #{message}".yellow
     if fatal
       @fatal_error = true
-      @should_abort = true
+      @fatal_reason = message
     else
       @should_reset_everything = true
     end
@@ -135,6 +154,11 @@ class InstrumentsRunner
     trace_detector = TraceErrorDetector.new
     trace_detector.event_sink = self
     add_listener("trace_error_detector", trace_detector)
+
+    # add fatal error listener
+    stop_detector = StopDetector.new
+    stop_detector.event_sink = self
+    add_listener("stop_detector", stop_detector)
   end
 
 
@@ -193,6 +217,7 @@ class InstrumentsRunner
     @fully_started = false
     @should_abort  = false
     @fatal_error   = false
+    @fatal_reason  = nil
     puts command.green
     remaining_attempts = @attempts
 
@@ -214,7 +239,7 @@ class InstrumentsRunner
           done_reading_output = false
           # select on the output and send it to the listeners
           while not done_reading_output do
-            if @should_abort
+            if @should_abort || @fatal_error
               successful_run = false
               done_reading_output = true
               kill_instruments(r, w, pid)
@@ -265,7 +290,12 @@ class InstrumentsRunner
       end
     end
 
-    return successful_run
+    exit_status = InstrumentsExitStatus.new
+    exit_status.normal       = successful_run
+    exit_status.fatal_error  = @fatal_error
+    exit_status.fatal_reason = @fatal_reason
+
+    return exit_status
   end
 
 end
