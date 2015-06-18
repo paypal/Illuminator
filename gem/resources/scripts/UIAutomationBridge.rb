@@ -167,7 +167,7 @@ request_hash['argument'] = options["jsonArgument"] unless options["jsonArgument"
 request_hash["selector"] = options["selector"]
 request_hash["callUID"] = options["callUID"]
 request = request_hash.to_json
-
+checkpoints["actual_request"] = request_hash
 
 # get the host/port according to whether we are using hardware
 host, port = '127.0.0.1', 4200
@@ -181,6 +181,8 @@ unless options["hardwareID"].nil?
 end
 
 # connect
+checkpoints["host"] = host
+checkpoints["port"] = port
 checkpoints["connection"] = false
 socket_stream, err_message = connect host, port
 if socket_stream.nil?
@@ -201,31 +203,30 @@ begin
 
   timeout(options["timeout"]) do
     while true
-      char = nil
+      new_data = nil
       begin
         timeout(0.1) do
-          char = socket_stream.getc
+	  new_data = socket_stream.gets("}") # read up to closing brace at a time
         end
       rescue Timeout::Error
         # nothing
       end
 
-      unless char.nil?
-        response = response + char
+      unless new_data.nil?
+        response = response + new_data
       end
 
       begin
-        #TODO fix crazy parsing each character
-        if char == "}"  # somewhat better
-          JSON.parse(response)
-          break
-        end
+        # successfully parse, or go back and try again
+        JSON.parse(response)
+        break
       rescue
         # nothing
       end
     end
   end
   checkpoints["response"] = true
+  checkpoints["response_length"] = response.length
 
 rescue Timeout::Error
   print_result_and_exit(false, "Timed out waiting for response", checkpoints)
