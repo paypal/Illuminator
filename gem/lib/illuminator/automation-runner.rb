@@ -304,7 +304,11 @@ class AutomationRunner
     instruments_exit_status = execute_entire_test_suite(options, target_device_id, nil)
 
     # rerun if specified.  do not rerun if @testsuite wasn't received (indicating setup problems)
-    unless options.illuminator.test.retest.attempts.nil? or @test_suite.nil? or instruments_exit_status.fatal_error
+    if instruments_exit_status.fatal_error
+      puts "Fatal error: #{instruments_exit_status.fatal_reason}".red
+    elsif options.illuminator.test.retest.attempts.nil? or @test_suite.nil?
+      # nothing to do
+    else
       execute_test_suite_reruns(options, target_device_id)
     end
 
