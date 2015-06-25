@@ -1972,7 +1972,8 @@ extendPrototype(UIATableView, {
         try {
             UIATarget.localTarget().pushTimeout(0);
             return this._getSomethingByScrolling("predicate: " + cellPredicate, function (thisTable) {
-                return thisTable.cells().firstWithPredicate(cellPredicate);
+                var ret = thisTable.cells().firstWithPredicate(cellPredicate);
+                return isNotNilElement(ret) && ret.isVisible() ? ret : newUIAElementNil();
             });
         } catch (e) {
             UIALogger.logDebug("getCellWithPredicateByScrolling caught/ignoring: " + e);
