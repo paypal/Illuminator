@@ -1922,13 +1922,20 @@ extendPrototype(UIATableView, {
 
         var downScroll = function (self) {
             UIALogger.logDebug("downScroll");
-            self.scrollDown();
-            delay(delayToPreventUIAutomationBug);
+            try {
+                self.scrollDown();
+                delay(delayToPreventUIAutomationBug);
+            } catch (e) {
+                UIALogger.logDebug("_getSomethingByScrolling.downScroll caught/ignoring " + e);
+            }
         };
 
         // scroll down until we've made all known cells visible at least once
         var unproductiveScrolls = 0;
-        for (initializeScroll(this); lastVisibleCell < (this.cells().length - 1); downScroll(this)) {
+        var maxCells = 0;
+        initializeScroll(this);
+        maxCells = this.cells().length;
+        while (lastVisibleCell < (maxCells - 1)) {
             // find this visible cell
             for (var i = lastVisibleCell; this.cells()[i].isVisible(); ++i) {
                 thisVisibleCell = i;
@@ -1939,10 +1946,13 @@ extendPrototype(UIATableView, {
                     ret.scrollToVisible();
                     delay(delayToPreventUIAutomationBug);
                 }
+                UIALogger.logDebug("_getSomethingByScrolling SUCCESS with " + ret);
                 return ret;
             }
 
-            UIALogger.logDebug("Cells " + lastVisibleCell + " to " + thisVisibleCell + " of " + this.cells().length
+            UIALogger.logDebug("Cells " + lastVisibleCell
+                               + " to " + thisVisibleCell
+                               + " of " + maxCells
                                + " didn't match " + thingDescription);
 
             // check whether scrolling as productive
@@ -1958,6 +1968,16 @@ extendPrototype(UIATableView, {
             }
 
             lastVisibleCell = thisVisibleCell;
+            downScroll(this);
+
+            // work around another UIAutomation bug
+            var newLength = this.cells().length;
+            if (newLength < maxCells) {
+                UIALogger.logDebug("UIAutomation now says that the table has " + newLength + " cells; presuming this to be bogus");
+            } else {
+                maxCells = newLength;
+            }
+
         }
 
         return newUIAElementNil();
@@ -1972,8 +1992,7 @@ extendPrototype(UIATableView, {
         try {
             UIATarget.localTarget().pushTimeout(0);
             return this._getSomethingByScrolling("predicate: " + cellPredicate, function (thisTable) {
-                var ret = thisTable.cells().firstWithPredicate(cellPredicate);
-                return isNotNilElement(ret) && ret.isVisible() ? ret : newUIAElementNil();
+                return thisTable.cells().firstWithPredicate(cellPredicate);
             });
         } catch (e) {
             UIALogger.logDebug("getCellWithPredicateByScrolling caught/ignoring: " + e);
