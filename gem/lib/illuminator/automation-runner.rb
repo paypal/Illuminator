@@ -60,7 +60,7 @@ class AutomationRunner
     # FIXME: this should probably get moved to instrument runner
     # keys to the methods of the BuildArtifacts singleton that we want to remove
     build_artifact_keys = [:crash_reports, :instruments, :object_files, :coverage_report_file,
-                         :junit_report_file, :illuminator_js_runner, :illuminator_js_environment, :illuminator_config_file]
+                           :junit_report_file, :illuminator_js_runner, :illuminator_js_environment, :illuminator_config_file]
     # get the directories without creating them (the 'true' arg), add them to our list
     build_artifact_keys.each do |key|
       dir = Illuminator::BuildArtifacts.instance.method(key).call(true)
@@ -371,7 +371,7 @@ class AutomationRunner
     # loop until all test cases are covered.
     # we won't get the actual test list until partway through -- from a listener callback
     exit_status = nil
-    begin
+    loop do
       remove_any_app_crashes
       @app_crashed = false
       @instruments_stopped = false
@@ -401,7 +401,8 @@ class AutomationRunner
         handle_unsuccessful_instruments_run
       end
 
-    end while not (@test_suite.nil? or @test_suite.unstarted_tests.empty? or exit_status.fatal_error)
+      break if (@test_suite.nil? or @test_suite.unstarted_tests.empty? or exit_status.fatal_error)
+    end
     # as long as we have a test suite with unfinished tests, and no fatal errors, keep going
 
     exit_status

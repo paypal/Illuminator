@@ -11,3 +11,8 @@ Metrics/LineLength:
   StyleGuide: https://github.com/bbatsov/ruby-style-guide#80-character-limits
   Enabled: true
   Max: 130
+
+# Configuration parameters: CountComments.
+Metrics/ClassLength:
+  Enabled: false
+  Max: 400

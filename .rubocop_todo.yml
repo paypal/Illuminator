@@ -14,10 +14,6 @@ Lint/DeprecatedClassMethods:
 Lint/HandleExceptions:
   Enabled: false
 
-# Offense count: 1
-Lint/Loop:
-  Enabled: false
-
 # Offense count: 2
 Lint/ParenthesesAsGroupedExpression:
   Enabled: false
@@ -53,11 +49,6 @@ Metrics/AbcSize:
 Metrics/BlockNesting:
   Max: 4
 
-# Offense count: 5
-# Configuration parameters: CountComments.
-Metrics/ClassLength:
-  Max: 403
-
 # Offense count: 9
 Metrics/CyclomaticComplexity:
   Max: 25
@@ -73,11 +64,6 @@ Metrics/PerceivedComplexity:
 
 # Offense count: 14
 Style/AccessorMethodName:
-  Enabled: false
-
-# Offense count: 1
-# Cop supports --auto-correct.
-Style/AlignArray:
   Enabled: false
 
 # Offense count: 15
