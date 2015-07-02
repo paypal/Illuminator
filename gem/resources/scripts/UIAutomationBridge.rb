@@ -194,7 +194,7 @@ begin
   # send request
   checkpoints["request"] = false
   socket_stream.write(request)
- 
+
   checkpoints["request"] = true
 
   # read response
@@ -202,7 +202,7 @@ begin
   response = ''
 
   timeout(options["timeout"]) do
-    while true
+    loop do
       new_data = nil
       begin
         timeout(0.1) do

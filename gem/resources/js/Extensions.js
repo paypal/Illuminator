@@ -1915,7 +1915,10 @@ extendPrototype(UIATableView, {
 
         // scroll to first cell if we can't see it
         var initializeScroll = function (self) {
-            self.cells()[0].scrollToVisible();
+            // avoid "scrollToVisible could not generate a scroll to make the element visible." in some cases
+            if (!self.cells()[0].isVisible()) {
+                self.cells()[0].scrollToVisible();
+            }
             lastVisibleCell = thisVisibleCell = 0;
             delay(delayToPreventUIAutomationBug);
         };
@@ -1946,7 +1949,6 @@ extendPrototype(UIATableView, {
                     ret.scrollToVisible();
                     delay(delayToPreventUIAutomationBug);
                 }
-                UIALogger.logDebug("_getSomethingByScrolling SUCCESS with " + ret);
                 return ret;
             }
 
