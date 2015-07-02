@@ -135,7 +135,7 @@ module Illuminator
       if match
         puts "Found device match: #{match}".green
         return match.captures[0]
-      elsif
+      else
         puts "Did not find UDID of device '#{sim_device}' for version '#{sim_version}'".green
         if XcodeUtils.instance.is_xcode_major_version 5
           fallback_name = "#{sim_device} - Simulator - iOS #{sim_version}"
