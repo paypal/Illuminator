@@ -1946,7 +1946,6 @@ extendPrototype(UIATableView, {
                     ret.scrollToVisible();
                     delay(delayToPreventUIAutomationBug);
                 }
-                UIALogger.logDebug("_getSomethingByScrolling SUCCESS with " + ret);
                 return ret;
             }
 
