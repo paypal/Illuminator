@@ -122,7 +122,7 @@ module Illuminator
 
     def get_simulator_devices
       if @_simulator_devices_text.nil?
-        @_simulator_devices_text = `instruments -s devices`
+        @_simulator_devices_text = `script -t 0.1 -q /dev/null instruments -s devices`
       end
       @_simulator_devices_text
     end
