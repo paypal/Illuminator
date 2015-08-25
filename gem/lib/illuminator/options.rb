@@ -79,6 +79,7 @@ module Illuminator
       self.simulator.device = nil
       self.simulator.version = nil
       self.simulator.language = nil
+      self.simulator.locale = nil
       self.simulator.kill_after = nil
 
       self.instruments.do_verbose = nil

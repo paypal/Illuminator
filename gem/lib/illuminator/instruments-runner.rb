@@ -76,7 +76,8 @@ class InstrumentsRunner
   attr_accessor :app_location     # the app to run
   attr_accessor :hardware_id      # hardware id specifier
   attr_accessor :sim_device       # sim device id specifier
-  attr_accessor :sim_language     # sim language (unsupported currently)
+  attr_accessor :sim_language     # sim language (code like 'es' or 'ES', or word like 'Spanish')
+  attr_accessor :sim_locale       # something like 'es_AR' or 'es-AR' or 'az-Cyrl-AZ'
   attr_accessor :attempts         # number of times to try running instruments before giving up
   attr_accessor :startup_timeout  # amount of time to wait for initial instruments output
   attr_accessor :max_silence      # if instruments goes silent for this long, we kill it.
@@ -184,7 +185,8 @@ class InstrumentsRunner
     command << " -e UIASCRIPT '#{global_js_file}'"
     command << " -e UIARESULTSPATH '#{report_path}'"
 
-    command << " #{@sim_language}" if @sim_language
+    command << " -AppleLanguages '(#{@sim_language})'" if @sim_language
+    command << " -AppleLocale '#{@sim_locale}'" if @sim_locale
 
     directory = Dir.pwd
     ret = nil

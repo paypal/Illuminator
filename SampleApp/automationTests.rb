@@ -8,7 +8,7 @@ parser_factory = Illuminator::ParserFactory.new
 parser_factory.prepare({"b" => 'iPhone 5'}, # the default sim device is iPhone 5
                       {},                  # no extra parse flags are being defined
                       {})                  # no argument processing overrides are being provided
-parser = parser_factory.build_parser(options, 'APDasdq#xtoni#rvmw#bzl#Bfek#')
+parser = parser_factory.build_parser(options, 'APDasdq#xtoni#rvmw#bzlL#Bfek#')
 
 option_struct = parser.parse ARGV
 

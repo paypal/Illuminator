@@ -247,6 +247,7 @@ class AutomationRunner
 
     if options.illuminator.hardware_id.nil?
       @instruments_runner.sim_language  = options.simulator.language
+      @instruments_runner.sim_locale    = options.simulator.locale
       @instruments_runner.sim_device    = Illuminator::XcodeUtils.instance.get_simulator_id(options.simulator.device,
                                                                                             options.simulator.version)
     end
