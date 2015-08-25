@@ -90,6 +90,7 @@ module Illuminator
       illuminatorOptions.simulator.device     = @_options["sim_device"] unless @_options["sim_device"].nil?
       illuminatorOptions.simulator.version    = @_options["sim_version"] unless @_options["sim_version"].nil?
       illuminatorOptions.simulator.language   = @_options["sim_language"] unless @_options["sim_language"].nil?
+      illuminatorOptions.simulator.locale     = @_options["sim_locale"] unless @_options["sim_locale"].nil?
       illuminatorOptions.simulator.kill_after = (not @_options["skipKillAfter"]) unless @_options["skipKillAfter"].nil?
 
       illuminatorOptions.instruments.app_location = @_options["app_location"] unless @_options["app_location"].nil?
@@ -145,6 +146,7 @@ module Illuminator
         'b' => 'sim_device',
         'z' => 'sim_version',
         'l' => 'sim_language',
+        'L' => 'sim_locale',
         'f' => 'skipBuild',
         'B' => 'skipAutomate',
         'e' => 'skipSetSim',
@@ -174,6 +176,7 @@ module Illuminator
         'z' => '8.2',
         'q' => 'iphonesimulator',
         'l' => 'en',
+        'L' => 'en_US',
         'x' => 'runTestsByTag',
         'm' => 30,
         'f' => false,
@@ -207,7 +210,8 @@ module Illuminator
       add_switch('E', ['-E', '--app_location LOCATION', 'Location of app executable, if pre-built'])
       add_switch('b', ['-b', '--simDevice DEVICE', 'Run on given simulated device'])
       add_switch('z', ['-z', '--simVersion VERSION', 'Run on given simulated iOS version'])
-      add_switch('l', ['-l', '--simLanguage LANGUAGE', 'Run on given simulated iOS language'])
+      add_switch('l', ['-l', '--simLanguage LANGUAGE', 'Use the given language in the simulator'])
+      add_switch('L', ['-L', '--simLocale LOCALE', 'Use the given locale in the simulator'])
       add_switch('f', ['-f', '--skip-build', 'Just automate; assume already built'])
       add_switch('B', ['-B', '--skip-automate', "Don't automate; build only"])
       add_switch('e', ['-e', '--skip-set-sim', 'Assume that simulator has already been chosen and properly reset'])

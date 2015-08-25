@@ -30,7 +30,8 @@ Usage: illuminatorTestRunner.rb [options]
     -d, --hardwareID ID              hardware id of device to run on instead of simulator
     -b, --simDevice DEVICE           Run on given simulated device   ::   Defaults to "iPhone 5"
     -z, --simVersion VERSION         Run on given simulated iOS version   ::   Defaults to "8.2"
-    -l, --simLanguage LANGUAGE       Run on given simulated iOS language   ::   Defaults to "en"
+    -l, --simLanguage LANGUAGE       Use the given language in the simulator   ::   Defaults to "en"
+    -L, --simLocale LOCALE           Use the given locale in the simulator   ::   Defaults to "en_US"
     -e, --skip-set-sim               Assume that simulator has already been chosen and properly reset   ::   Defaults to "false"
     -k, --skip-kill-after            Leave the simulator open after the run   ::   Defaults to "false"
   ---------------------------------------------------------------------------------
@@ -90,6 +91,7 @@ options.illuminator.task.automate = true
 options.illuminator.task.set_sim = true
 options.simulator.device = 'iPhone 5'
 options.simulator.language = 'en'
+options.simulator.locale = 'en_US'
 options.simulator.kill_after = true
 
 options.instruments.do_verbose = false
@@ -222,7 +224,10 @@ This option selects the simulator device that should be run.
 This option selects the iOS version of the simulator.
 
 #### `options.simulator.language` (string)
-This option selects the language of the simulator (currently unsupported).
+This option selects the language of the simulator (e.g. 'en', 'EN', or 'English')
+
+#### `options.simulator.locale` (string)
+This option selects the locale of the simulator (e.g. 'en-US', 'en_US').
 
 #### `options.simulator.kill_after` (boolean)
 This option specifies whether to close the simulator after automation is complete.
@@ -288,7 +293,7 @@ parser_factory.add_switch("g", ["-g", "--word-starting-with-g WORD", "A word sta
 parser_factory.add_switch("p", ["-p", "--do-ipad", "Run ipad implementation"])
 
 # build the parser using letters from IlluminatorArgumentParsing plus our custom ones
-parser = parser_factory.build_parser({}, "xtondispaE#bzl#fBeky#crvmw#g")
+parser = parser_factory.build_parser({}, "xtondispaE#bzlL#fBeky#crvmw#g")
 
 # Now use the parser to get input arguments
 options = parser.parse ARGV
