@@ -53,20 +53,16 @@ module Illuminator
       end
     end
 
-    # copy internal options storage into a options object
-    def copy_parsed_options_into(illuminatorOptions)
-      check_clean_args
-      check_retest_args
-
-      # load up known illuminatorOptions
-      # we only load non-nil options, just in case there was already something in the illuminatorOptions obj
-      illuminatorOptions.build_artifacts_dir = @_options["buildArtifacts"] unless @_options["buildArtifacts"].nil?
-
+    # stupid refactor to make rubocop happy.  ARE YOU HAPPY NOW?
+    def _copy_xcode_options_into(illuminatorOptions)
       illuminatorOptions.xcode.app_name       = @_options["app_name"] unless @_options["app_name"].nil?
       illuminatorOptions.xcode.sdk            = @_options["sdk"] unless @_options["sdk"].nil?
       illuminatorOptions.xcode.scheme         = @_options["scheme"] unless @_options["scheme"].nil?
       illuminatorOptions.xcode.workspace      = @_options["xcodeWorkspace"] unless @_options["xcodeWorkspace"].nil?
+    end
 
+    # stupid refactor to make rubocop happy.  ARE YOU HAPPY NOW?
+    def _copy_illuminator_options_into(illuminatorOptions)
       illuminatorOptions.illuminator.entry_point      = @_options["entry_point"] unless @_options["entry_point"].nil?
       illuminatorOptions.illuminator.test.random_seed = @_options["random_seed"].to_i unless @_options["random_seed"].nil?
       illuminatorOptions.illuminator.test.tags.any    = @_options["tags_any"] unless @_options["tags_any"].nil?
@@ -86,12 +82,29 @@ module Illuminator
       illuminatorOptions.illuminator.task.set_sim   = (not @_options["skipSetSim"]) unless @_options["skipSetSim"].nil?
       illuminatorOptions.illuminator.task.coverage  = @_options["coverage"] unless @_options["coverage"].nil?
       illuminatorOptions.illuminator.hardware_id    = @_options["hardware_id"] unless @_options["hardware_id"].nil?
+    end
 
+    # stupid refactor to make rubocop happy.  ARE YOU HAPPY NOW?
+    def _copy_simulator_options_into(illuminatorOptions)
       illuminatorOptions.simulator.device     = @_options["sim_device"] unless @_options["sim_device"].nil?
       illuminatorOptions.simulator.version    = @_options["sim_version"] unless @_options["sim_version"].nil?
       illuminatorOptions.simulator.language   = @_options["sim_language"] unless @_options["sim_language"].nil?
       illuminatorOptions.simulator.locale     = @_options["sim_locale"] unless @_options["sim_locale"].nil?
       illuminatorOptions.simulator.kill_after = (not @_options["skipKillAfter"]) unless @_options["skipKillAfter"].nil?
+    end
+
+    # copy internal options storage into a options object
+    def copy_parsed_options_into(illuminatorOptions)
+      check_clean_args
+      check_retest_args
+
+      # load up known illuminatorOptions
+      # we only load non-nil options, just in case there was already something in the illuminatorOptions obj
+      illuminatorOptions.build_artifacts_dir = @_options["buildArtifacts"] unless @_options["buildArtifacts"].nil?
+
+      _copy_illuminator_options_into(illuminatorOptions)
+      _copy_xcode_options_into(illuminatorOptions)
+      _copy_simulator_options_into(illuminatorOptions)
 
       illuminatorOptions.instruments.app_location = @_options["app_location"] unless @_options["app_location"].nil?
       illuminatorOptions.instruments.do_verbose   = @_options["verbose"] unless @_options["verbose"].nil?
