@@ -86,8 +86,8 @@
     config.buildArtifacts.automatorJSON         = tmpDir + "/automator.json";
     config.buildArtifacts.automatorScenarioJSON = tmpDir + "/automatorScenarios.json";
     config.buildArtifacts.intendedTestList      = tmpDir + "/intendedTestList.json";
-    
-    //This line is a placeholder so that the automator can communicate its current operation to the entire set of Illuminator javascript extensions. 
+
+    //This line is a placeholder so that the automator can communicate its current operation to the entire set of Illuminator javascript extensions.
     //This is because the logical first choice for implementing this -- automator state -- is not available from Extensions.js
     config.automatorModality                    = "init";
 
