@@ -1739,6 +1739,20 @@ extendPrototype(UIATarget, {
     },
 
     /**
+     * Get the target device language
+     */
+    language: function () {
+        return config.targetDeviceLanguage;
+    },
+
+    /**
+     * Get the target device locale
+     */
+    locale: function () {
+        return config.targetDeviceLocale;
+    },
+
+    /**
      * Open a URL on the target device
      *
      * @param url string the URL

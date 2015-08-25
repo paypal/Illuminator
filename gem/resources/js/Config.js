@@ -40,6 +40,8 @@
         "automatorDesiredSimDevice": true,
         "automatorDesiredSimVersion": true,
         "targetDeviceID": true,
+        "targetDeviceLanguage": false,
+        "targetDeviceLocale": false,
         "isHardware": true,
         "xcodePath": true,
         "automatorTagsAny": false,

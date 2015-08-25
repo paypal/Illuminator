@@ -190,22 +190,24 @@ class AutomationRunner
   def configure_javascript_runner(options, target_device_id)
     js_config = @javascript_runner
 
-    js_config.target_device_id     = target_device_id
-    js_config.is_hardware          = !(options.illuminator.hardware_id.nil?)
-    js_config.implementation       = options.javascript.implementation
-    js_config.test_path            = options.javascript.test_path
+    js_config.target_device_id       = target_device_id
+    js_config.target_device_language = options.simulator.language
+    js_config.target_device_locale   = options.simulator.locale
+    js_config.is_hardware            = !(options.illuminator.hardware_id.nil?)
+    js_config.implementation         = options.javascript.implementation
+    js_config.test_path              = options.javascript.test_path
 
-    js_config.entry_point          = options.illuminator.entry_point
-    js_config.scenario_list        = options.illuminator.test.names
-    js_config.tags_any             = options.illuminator.test.tags.any
-    js_config.tags_all             = options.illuminator.test.tags.all
-    js_config.tags_none            = options.illuminator.test.tags.none
-    js_config.random_seed          = options.illuminator.test.random_seed
+    js_config.entry_point            = options.illuminator.entry_point
+    js_config.scenario_list          = options.illuminator.test.names
+    js_config.tags_any               = options.illuminator.test.tags.any
+    js_config.tags_all               = options.illuminator.test.tags.all
+    js_config.tags_none              = options.illuminator.test.tags.none
+    js_config.random_seed            = options.illuminator.test.random_seed
 
-    js_config.sim_device           = options.simulator.device
-    js_config.sim_version          = options.simulator.version
+    js_config.sim_device             = options.simulator.device
+    js_config.sim_version            = options.simulator.version
 
-    js_config.app_specific_config  = options.javascript.app_specific_config
+    js_config.app_specific_config    = options.javascript.app_specific_config
 
     # don't offset the numbers this time
     js_config.scenario_number_offset = 0

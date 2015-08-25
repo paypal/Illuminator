@@ -14,6 +14,8 @@ class JavascriptRunner
 
   attr_reader   :saltinel # the salted sentinel
   attr_accessor :target_device_id
+  attr_accessor :target_device_language
+  attr_accessor :target_device_locale
   attr_accessor :is_hardware
   attr_accessor :entry_point
   attr_accessor :test_path
@@ -47,6 +49,8 @@ class JavascriptRunner
       'automatorDesiredSimDevice'    => @sim_device,
       'automatorDesiredSimVersion'   => @sim_version,
       'targetDeviceID'               => @target_device_id,
+      'targetDeviceLanguage'         => @target_device_language,
+      'targetDeviceLocale'           => @target_device_locale,
       'isHardware'                   => @is_hardware,
       'xcodePath'                    => Illuminator::XcodeUtils.instance.get_xcode_path,
       'automatorSequenceRandomSeed'  => @random_seed,

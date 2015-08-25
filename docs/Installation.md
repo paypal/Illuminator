@@ -43,6 +43,13 @@ config.targetDeviceID = "<one of the UIDs from 'simctl list'>";
 config.isHardware = false; // indicate that we are on a simulator
 ```
 
+Finally, the following optional variables may be provided to suppress warnings:
+
+```javascript
+config.targetDeviceLanguage = "< a language code >";  // e.g. "EN"
+config.targetDeviceLocale = "< a locale code >";      // e.g. "en_US"
+```
+
 
 Advanced Features: The [Bridge](Bridge.md)
 ------------------------------------------
