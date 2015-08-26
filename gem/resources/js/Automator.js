@@ -589,8 +589,18 @@ var debugAutomator = false;
             names.push(scenarioList[i].title);
         }
 
+        // sometimes the save operation fails.  Retry it if that happens.
         var intendedListPath = config.buildArtifacts.intendedTestList;
-        if (!host().writeToFile(intendedListPath, JSON.stringify({scenarioNames: names}, null, "    "))) {
+        var desired_contents = JSON.stringify({scenarioNames: names}, null, "    ");
+        var success = false;
+        for (var tries = 3; tries > 0 && !success; --tries) {
+            if (tries < 3) {
+                delay(0.5); // just in case there's a time-related problem
+            }
+            success = host().writeToFile(intendedListPath, desired_contents);
+        }
+
+        if (!success) {
             throw new IlluminatorRuntimeFailureException("Could not save intended test list to " + intendedListPath);
         }
 
