@@ -225,6 +225,12 @@ Returns true if the element is not `UIAElementNil`.
 #### `.isVisible()` - UIAElementNil
 Similar to `.isVisible()` for ordinary UIAElement objects but always returns false.  Provided for compatibility.
 
+#### `.language()` - UIATarget
+Return the device language that was specified to Illuminator on startup
+
+#### `.locale()` - UIATarget
+Return the device locale that was specified to Illuminator on startup
+
 #### `.openURL(url)` - UIATarget
 Open a URL on the target device.
 
