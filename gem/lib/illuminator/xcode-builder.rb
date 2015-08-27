@@ -18,6 +18,7 @@ module Illuminator
     attr_accessor :do_test
     attr_accessor :do_build
     attr_accessor :do_archive
+    attr_accessor :do_coverage
     attr_accessor :derived_data_is_artifact
 
     attr_reader :exit_code
@@ -75,7 +76,7 @@ module Illuminator
       end
     end
 
-
+    # assemble the proper build command (based on config) and return it
     def _build_command
       use_pipefail = false  # debug option
       _assemble_config
@@ -110,7 +111,7 @@ module Illuminator
       log_file = File.join(Illuminator::BuildArtifacts.instance.console, 'xcodebuild.log')
     end
 
-
+    # execute the build command, log the output to the screen, and return true or false indicating success
     def _execute_build_command command
       puts command.green
       process = IO.popen(command) do |io|

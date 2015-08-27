@@ -12,7 +12,7 @@ parser_factory.prepare({},  # no defaults are being set
 
 # Each command line option has a single-character code, so we lay out the order of the options (# for separator) here
 #parser = parser_factory.build_parser(options, 'APDasdq#xtoni#rvmw#bzl#Bfek#')
-parser = parser_factory.build_parser(options, 'AyfEBxrc#aDPWqs#dbzlLek#vmp#xtoniw#')
+parser = parser_factory.build_parser(options, 'AyfEBxrc#aDPWXqs#dbzlLek#vmp#xtoniw#')
 
 # read the options into an Illuminator::Options structure
 option_struct = parser.parse ARGV

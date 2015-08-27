@@ -14,6 +14,7 @@ options.build_artifacts_dir = File.join(Dir.pwd, "buildArtifacts")
 options.xcode.app_name = 'AutomatorSampleApp'
 options.xcode.scheme = 'AutomatorSampleApp'
 options.xcode.workspace = 'AutomatorSampleApp.xcworkspace'
+options.xcode.xcconfig = nil
 options.xcode.project_dir = Dir.pwd
 
 

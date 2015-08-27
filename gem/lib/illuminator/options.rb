@@ -56,6 +56,7 @@ module Illuminator
       self.xcode.sdk = nil
       self.xcode.workspace = nil
       self.xcode.scheme = nil
+      self.xcode.xcconfig = nil
       self.xcode.environment_vars = nil
 
       self.illuminator.entry_point = nil
