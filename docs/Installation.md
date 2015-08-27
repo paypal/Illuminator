@@ -54,7 +54,7 @@ config.targetDeviceLocale = "< a locale code >";      // e.g. "en_US"
 Advanced Features: The [Bridge](Bridge.md)
 ------------------------------------------
 
-The Illuminator automation bridge is easily installed via CocoaPods.  Add this line to your `Podfile`:
+The Illuminator automation bridge is easily installed via [CocoaPods](https://cocoapods.org/).  Add this line to your `Podfile`:
 
 ```ruby
 pod 'Illuminator', :configurations => ['Debug']
