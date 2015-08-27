@@ -24,6 +24,7 @@ Usage: illuminatorTestRunner.rb [options]
     -P, --xcodeProject PROJECTNAME   Project to build -- required if there are 2 in the same directory
     -W WORKSPACENAME,                Workspace to build
         --xcodeWorkspace
+    -X, --xcconfig PATH              Path to a custom .xcconfig file
     -q, --sdk SDK                    SDK to build against   ::   Defaults to "iphonesimulator"
     -s, --scheme SCHEME              Build and run specific tests on given workspace scheme
   ---------------------------------------------------------------------------------
@@ -78,6 +79,7 @@ options.build_artifacts_dir = File.join(Dir.pwd, "buildArtifacts")
 options.xcode.app_name = 'AutomatorSampleApp'
 options.xcode.scheme = 'AutomatorSampleApp'
 options.xcode.workspace = 'AutomatorSampleApp.xcworkspace'
+options.xcode.xcconfig = nil
 options.xcode.project_dir = Dir.pwd
 
 
@@ -147,6 +149,9 @@ The name of the application that will be built by Xcode (and run by Instruments)
 
 #### `options.xcode.workspace` (string)
 The Xcode workspace directory to use (e.g. a path typically ending in `.xcworkspace`).
+
+#### `options.xcode.xcconfig` (string)
+The path to the Xcode Config file (e.g. a path typically ending in `.xcconfig`).
 
 #### `options.xcode.sdk` (string)
 The SDK that will be used by Xcode.  This defaults to `iphonesimulator` for simulator runs, and `iphoneos` for real hardware runs, so there should be no reason to supply it manually.

@@ -59,6 +59,7 @@ module Illuminator
       illuminatorOptions.xcode.sdk            = @_options["sdk"] unless @_options["sdk"].nil?
       illuminatorOptions.xcode.scheme         = @_options["scheme"] unless @_options["scheme"].nil?
       illuminatorOptions.xcode.workspace      = @_options["xcodeWorkspace"] unless @_options["xcodeWorkspace"].nil?
+      illuminatorOptions.xcode.xcconfig       = @_options["xcconfig"] unless @_options["xcconfig"].nil?
     end
 
     # stupid refactor to make rubocop happy.  ARE YOU HAPPY NOW?
@@ -148,6 +149,7 @@ module Illuminator
         'D' => 'xcodeProjectDir',
         'P' => 'xcodeProject',
         'W' => 'xcodeWorkspace',
+        'X' => 'xcconfig',
         't' => 'tags_any',
         'o' => 'tags_all',
         'n' => 'tags_none',
@@ -213,6 +215,7 @@ module Illuminator
       add_switch('D', ['-D', '--xcodeProjectDirectory PATH', "Directory containing the Xcode project to build"])
       add_switch('P', ['-P', '--xcodeProject PROJECTNAME', "Project to build -- required if there are 2 in the same directory"])
       add_switch('W', ['-W', '--xcodeWorkspace WORKSPACENAME', "Workspace to build"])
+      add_switch('X', ['-X', '--xcconfig PATH', "Path to a custom .xcconfig file"])
       add_switch('t', ['-t', '--tags-any TAGSANY', 'Run tests with any of the given tags'])
       add_switch('o', ['-o', '--tags-all TAGSALL', 'Run tests with all of the given tags'])
       add_switch('n', ['-n', '--tags-none TAGSNONE', 'Run tests with none of the given tags'])

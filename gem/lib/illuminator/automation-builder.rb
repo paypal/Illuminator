@@ -19,8 +19,6 @@ module Illuminator
 
 
     def build_for_automation sdk, hardware_id
-      @xcconfig = "#{File.dirname(__FILE__)}/../../resources/BuildConfiguration.xcconfig"
-
       preprocessor_definitions = '$(value) UIAUTOMATION_BUILD=1'
       if hardware_id.nil?
         @sdk = sdk || 'iphonesimulator'
@@ -31,6 +29,11 @@ module Illuminator
         preprocessor_definitions += " AUTOMATION_UDID=#{hardware_id}"
       end
       add_environment_variable('GCC_PREPROCESSOR_DEFINITIONS', "'#{preprocessor_definitions}'")
+
+      if @do_coverage
+        add_environment_variable('GCC_INSTRUMENT_PROGRAM_FLOW_ARCS', 'YES')
+        add_environment_variable('GCC_GENERATE_TEST_COVERAGE_FILES', 'YES')
+      end
 
       build
     end

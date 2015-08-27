@@ -121,10 +121,12 @@ module Illuminator
     else
       builder = AutomationBuilder.new
       builder.project_dir = options.xcode.project_dir
-      builder.project    = options.xcode.project
-      builder.scheme     = options.xcode.scheme
-      builder.workspace  = options.xcode.workspace
+      builder.project     = options.xcode.project
+      builder.scheme      = options.xcode.scheme
+      builder.workspace   = options.xcode.workspace
+      builder.xcconfig    = options.xcode.xcconfig
       builder.do_clean    = options.illuminator.clean.xcode
+      builder.do_coverage = options.illuminator.task.coverage
       unless options.xcode.environment_vars.nil?
         options.xcode.environment_vars.each { |name, value| builder.add_environment_variable(name, value) }
       end
