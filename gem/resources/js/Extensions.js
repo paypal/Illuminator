@@ -1656,7 +1656,7 @@ extendPrototype(UIAHost, {
 
         var chunkSize = Math.floor(262144 * 0.73) - (path.length + 100); // `getconf ARG_MAX`, adjusted for b64
 
-        var writeHelper = function (b64stuff, outputPath) {
+        var rawWriter = function (b64stuff, outputPath) {
             var result = target().host().performTaskWithPathArgumentsTimeout("/bin/sh", ["-c",
                                                                                          "echo \"$0\" | base64 -D -o \"$1\"",
                                                                                          b64stuff,
@@ -1672,6 +1672,19 @@ extendPrototype(UIAHost, {
                 return false;
             }
             return true;
+        }
+
+        var writeHelper = function (b64stuff, outputPath) {
+            // sometimes the save operation fails.  Retry it if that happens.
+            var success = false;
+            for (var tries = 3; tries > 0 && !success; --tries) {
+                if (tries < 3) {
+                    UIALogger.logDebug("Waiting 0.5 seconds and retrying file write");
+                    delay(0.5); // just in case there's a time-related problem
+                }
+                success = rawWriter(b64stuff, outputPath);
+            }
+            return success;
         }
 
         var result = true;
