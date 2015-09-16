@@ -76,7 +76,7 @@ module Illuminator
       illuminatorOptions.illuminator.clean.xcode     = @_options["clean"].include? "xcode"
       illuminatorOptions.illuminator.clean.derived   = @_options["clean"].include? "derivedData"
       illuminatorOptions.illuminator.clean.artifacts = @_options["clean"].include? "buildArtifacts"
-      illuminatorOptions.illuminator.clean.noDelay   = @_options["clean"].include? "noDelay"
+      illuminatorOptions.illuminator.clean.no_delay   = @_options["clean"].include? "noDelay"
 
       illuminatorOptions.illuminator.task.build     = (not @_options["skipBuild"]) unless @_options["skipBuild"].nil?
       illuminatorOptions.illuminator.task.automate  = (not @_options["skipAutomate"]) unless @_options["skipAutomate"].nil?
