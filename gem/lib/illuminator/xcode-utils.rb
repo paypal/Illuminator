@@ -73,7 +73,7 @@ module Illuminator
     end
 
     def _get_all_simulator_info
-      info = `#{get_xcode_simctl_path} list`.split("\n")
+      info = `"#{get_xcode_simctl_path}" list`.split("\n")
 
       output = {"devices" => [], "runtimes" => []}
       pointer = nil
@@ -181,14 +181,14 @@ module Illuminator
 
     # use the provided applescript to reset the content and settings of the simulator
     def reset_simulator device_id
-      command = "#{get_xcode_simctl_path} erase #{device_id}"
+      command = "\"#{get_xcode_simctl_path}\" erase #{device_id}"
       puts command.green
       puts `#{command}`
 
     end
 
     def shutdown_simulator device_id
-      command = "#{get_xcode_simctl_path} shutdown #{device_id}"
+      command = "\"#{get_xcode_simctl_path}\" shutdown #{device_id}"
       puts command.green
       puts `#{command}`
     end
