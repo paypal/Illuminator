@@ -64,17 +64,28 @@ var debugBridge = false;
 
         output = target().host().performTaskWithPathArgumentsTimeout("/usr/bin/ruby", taskArguments, 500);
 
-
+        // we expect b64-encoded JSON by default
         if (output) {
-            if ("" == output.stdout.trim()) {
+            // check b64
+            decoded_response = null
+            try {
+                decoded_response = Base64.decode(output.stdout)
+            } catch(e) {
+                throw new IlluminatorRuntimeFailureException("Bridge got back bad Base64: " + output.stdout);
+            }
+
+            // check content length -- it's always nonzero from our script because we wrap the real response
+            if ("" == decoded_response.trim()) {
                 UIALogger.logWarning("Ruby may not be working; to diagnose, run this same command in a terminal: "
-                                     + "$ ruby " + taskArguments.join(" "));
+                                     + "$ ruby '" + taskArguments.join("' '") + "'" + " --plaintext");
                 throw new bridge.SetupException("Bridge got back an empty/blank string instead of JSON");
             }
+
+            // check JSON parsing
             try {
-                jsonOutput = JSON.parse(output.stdout);
+                jsonOutput = JSON.parse(decoded_response);
             } catch(e) {
-                throw new IlluminatorRuntimeFailureException("Bridge got back bad JSON: " + output.stdout);
+                throw new IlluminatorRuntimeFailureException("Bridge got back bad JSON: " + decoded_response);
             }
         } else {
             jsonOutput = null;
