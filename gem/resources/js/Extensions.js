@@ -1827,9 +1827,12 @@ extendPrototype(UIAKeyboard, {
         var getDeletionElement = function () {
             delButtons = kb.waitForChildSelect(5, {
                 // TODO: handle other languages, possibly by programmatically generating this
-                "key": function (keyboard) { return keyboard.keys()["Delete"]; },
-                "button": function (keyboard) { return keyboard.buttons()["Delete"]; },
-                "element": function (keyboard) { return keyboard.elements()["Delete"]; },
+                "key": function (keyboard) { return keyboard.keys()["delete"]; },
+                "Key": function (keyboard) { return keyboard.keys()["Delete"]; },
+                "button": function (keyboard) { return keyboard.buttons()["delete"]; },
+                "Button": function (keyboard) { return keyboard.buttons()["Delete"]; },
+                "element": function (keyboard) { return keyboard.elements()["delete"]; },
+                "Element": function (keyboard) { return keyboard.elements()["Delete"]; },
             });
             for (var k in delButtons) {
                 return delButtons[k]; // first one is fine
