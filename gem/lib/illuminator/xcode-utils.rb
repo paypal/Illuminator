@@ -130,7 +130,7 @@ module Illuminator
     # Based on the desired device and version, get the ID of the simulator that will be passed to instruments
     def get_simulator_id (sim_device, sim_version)
       devices = get_simulator_devices
-      needle = sim_device + ' \(' + sim_version + ' Simulator\) \[(.*)\]'
+      needle = sim_device + ' \(' + sim_version + '\) \[(.*)\]'
       match = devices.match(needle)
       if match
         puts "Found device match: #{match}".green

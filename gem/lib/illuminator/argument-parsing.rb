@@ -187,8 +187,8 @@ module Illuminator
       @default_values = {
         # 'D' => Dir.pwd,   # Since this effectively happens in xcode-builder, DON'T do it here too
         'A' => File.join(Dir.pwd, "buildArtifacts"),
-        'b' => 'iPhone 5',
-        'z' => '8.2',
+        'b' => 'iPhone 6',
+        'z' => '9.0',
         'q' => 'iphonesimulator',
         'l' => 'en',
         'L' => 'en_US',

@@ -5,7 +5,7 @@ require 'pathname'
 options = {}
 parser_factory = Illuminator::ParserFactory.new
 
-parser_factory.prepare({"b" => 'iPhone 5'}, # the default sim device is iPhone 5
+parser_factory.prepare({"b" => 'iPhone 6'}, # the default sim device is iPhone 5
                       {},                  # no extra parse flags are being defined
                       {})                  # no argument processing overrides are being provided
 parser = parser_factory.build_parser(options, 'APDasdq#xtoni#rvmw#bzlL#Bfek#')
