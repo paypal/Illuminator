@@ -26,7 +26,7 @@ options.illuminator.clean.no_delay = true
 options.illuminator.task.build = true
 options.illuminator.task.automate = true
 options.illuminator.task.set_sim = true
-options.simulator.device = 'iPhone 5'
+options.simulator.device = 'iPhone 6'
 options.simulator.language = 'en'
 options.simulator.kill_after = true
 
