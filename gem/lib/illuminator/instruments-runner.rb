@@ -231,7 +231,10 @@ class InstrumentsRunner
 
       Illuminator::XcodeUtils.kill_all_instruments_processes  # because sometimes they stick around and add up
 
-      puts "\nRelaunching instruments.  #{remaining_attempts} retries left".red unless (remaining_attempts + 1) == @attempts
+      unless (remaining_attempts + 1) == @attempts
+        sleep(3)
+        puts "\nRelaunching instruments.  #{remaining_attempts} retries left".red
+      end
 
       # spawn process and catch unexpected exits
       begin
