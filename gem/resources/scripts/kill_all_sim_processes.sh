@@ -5,6 +5,8 @@ echo "Killing all top-level Xcode 5 simulator processes..."
 killall -9 "iPhone Simulator" 2>&1
 echo "Killing all top-level Xcode 6 simulator processes..."
 killall -9 "iOS Simulator" 2>&1
+echo "Killing all top-level Xcode 7 simulator processes..."
+killall -9 "Simulator" 2>&1
 
 echo "Killing ScriptAgent..."
 killall -9 "ScriptAgent" 2>&1
