@@ -1,0 +1,10 @@
+source 'https://github.com/CocoaPods/Specs.git'
+use_frameworks!
+
+target 'Illuminator_Example', :exclusive => true do
+  pod "Illuminator/app", :path => "../"
+end
+
+target 'Illuminator_Tests', :exclusive => true do
+  pod "Illuminator", :path => "../"
+end

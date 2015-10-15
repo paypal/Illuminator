@@ -1,0 +1,18 @@
+PODS:
+  - Illuminator (1.0.0):
+    - Illuminator/test (= 1.0.0)
+  - Illuminator/app (1.0.0)
+  - Illuminator/test (1.0.0)
+
+DEPENDENCIES:
+  - Illuminator (from `../`)
+  - Illuminator/app (from `../`)
+
+EXTERNAL SOURCES:
+  Illuminator:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Illuminator: 0a34b7d2144e9332d7c0382c8066f6581477ade3
+
+COCOAPODS: 0.39.0
