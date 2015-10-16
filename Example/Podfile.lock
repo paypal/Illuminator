@@ -1,11 +1,7 @@
 PODS:
-  - Illuminator (1.0.0):
-    - Illuminator/test (= 1.0.0)
   - Illuminator/app (1.0.0)
-  - Illuminator/test (1.0.0)
 
 DEPENDENCIES:
-  - Illuminator (from `../`)
   - Illuminator/app (from `../`)
 
 EXTERNAL SOURCES:

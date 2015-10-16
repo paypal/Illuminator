@@ -28,7 +28,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "607FACE41AFB9204008FA782"
+               BlueprintIdentifier = "88DDABDC1BD04382006CF87E"
                BuildableName = "Illuminator_Tests.xctest"
                BlueprintName = "Illuminator_Tests"
                ReferencedContainer = "container:Illuminator.xcodeproj">
@@ -46,9 +46,29 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "607FACE41AFB9204008FA782"
+               BlueprintIdentifier = "88DDABDC1BD04382006CF87E"
                BuildableName = "Illuminator_Tests.xctest"
                BlueprintName = "Illuminator_Tests"
+               ReferencedContainer = "container:Illuminator.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "881FF3F01BD132F10094DFC3"
+               BuildableName = "Illuminator_UITests.xctest"
+               BlueprintName = "Illuminator_UITests"
+               ReferencedContainer = "container:Illuminator.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "881FF3FE1BD142A50094DFC3"
+               BuildableName = "IlluminatorUITests.xctest"
+               BlueprintName = "IlluminatorUITests"
                ReferencedContainer = "container:Illuminator.xcodeproj">
             </BuildableReference>
          </TestableReference>

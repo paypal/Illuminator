@@ -7,27 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4D8EBBE6BDA055EFBF003085 /* Pods_Illuminator_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0FED3DF78381CEF6A87A2AA /* Pods_Illuminator_Tests.framework */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
 		607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Images.xcassets */; };
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
-		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
+		881FF4021BD142A50094DFC3 /* IlluminatorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 881FF4011BD142A50094DFC3 /* IlluminatorUITests.swift */; };
 		D9B16B74E5D534F931CC7257 /* Pods_Illuminator_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98975B730A83F23D713B3FFB /* Pods_Illuminator_Example.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		607FACE61AFB9204008FA782 /* PBXContainerItemProxy */ = {
+		881FF4041BD142A50094DFC3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 607FACC81AFB9204008FA782 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 607FACCF1AFB9204008FA782;
-			remoteInfo = Illuminator;
+			remoteInfo = Illuminator_Example;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		13640ABCEA40123310FAD612 /* Pods-Illuminator_UITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Illuminator_UITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-Illuminator_UITests/Pods-Illuminator_UITests.release.xcconfig"; sourceTree = "<group>"; };
+		5B7371CFDC8ADF124ECA40C9 /* Pods_Illuminator_UITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Illuminator_UITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD01AFB9204008FA782 /* Illuminator_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Illuminator_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD51AFB9204008FA782 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -35,15 +36,16 @@
 		607FACDA1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		607FACDC1AFB9204008FA782 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		607FACDF1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		607FACE51AFB9204008FA782 /* Illuminator_Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Illuminator_Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		607FACEB1AFB9204008FA782 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 		6BA69DC327173821CFD67E12 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		6D56D7B73671BA42314A59AA /* Pods-Illuminator_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Illuminator_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-Illuminator_Example/Pods-Illuminator_Example.release.xcconfig"; sourceTree = "<group>"; };
 		7F6CF23A0A73465F53057CB1 /* Pods-Illuminator_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Illuminator_Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Illuminator_Example/Pods-Illuminator_Example.debug.xcconfig"; sourceTree = "<group>"; };
+		881FF3FF1BD142A50094DFC3 /* IlluminatorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IlluminatorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		881FF4011BD142A50094DFC3 /* IlluminatorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IlluminatorUITests.swift; sourceTree = "<group>"; };
+		881FF4031BD142A50094DFC3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9874FBAAE66B41816AC3561D /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		98975B730A83F23D713B3FFB /* Pods_Illuminator_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Illuminator_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F1812780FF033F59E0BE2CF /* Pods-Illuminator_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Illuminator_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Illuminator_Tests/Pods-Illuminator_Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		A2C20FAD1F32AC42D98B583F /* Pods-Illuminator_UITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Illuminator_UITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Illuminator_UITests/Pods-Illuminator_UITests.debug.xcconfig"; sourceTree = "<group>"; };
 		B0FED3DF78381CEF6A87A2AA /* Pods_Illuminator_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Illuminator_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1E35CF1B245CEA427115F17 /* Illuminator.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = Illuminator.podspec; path = ../Illuminator.podspec; sourceTree = "<group>"; };
 		DE93BE14D0CEE3BF77DD20C1 /* Pods-Illuminator_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Illuminator_Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-Illuminator_Tests/Pods-Illuminator_Tests.release.xcconfig"; sourceTree = "<group>"; };
@@ -58,11 +60,10 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		607FACE21AFB9204008FA782 /* Frameworks */ = {
+		881FF3FC1BD142A50094DFC3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4D8EBBE6BDA055EFBF003085 /* Pods_Illuminator_Tests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +75,7 @@
 			children = (
 				98975B730A83F23D713B3FFB /* Pods_Illuminator_Example.framework */,
 				B0FED3DF78381CEF6A87A2AA /* Pods_Illuminator_Tests.framework */,
+				5B7371CFDC8ADF124ECA40C9 /* Pods_Illuminator_UITests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -82,8 +84,8 @@
 			isa = PBXGroup;
 			children = (
 				607FACF51AFB993E008FA782 /* Podspec Metadata */,
-				607FACD21AFB9204008FA782 /* Example for Illuminator */,
-				607FACE81AFB9204008FA782 /* Tests */,
+				607FACD21AFB9204008FA782 /* Illuminator */,
+				881FF4001BD142A50094DFC3 /* IlluminatorUITests */,
 				607FACD11AFB9204008FA782 /* Products */,
 				C72DB94562CB5ACCCB573D42 /* Pods */,
 				0FEB62574B21AA6CB2AF2989 /* Frameworks */,
@@ -94,12 +96,12 @@
 			isa = PBXGroup;
 			children = (
 				607FACD01AFB9204008FA782 /* Illuminator_Example.app */,
-				607FACE51AFB9204008FA782 /* Illuminator_Tests.xctest */,
+				881FF3FF1BD142A50094DFC3 /* IlluminatorUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		607FACD21AFB9204008FA782 /* Example for Illuminator */ = {
+		607FACD21AFB9204008FA782 /* Illuminator */ = {
 			isa = PBXGroup;
 			children = (
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
@@ -109,7 +111,6 @@
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
 			);
-			name = "Example for Illuminator";
 			path = Illuminator;
 			sourceTree = "<group>";
 		};
@@ -117,23 +118,6 @@
 			isa = PBXGroup;
 			children = (
 				607FACD41AFB9204008FA782 /* Info.plist */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		607FACE81AFB9204008FA782 /* Tests */ = {
-			isa = PBXGroup;
-			children = (
-				607FACEB1AFB9204008FA782 /* Tests.swift */,
-				607FACE91AFB9204008FA782 /* Supporting Files */,
-			);
-			path = Tests;
-			sourceTree = "<group>";
-		};
-		607FACE91AFB9204008FA782 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				607FACEA1AFB9204008FA782 /* Info.plist */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -148,6 +132,15 @@
 			name = "Podspec Metadata";
 			sourceTree = "<group>";
 		};
+		881FF4001BD142A50094DFC3 /* IlluminatorUITests */ = {
+			isa = PBXGroup;
+			children = (
+				881FF4011BD142A50094DFC3 /* IlluminatorUITests.swift */,
+				881FF4031BD142A50094DFC3 /* Info.plist */,
+			);
+			path = IlluminatorUITests;
+			sourceTree = "<group>";
+		};
 		C72DB94562CB5ACCCB573D42 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -155,6 +148,8 @@
 				6D56D7B73671BA42314A59AA /* Pods-Illuminator_Example.release.xcconfig */,
 				9F1812780FF033F59E0BE2CF /* Pods-Illuminator_Tests.debug.xcconfig */,
 				DE93BE14D0CEE3BF77DD20C1 /* Pods-Illuminator_Tests.release.xcconfig */,
+				A2C20FAD1F32AC42D98B583F /* Pods-Illuminator_UITests.debug.xcconfig */,
+				13640ABCEA40123310FAD612 /* Pods-Illuminator_UITests.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -182,26 +177,23 @@
 			productReference = 607FACD01AFB9204008FA782 /* Illuminator_Example.app */;
 			productType = "com.apple.product-type.application";
 		};
-		607FACE41AFB9204008FA782 /* Illuminator_Tests */ = {
+		881FF3FE1BD142A50094DFC3 /* IlluminatorUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 607FACF21AFB9204008FA782 /* Build configuration list for PBXNativeTarget "Illuminator_Tests" */;
+			buildConfigurationList = 881FF4061BD142A50094DFC3 /* Build configuration list for PBXNativeTarget "IlluminatorUITests" */;
 			buildPhases = (
-				BE95D38ABAE94D5995B96B19 /* Check Pods Manifest.lock */,
-				607FACE11AFB9204008FA782 /* Sources */,
-				607FACE21AFB9204008FA782 /* Frameworks */,
-				607FACE31AFB9204008FA782 /* Resources */,
-				74A81F7F44019E5DCA65A448 /* Embed Pods Frameworks */,
-				B89C30F263193FADB8616223 /* Copy Pods Resources */,
+				881FF3FB1BD142A50094DFC3 /* Sources */,
+				881FF3FC1BD142A50094DFC3 /* Frameworks */,
+				881FF3FD1BD142A50094DFC3 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				607FACE71AFB9204008FA782 /* PBXTargetDependency */,
+				881FF4051BD142A50094DFC3 /* PBXTargetDependency */,
 			);
-			name = Illuminator_Tests;
-			productName = Tests;
-			productReference = 607FACE51AFB9204008FA782 /* Illuminator_Tests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
+			name = IlluminatorUITests;
+			productName = IlluminatorUITests;
+			productReference = 881FF3FF1BD142A50094DFC3 /* IlluminatorUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -216,8 +208,8 @@
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
 					};
-					607FACE41AFB9204008FA782 = {
-						CreatedOnToolsVersion = 6.3.1;
+					881FF3FE1BD142A50094DFC3 = {
+						CreatedOnToolsVersion = 7.0.1;
 						TestTargetID = 607FACCF1AFB9204008FA782;
 					};
 				};
@@ -236,7 +228,7 @@
 			projectRoot = "";
 			targets = (
 				607FACCF1AFB9204008FA782 /* Illuminator_Example */,
-				607FACE41AFB9204008FA782 /* Illuminator_Tests */,
+				881FF3FE1BD142A50094DFC3 /* IlluminatorUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -252,7 +244,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		607FACE31AFB9204008FA782 /* Resources */ = {
+		881FF3FD1BD142A50094DFC3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -277,21 +269,6 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		74A81F7F44019E5DCA65A448 /* Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Illuminator_Tests/Pods-Illuminator_Tests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		83371FB577C7794B8BF12372 /* Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -305,21 +282,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Illuminator_Example/Pods-Illuminator_Example-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		B89C30F263193FADB8616223 /* Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Illuminator_Tests/Pods-Illuminator_Tests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		BA66412D90478CC88E509882 /* Embed Pods Frameworks */ = {
@@ -337,21 +299,6 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Illuminator_Example/Pods-Illuminator_Example-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BE95D38ABAE94D5995B96B19 /* Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -364,21 +311,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		607FACE11AFB9204008FA782 /* Sources */ = {
+		881FF3FB1BD142A50094DFC3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				607FACEC1AFB9204008FA782 /* Tests.swift in Sources */,
+				881FF4021BD142A50094DFC3 /* IlluminatorUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		607FACE71AFB9204008FA782 /* PBXTargetDependency */ = {
+		881FF4051BD142A50094DFC3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 607FACCF1AFB9204008FA782 /* Illuminator_Example */;
-			targetProxy = 607FACE61AFB9204008FA782 /* PBXContainerItemProxy */;
+			targetProxy = 881FF4041BD142A50094DFC3 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -510,35 +457,30 @@
 			};
 			name = Release;
 		};
-		607FACF31AFB9204008FA782 /* Debug */ = {
+		881FF4071BD142A50094DFC3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9F1812780FF033F59E0BE2CF /* Pods-Illuminator_Tests.debug.xcconfig */;
 			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = Tests/Info.plist;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				INFOPLIST_FILE = IlluminatorUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.paypal.IlluminatorUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Illuminator_Example.app/Illuminator_Example";
+				TEST_TARGET_NAME = Illuminator_Example;
+				USES_XCTRUNNER = YES;
 			};
 			name = Debug;
 		};
-		607FACF41AFB9204008FA782 /* Release */ = {
+		881FF4081BD142A50094DFC3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DE93BE14D0CEE3BF77DD20C1 /* Pods-Illuminator_Tests.release.xcconfig */;
 			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				INFOPLIST_FILE = Tests/Info.plist;
+				INFOPLIST_FILE = IlluminatorUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.paypal.IlluminatorUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Illuminator_Example.app/Illuminator_Example";
+				TEST_TARGET_NAME = Illuminator_Example;
+				USES_XCTRUNNER = YES;
 			};
 			name = Release;
 		};
@@ -563,14 +505,13 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		607FACF21AFB9204008FA782 /* Build configuration list for PBXNativeTarget "Illuminator_Tests" */ = {
+		881FF4061BD142A50094DFC3 /* Build configuration list for PBXNativeTarget "IlluminatorUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				607FACF31AFB9204008FA782 /* Debug */,
-				607FACF41AFB9204008FA782 /* Release */,
+				881FF4071BD142A50094DFC3 /* Debug */,
+				881FF4081BD142A50094DFC3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
