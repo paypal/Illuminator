@@ -22,14 +22,18 @@ class ViewController: UIViewController {
         
         
         _ = XCTUIBridge.register("test") {
-            
+            self.showAlert()
         }
     
     }
 
     @IBAction func buttonPressed(sender: AnyObject) {
+        showAlert()
+    }
+    
+    func showAlert() {
         
-        let alert = UIAlertView(title: "Button Pressed", message: "test will pass", delegate: nil, cancelButtonTitle: nil, otherButtonTitles: "OK")
+        let alert = UIAlertView(title: "Alert", message: "alert", delegate: nil, cancelButtonTitle: nil, otherButtonTitles: "OK")
         alert.show()
     }
 }
