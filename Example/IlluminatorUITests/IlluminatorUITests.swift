@@ -10,7 +10,7 @@ import XCTest
 import Illuminator
 import IlluminatorBridge
 
-class IlluminatorUITests: XCTestCase {
+class IlluminatorUITests: XCTaggedTestCase {
         
     override func setUp() {
         super.setUp()
@@ -31,8 +31,20 @@ class IlluminatorUITests: XCTestCase {
     }
     
     func testExample() {
-        // Use recording to get started writing UI tests.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+        
+        
+        
+        let app = XCUIApplication()
+        let button = app.buttons["Button"]
+        let textField = app.otherElements.containingType(.Button, identifier:"Button").childrenMatchingType(.TextField).element
+        
+        textField.tap()
+        textField.typeText("test")
+        button.tap()
+        
+        let alert = app.alerts["Button Pressed"]
+        alert.collectionViews.buttons["OK"].tap()
+    
     }
     
 }
