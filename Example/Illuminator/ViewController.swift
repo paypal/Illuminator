@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Illuminator
+import IlluminatorBridge
 
 class ViewController: UIViewController {
 
