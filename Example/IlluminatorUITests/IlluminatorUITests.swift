@@ -30,7 +30,7 @@ class IlluminatorUITests: XCTaggedTestCase {
         super.tearDown()
     }
     
-    func testExample() {
+    func testExample_bug() {
         
         let app = XCUIApplication()
         let button = app.buttons["Button"]
@@ -40,8 +40,17 @@ class IlluminatorUITests: XCTaggedTestCase {
         textField.typeText("test")
         button.tap()
         
-        XCTAssertEqual(textField.value as? String, "test")
-    
+        XCTAssertEqual(textField.value as? String, "testv")
+        
     }
     
+    func testExample_bridge() {
+        
+        let app = XCUIApplication()
+        
+        XCTUIBridge.sendNotification("showAlert")
+        
+        let alert = app.alerts["Alert"]
+        alert.collectionViews.buttons["OK"].tap()
+    }
 }

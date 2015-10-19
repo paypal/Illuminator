@@ -14,17 +14,15 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        _ = XCTUIBridge.register("showAlert") {
+            self.showAlert()
+        }
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-        
-        
-        _ = XCTUIBridge.register("test") {
-            self.showAlert()
-        }
-    
     }
 
     @IBAction func buttonPressed(sender: AnyObject) {
@@ -32,7 +30,6 @@ class ViewController: UIViewController {
     }
     
     func showAlert() {
-        
         let alert = UIAlertView(title: "Alert", message: "alert", delegate: nil, cancelButtonTitle: nil, otherButtonTitles: "OK")
         alert.show()
     }
