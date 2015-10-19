@@ -1,7 +1,0 @@
-language: objective-c
-install: bundle install --jobs=3 --retry=3 --gemfile SampleApp/Gemfile
-script:
-   - rubocop -D .
-   - cd SampleApp
-   - pod install
-   - ruby smokeTests.rb
