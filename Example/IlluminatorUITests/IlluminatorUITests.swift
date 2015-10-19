@@ -7,6 +7,8 @@
 //
 
 import XCTest
+import Illuminator
+import IlluminatorBridge
 
 class IlluminatorUITests: XCTestCase {
         
