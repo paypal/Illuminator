@@ -20,7 +20,7 @@ private class XCTUIBridgeCallbackContainer {
     }
 }
 
-public class XCTUIBridge {
+public class XCTUIBridge: NSObject {
     
     private var clientListeners = [String: NSMutableArray]();
     
