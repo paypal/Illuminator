@@ -32,8 +32,6 @@ class IlluminatorUITests: XCTaggedTestCase {
     
     func testExample() {
         
-        
-        
         let app = XCUIApplication()
         let button = app.buttons["Button"]
         let textField = app.otherElements.containingType(.Button, identifier:"Button").childrenMatchingType(.TextField).element
@@ -42,8 +40,7 @@ class IlluminatorUITests: XCTaggedTestCase {
         textField.typeText("test")
         button.tap()
         
-        let alert = app.alerts["Button Pressed"]
-        alert.collectionViews.buttons["OK"].tap()
+        XCTAssertEqual(textField.value as? String, "test")
     
     }
     
