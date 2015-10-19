@@ -27,5 +27,10 @@ class ViewController: UIViewController {
     
     }
 
+    @IBAction func buttonPressed(sender: AnyObject) {
+        
+        let alert = UIAlertView(title: "Button Pressed", message: "test will pass", delegate: nil, cancelButtonTitle: nil, otherButtonTitles: "OK")
+        alert.show()
+    }
 }
 
