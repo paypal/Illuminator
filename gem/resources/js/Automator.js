@@ -270,7 +270,7 @@ var debugAutomator = false;
         for (var i = 0; i < tags.length; ++i) {
             var tag = tags[i];
             for (var j = 0; j < tag.length; ++j) {
-                c = tag[j];
+                var c = tag[j];
                 if (automator.disallowedTagChars[c]) {
                     throw new automator.ScenarioSetupException("Disallowed character '" + c + "' in tag '" + tag + "' in scenario '" + scenarioName + "'");
                 }
