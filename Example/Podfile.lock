@@ -13,7 +13,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Illuminator: 0cdf706e679fb9ca50dca277eb5e578036e5feaf
-  IlluminatorBridge: 4d7165049754ead303c135c4fa75753158ead8f0
+  Illuminator: d27a66b04327bcd6f4874419991183f6c8cf5e14
+  IlluminatorBridge: 8ea50ec65a6409aa1d5d5bf71c7e3449f092c861
 
 COCOAPODS: 0.39.0
