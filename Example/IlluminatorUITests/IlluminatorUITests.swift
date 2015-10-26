@@ -44,6 +44,19 @@ class IlluminatorUITests: XCTaggedTestCase {
         
     }
     
+    func testExceptionThrowing() {
+        
+        let exception = NSException(name: "exception", reason: nil, userInfo: nil)
+        tryBlock({
+                throwException(exception)
+            }, catchBlock: { newException in
+                XCTAssert(newException == exception)
+            }, finally:  {
+        })
+        
+        
+    }
+    
     func testExample_bridge() {
         
         let app = XCUIApplication()

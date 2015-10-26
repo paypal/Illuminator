@@ -4,7 +4,7 @@ use_frameworks!
 
 
 target 'Illuminator_Example', :exclusive => true do
-  pod "IlluminatorBridge", :path => "../"
+    pod "IlluminatorBridge", :path => "../"
 end
 
 
