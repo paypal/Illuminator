@@ -24,6 +24,6 @@ extension XCUIElement {
     }
     
     class func act()->Void {
-    
+        
     }
 }
