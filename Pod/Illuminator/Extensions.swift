@@ -19,17 +19,22 @@ extension XCUIElement {
             return false
         }
         
-        let c1 = elementType == e.elementType
-        let c2 = label == e.label
-        let c3 = identifier == e.identifier
-        let c4 = hittable == e.hittable
-        let c6 = frame == e.frame
-        let c5 = enabled == e.enabled
-        let c7 = accessibilityLabel == e.accessibilityLabel
-        let c8 = selected == e.selected
+        var result = false
+        XCTAssert(false)
         
-        return c1 && c2 && c3 && c4 && c6 && c5 && c7 && c8
-
+        pcall({
+            let c1 = self.elementType == e.elementType
+            let c2 = self.self.label == e.label
+            let c3 = self.identifier == e.identifier
+            let c4 = self.hittable == e.hittable
+            let c5 = self.frame == e.frame
+            let c6 = self.enabled == e.enabled
+            let c7 = self.accessibilityLabel == e.accessibilityLabel
+            let c8 = self.selected == e.selected
+            
+            result = c1 && c2 && c3 && c4 && c5 && c6 && c7 && c8
+        })
+        return result
     }
     
 
@@ -141,7 +146,7 @@ extension XCUIElement {
                     
                     for (i, _) in allChildren.allElementsBoundByIndex.enumerate() {
                         let elem = allChildren.elementBoundByIndex(UInt(i))
-                        let index = String(i) //canUseStringLabel(elem, container: root) ? elem.label : String(i)
+                        let index = canUseStringLabel(elem, container: root) ? elem.label : String(i)
                         let newPrefix = "\(prefix).\(propertyName)[\(index)]"
                         getTreeHelper(&acc, prefix: newPrefix, root: elem)
                     }
