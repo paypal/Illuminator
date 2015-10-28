@@ -8,10 +8,6 @@
 
 import Foundation
 
-public func tryBlock(tryBlock:IlluminatorEmptyBlock, catchBlock:IlluminatorExceptionBlock? = nil, finally:IlluminatorEmptyBlock? = nil) {
-    NSObject.tryBlock(tryBlock, catchBlock: catchBlock, finally:finally)
-}
-
-public func throwException(exception: NSException) {
-    NSObject.throwException(exception)
+public func pcall(tryBlock:IlluminatorEmptyBlock, catchBlock:IlluminatorExceptionBlock? = nil, finally:IlluminatorEmptyBlock? = nil) {
+    NSObject.pcall(tryBlock, catchBlock: catchBlock, finally: finally)
 }

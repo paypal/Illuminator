@@ -10,13 +10,18 @@
 
 @implementation NSObject (Exceptions)
 
-+ (void)tryBlock:(IlluminatorEmptyBlock)tryBlock catchBlock:(IlluminatorExceptionBlock)catchBlock finally:(IlluminatorEmptyBlock)finallyBlock {
++ (void)pcall:(IlluminatorEmptyBlock)tryBlock catchBlock:(IlluminatorExceptionBlock)catchBlock finally:(IlluminatorEmptyBlock)finallyBlock {
     @try {
         tryBlock();
     }
     @catch (NSException *exception) {
         if (catchBlock) {
             catchBlock(exception);
+        }
+    }
+    @catch (id) {
+        if (catchBlock) {
+            catchBlock(nil);
         }
     }
     @finally {
@@ -27,7 +32,4 @@
 }
 
 
-+ (void)throwException:(NSException *)exception {
-    @throw exception;
-}
 @end

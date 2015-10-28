@@ -13,6 +13,5 @@ typedef void (^IlluminatorEmptyBlock)();
 
 @interface NSObject (Exceptions)
 
-+ (void)tryBlock:(IlluminatorEmptyBlock)tryBlock catchBlock:(IlluminatorExceptionBlock)catchBlock finally:(IlluminatorEmptyBlock)finallyBlock;
-+ (void)throwException:(NSException *)exception;
++ (void)pcall:(IlluminatorEmptyBlock)tryBlock catchBlock:(IlluminatorExceptionBlock)catchBlock finally:(IlluminatorEmptyBlock)finallyBlock;
 @end
