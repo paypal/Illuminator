@@ -47,6 +47,7 @@ options.illuminator.clean.xcode = false
 options.illuminator.clean.artifacts = false
 options.illuminator.task.build = false
 options.simulator.version = '7.1'
+options.simulator.device = 'iPhone 5s'
 success7 = Illuminator::run_with_options options
 
-exit 1 unless success7 and success8
+exit 1 unless success8 and success7
