@@ -40,13 +40,13 @@ if Illuminator::XcodeUtils.instance.is_xcode_major_version 5
   options.simulator.device = 'iPhone Retina (4-inch)'
 end
 
-options.simulator.version = '8.1'
+options.simulator.version = '9.1'
 success8 = Illuminator::run_with_options options
 
-options.illuminator.clean.xcode = false
-options.illuminator.clean.artifacts = false
-options.illuminator.task.build = false
-options.simulator.version = '7.1'
-success7 = Illuminator::run_with_options options
+# options.illuminator.clean.xcode = false
+# options.illuminator.clean.artifacts = false
+# options.illuminator.task.build = false
+# options.simulator.version = '8.1'
+# success7 = Illuminator::run_with_options options
 
-exit 1 unless success7 and success8
+exit 1 unless success8 # and success7
