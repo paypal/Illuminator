@@ -124,11 +124,11 @@ module Illuminator
       stderr_output = ''
       
       Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
-        while(line = stdout.gets) do
+        while line = stdout.gets do
           puts line
         end
         
-        while(line = stderr.gets) do
+        while line = stderr.gets do
           printf line.red
           stderr_output << line
         end
@@ -137,9 +137,9 @@ module Illuminator
         @exit_code = wait_thr.value.exitstatus
       end
 
-      File.open(stderr_logfile_path, 'w') { |f|
+      File.open(stderr_logfile_path, 'w') do |f|
         f.write stderr_output
-      }
+      end
 
       return @exit_code == 0
     end
