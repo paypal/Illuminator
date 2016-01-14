@@ -1,4 +1,5 @@
 require 'colorize'
+require 'open3'
 
 require_relative './build-artifacts'
 require_relative './host-utils'
@@ -110,17 +111,36 @@ module Illuminator
     def logfile_path
       log_file = File.join(Illuminator::BuildArtifacts.instance.console, 'xcodebuild.log')
     end
+    
+    def stderr_logfile_path
+      log_file = File.join(Illuminator::BuildArtifacts.instance.console, 'xcodebuild-stderr.log')
+    end
 
     # execute the build command, log the output to the screen, and return true or false indicating success
     def _execute_build_command command
+
       puts command.green
-      process = IO.popen(command) do |io|
-        io.each {|line| puts line}
-        io.close
+
+      stderr_output = ''
+      
+      Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
+        while(line = stdout.gets) do
+          puts line
+        end
+        
+        while(line = stderr.gets) do
+          printf line.red
+          stderr_output << line
+        end
+        
+        # Wait for command to finish and get exit code
+        @exit_code = wait_thr.value.exitstatus
       end
 
-      ec = $?
-      @exit_code = ec.exitstatus
+      File.open(stderr_logfile_path, 'w') { |f|
+        f.write stderr_output
+      }
+
       return @exit_code == 0
     end
 
