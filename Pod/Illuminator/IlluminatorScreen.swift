@@ -10,7 +10,7 @@ import XCTest
 
 
 protocol IlluminatorScreen: CustomStringConvertible {
-    var parent: IlluminatorApplication { get }
+    var testCase: XCTestCase { get }
     var label: String { get }
     var isActive: Bool { get }
     func becomesActive() throws
@@ -19,34 +19,28 @@ protocol IlluminatorScreen: CustomStringConvertible {
 extension IlluminatorScreen {
 
     var description: String {
-        get {
-            return "\(self.parent.label) screen \(self.label)"
-        }
+        return "\(self.dynamicType) \(self.label)"
     }
     
-    // for convenience
-    var app: XCUIApplication {
-        get {
-            return self.parent.app
-        }
+    func makeAction<T>(label l: String, task: (T) throws -> T) -> IlluminatorActionGeneric<T> {
+        return IlluminatorActionGeneric(label: l, testCase: self.testCase, screen: self, task: task)
     }
+    
 }
 
 class IlluminatorSimpleScreen: IlluminatorScreen {
-    let parent: IlluminatorApplication
+    let testCase: XCTestCase
     let label: String
     
-    init (containingApplication: IlluminatorApplication, label labelVal: String) {
-        parent = containingApplication
+    init (label labelVal: String, testCase t: XCTestCase) {
+        testCase = t
         label = labelVal
     }
     
   
     // By default, we assume that the screen is always active.  This should be overridden with a more realistic measurement
     var isActive: Bool {
-        get {
-            return true
-        }
+        return true
     }
     
     // Since the screen is always active, we don't need to waste time
@@ -59,13 +53,12 @@ class IlluminatorSimpleScreen: IlluminatorScreen {
 
 class IlluminatorDelayedScreen: IlluminatorSimpleScreen {
     let screenTimeout: Double
-    
     var nextTimeout: Double // For setting temporarily
     
-    init (containingApplication: IlluminatorApplication, label: String, screenTimeout timeoutVal: Double) {
-        screenTimeout = timeoutVal
-        nextTimeout = screenTimeout
-        super.init(containingApplication: containingApplication, label: label)
+    init (label labelVal: String, testCase t: XCTestCase, screenTimeout s: Double) {
+        screenTimeout = s
+        nextTimeout = s
+        super.init(label: labelVal, testCase: t)
     }
     
     
@@ -83,7 +76,9 @@ class IlluminatorScreenWithTransient: IlluminatorSimpleScreen {
     var nextTimeoutSoft: Double     // Sometimes we may want to adjust the timeouts temporarily
     var nextTimeoutHard: Double
     
-    init (containingApplication: IlluminatorApplication,
+    
+    
+    init (testCase: XCTestCase,
           label: String,
           screenTimeoutSoft timeoutSoft: Double,
           screenTimeoutHard timeoutHard: Double) {
@@ -91,14 +86,12 @@ class IlluminatorScreenWithTransient: IlluminatorSimpleScreen {
         screenTimeoutHard = timeoutHard
         nextTimeoutSoft = screenTimeoutSoft
         nextTimeoutHard = screenTimeoutHard
-        super.init(containingApplication: containingApplication, label: label)
+            super.init(label: label, testCase: testCase)
     }
     
     // To be overridden by the extender of the class
     var transientIsActive: Bool {
-        get {
-            return false;
-        }
+        return false;
     }
     
     override func becomesActive() throws {
@@ -118,7 +111,7 @@ class IlluminatorScreenWithTransient: IlluminatorSimpleScreen {
         } while hardTime.timeIntervalSinceNow < nextTimeoutHard && softTime.timeIntervalSinceNow < nextTimeoutSoft
 
         let msg = "[\(self) becomesActive] failed "
-        throw IlluminatorExceptions.VerificationFailed(
+        throw IlluminatorExceptions.IncorrectScreen(
             message: msg + ((hardTime.timeIntervalSinceNow > nextTimeoutHard) ? "hard" : "soft") + " timeout")
     }
 }
