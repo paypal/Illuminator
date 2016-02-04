@@ -20,24 +20,23 @@ module Illuminator
     attr_accessor :do_archive
     attr_accessor :do_coverage
     attr_accessor :derived_data_is_artifact
+    attr_accessor :set_configuration_build_dir
 
     attr_reader :exit_code
 
     def initialize
-      @parameters       = Hash.new
-      @environment_vars = Hash.new
-      @project_dir      = nil
-      @do_clean         = FALSE
-      @do_test          = FALSE
-      @do_build         = TRUE
-      @do_archive       = FALSE
-      @exit_code        = nil
+      @parameters                  = Hash.new
+      @environment_vars            = Hash.new
+      @project_dir                 = nil
+      @do_clean                    = FALSE
+      @do_test                     = FALSE
+      @do_build                    = TRUE
+      @do_archive                  = FALSE
+      @exit_code                   = nil
+      @set_configuration_build_dir = TRUE
 
       @derived_data_is_artifact = FALSE
 
-      result_path = Illuminator::BuildArtifacts.instance.xcode
-      add_environment_variable('CONFIGURATION_BUILD_DIR', "'#{result_path}'")
-      add_environment_variable('CONFIGURATION_TEMP_DIR', "'#{result_path}'")
     end
 
     def set_build_artifacts_root root_dir
@@ -126,6 +125,10 @@ module Illuminator
 
 
     def build
+      result_path = Illuminator::BuildArtifacts.instance.xcode
+      add_environment_variable('CONFIGURATION_BUILD_DIR', "'#{result_path}'") if @set_configuration_build_dir
+      add_environment_variable('CONFIGURATION_TEMP_DIR', "'#{result_path}'")
+      
       command = _build_command
 
       # switch to a directory (if desired) and build
