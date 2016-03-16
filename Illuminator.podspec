@@ -12,13 +12,13 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/paypal/Illuminator.git", :tag => s.version.to_s }
   s.platform     = :ios, '8.0'
   s.requires_arc = true
-  
+
   s.resource_bundles = {
     'Illuminator' => ['Pod/Assets/*.png']
   }
 
   s.ios.frameworks = 'XCTest'
   s.source_files = 'Pod/Bridge/**/*'
-  s.source_files = 'Pod/Illuminator/**/*'  
+  s.source_files = 'Pod/Illuminator/**/*'
 
 end
