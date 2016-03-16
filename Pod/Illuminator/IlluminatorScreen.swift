@@ -7,7 +7,7 @@
 //
 
 import XCTest
-
+import KIF
 
 protocol IlluminatorScreen: CustomStringConvertible {
     var testCase: XCTestCase { get }
