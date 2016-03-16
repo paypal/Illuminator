@@ -25,6 +25,14 @@ extension IlluminatorScreen {
     func makeAction<T>(label l: String, task: (T) throws -> T) -> IlluminatorActionGeneric<T> {
         return IlluminatorActionGeneric(label: l, testCase: self.testCase, screen: self, task: task)
     }
+ 
+    internal func tester(file : String = __FILE__, _ line : Int = __LINE__) -> KIFUITestActor {
+        return KIFUITestActor(inFile: file, atLine: line, delegate: self.testCase)
+    }
+    
+    internal func system(file : String = __FILE__, _ line : Int = __LINE__) -> KIFSystemTestActor {
+        return KIFSystemTestActor(inFile: file, atLine: line, delegate: self.testCase)
+    }
     
 }
 
