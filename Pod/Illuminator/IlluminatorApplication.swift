@@ -45,18 +45,3 @@ struct IlluminatorApplicationGeneric<T>: IlluminatorApplication {
     }
 }
 
-class IlluminatorIOSApplication: IlluminatorApplication {
-    
-    private (set) var label: String
-    private (set) var app: XCUIApplication
-    var state = [String: String]()
-    
-    init (app: XCUIApplication, label: String) {
-        self.app = app
-        self.label = label
-    }
-    
-}
-
-
-
