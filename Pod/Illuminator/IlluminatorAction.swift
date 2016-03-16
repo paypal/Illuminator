@@ -6,8 +6,11 @@
 //  Copyright © 2015 PayPal, Inc. All rights reserved.
 //
 
+import KIF
+
 // actions have a function that takes state (absctract type) and returns state, throws
 // actions are created from blocks within the screen defintion -- they contain a ref to the screen
+
 protocol IlluminatorAction: CustomStringConvertible {
     var label: String { get }
     var testCase: XCTestCase { get }

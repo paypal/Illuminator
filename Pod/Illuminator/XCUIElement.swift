@@ -8,6 +8,7 @@
 
 import XCTest
 
+@available(iOS 9.0, *)
 extension XCUIElement {
     
     var app: XCUIApplication {
