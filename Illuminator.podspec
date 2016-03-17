@@ -17,8 +17,8 @@ Pod::Spec.new do |s|
     'Illuminator' => ['Pod/Assets/*.png']
   }
 
-  s.ios.frameworks = 'XCTest'
-  s.source_files = 'Pod/Bridge/**/*'
-  s.source_files = 'Pod/Illuminator/**/*'
+  s.ios.frameworks        = 'XCTest'
+  s.ios.deployment_target = '8.0'
+  s.source_files          = 'Pod/Illuminator/**/*'
 
 end
