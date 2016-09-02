@@ -11,7 +11,7 @@ import KIF
 // actions have a function that takes state (absctract type) and returns state, throws
 // actions are created from blocks within the screen defintion -- they contain a ref to the screen
 
-protocol IlluminatorAction: CustomStringConvertible {
+public protocol IlluminatorAction: CustomStringConvertible {
     var label: String { get }
     var testCase: XCTestCase { get }
     var screen: IlluminatorScreen? { get }
@@ -19,7 +19,7 @@ protocol IlluminatorAction: CustomStringConvertible {
     func task(state: AbstractStateType) throws -> AbstractStateType
 }
 
-extension IlluminatorAction {
+public extension IlluminatorAction {
     var description: String {
         get {
             return "\(self.dynamicType) \(self.label)"
@@ -36,10 +36,10 @@ extension IlluminatorAction {
 }
 
 
-struct IlluminatorActionGeneric<T>: IlluminatorAction {
-    let label: String
-    let testCase: XCTestCase
-    let screen: IlluminatorScreen?
+public struct IlluminatorActionGeneric<T>: IlluminatorAction {
+    public let label: String
+    public let testCase: XCTestCase
+    public let screen: IlluminatorScreen?
     
     private let _task: (T) throws -> T
     
@@ -57,7 +57,7 @@ struct IlluminatorActionGeneric<T>: IlluminatorAction {
         _task = task
     }
     
-    func task(state: T) throws -> T {
+    public func task(state: T) throws -> T {
         return try _task(state)
     }
     
