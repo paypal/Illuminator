@@ -8,14 +8,14 @@
 
 import XCTest
 
-enum IlluminatorExceptions: ErrorType {
+public enum IlluminatorExceptions: ErrorType {
     case Warning(message: String)             // non-fatal error; can be deferred. doesn't interrupt flow
     case IncorrectScreen(message: String)     // we're on the wrong screen
     //case IndeterminateState(message: String)  // the saved state doesn't make sense
     //case VerificationFailed(message: String)  // we wanted something that wasn't there
 }
 
-protocol WaitForible: Equatable, CustomStringConvertible {}
+public protocol WaitForible: Equatable, CustomStringConvertible {}
 
 extension Bool: WaitForible {
     var description: String {
@@ -27,7 +27,7 @@ extension Bool: WaitForible {
 
 
 // guaranteed to run at least once (even if seconds == 0)
-func waitForResult <A: WaitForible> (seconds: Double, desired: A, what: String, getResult: () -> A) throws {
+public func waitForResult <A: WaitForible> (seconds: Double, desired: A, what: String, getResult: () -> A) throws {
     let startTime = NSDate()
     var lastResult: A
     repeat {

@@ -9,7 +9,7 @@
 import Foundation
 import KIF
 
-enum IlluminatorTestProgress<T> {
+public enum IlluminatorTestProgress<T> {
     case Passing(T)
     case Flagging(T, [String])
     case Failing([String])
@@ -27,7 +27,7 @@ enum IlluminatorTestProgress<T> {
     }
     
     // apply an action to a state of progress, returning a new state of progress
-    func applyAction(action: IlluminatorActionGeneric<T>, checkScreen: Bool) throws -> IlluminatorTestProgress<T> {
+    func applyAction(action: IlluminatorActionGeneric<T>, checkScreen: Bool) -> IlluminatorTestProgress<T> {
         
         let info = normalize()
         
@@ -45,6 +45,9 @@ enum IlluminatorTestProgress<T> {
                     try s.becomesActive()
                 } catch IlluminatorExceptions.IncorrectScreen(let message) {
                     myErrStrings.append(message)
+                    return .Failing(myErrStrings)
+                } catch let unknownError {
+                    myErrStrings.append("Caught error: \(unknownError)")
                     return .Failing(myErrStrings)
                 }
             }
@@ -75,21 +78,24 @@ enum IlluminatorTestProgress<T> {
             //} catch IlluminatorExceptions.VerificationFailed(let message) {
             //    myErrStrings.append(decorate("verification failed", message))
             //    return .Failing(myErrStrings)
+        } catch let unknownError {
+            myErrStrings.append("Caught error: \(unknownError)")
+            return .Failing(myErrStrings)
         }
     }
     
     // apply an action, checking the screen first
-    func apply(action: IlluminatorActionGeneric<T>) throws -> IlluminatorTestProgress<T> {
-        return try applyAction(action, checkScreen: true)
+    public func apply(action: IlluminatorActionGeneric<T>) -> IlluminatorTestProgress<T> {
+        return applyAction(action, checkScreen: true)
     }
     
     // apply an action, without checking the screen first
-    func check(action: IlluminatorActionGeneric<T>) throws -> IlluminatorTestProgress<T> {
-        return try applyAction(action, checkScreen: false)
+    public func blindly(action: IlluminatorActionGeneric<T>) -> IlluminatorTestProgress<T> {
+        return applyAction(action, checkScreen: false)
     }
     
     // interpret the final result in terms of a test case
-    func finish(testCase: KIFTestCase) {
+    public func finish(testCase: XCTestCase) {
         let (isPassing, _, _, errorMessages) = normalize()
         XCTAssert(isPassing, errorMessages.joinWithSeparator("; "))
     }
