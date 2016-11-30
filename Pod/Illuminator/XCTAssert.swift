@@ -8,7 +8,7 @@
 
 import XCTest
 
-public func XCTAssertFailable(expression: () throws -> Void, errorBlock: ((ErrorType) -> Void)?, file: String = __FILE__, line: UInt = __LINE__) {
+public func XCTAssertFailable(expression: () throws -> Void, errorBlock: ((ErrorType) -> Void)?, file: StaticString = #file, line: UInt = #line) {
     do {
         try expression()
     } catch let error {

@@ -9,5 +9,5 @@
 import Foundation
 
 public func pcall(tryBlock:IlluminatorEmptyBlock, catchBlock:IlluminatorExceptionBlock? = nil, finally:IlluminatorEmptyBlock? = nil) {
-    NSObject.pcall(tryBlock, catchBlock: catchBlock, finally: finally)
+    NSObject.protectedSwiftCall(tryBlock, catchBlock: catchBlock, finally: finally)
 }

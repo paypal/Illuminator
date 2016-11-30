@@ -8,6 +8,7 @@
 
 import XCTest
 
+
 public enum IlluminatorExceptions: ErrorType {
     case Warning(message: String)             // non-fatal error; can be deferred. doesn't interrupt flow
     case IncorrectScreen(message: String)     // we're on the wrong screen
@@ -33,9 +34,9 @@ public func waitForResult <A: WaitForible> (seconds: Double, desired: A, what: S
     repeat {
         lastResult = getResult()
         if desired == lastResult {return}
-    } while startTime.timeIntervalSinceNow < seconds
+        print("Waiting for \(what) to become \(desired), \(startTime.timeIntervalSinceNow) of \(seconds) seconds; got \(lastResult)")
+    } while (0 - startTime.timeIntervalSinceNow) < seconds
     throw IlluminatorExceptions.IncorrectScreen(
         message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
 }
-
 
