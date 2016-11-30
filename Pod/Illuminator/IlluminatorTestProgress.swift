@@ -7,8 +7,9 @@
 //
 
 import Foundation
-import KIF
+import XCTest
 
+@available(iOS 9.0, *)
 public enum IlluminatorTestProgress<T> {
     case Passing(T)
     case Flagging(T, [String])
@@ -95,12 +96,10 @@ public enum IlluminatorTestProgress<T> {
     }
     
     // interpret the final result in terms of a test case
-    public func finish(testCase: XCTestCase) {
+    public func finish() {
         let (isPassing, _, _, errorMessages) = normalize()
+        print(XCUIApplication().debugDescription)
         XCTAssert(isPassing, errorMessages.joinWithSeparator("; "))
     }
     
 }
-
-
-
