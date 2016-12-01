@@ -20,10 +20,11 @@ it, simply add the following line to your Podfile:
 pod "Illuminator"
 ```
 
-## Author
+## Authors
 
 kviksilver, berceg@paypal.com
+Ian Katz, ifreecarve@gmail.com
 
 ## License
 
-Illuminator is available under the MIT license. See the LICENSE file for more info.
+Illuminator is available under the Apache 2.0 license. See the LICENSE.txt file for more info.
