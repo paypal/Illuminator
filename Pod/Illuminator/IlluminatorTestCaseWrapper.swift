@@ -8,6 +8,9 @@
 
 import XCTest
 
+// this may not work
+// see http://stackoverflow.com/questions/20998788/failing-a-xctestcase-with-assert-without-the-test-continuing-to-run-but-without
+
 // Actions need the ability to push/pop the continueAfterFailure variable.
 // We don't care whose framework "owns" the base class, we just need to wrap it.
 public class IlluminatorTestcaseWrapper {
