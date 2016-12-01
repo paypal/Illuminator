@@ -39,4 +39,3 @@ public func waitForResult <A: WaitForible> (seconds: Double, desired: A, what: S
     throw IlluminatorExceptions.IncorrectScreen(
         message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
 }
-
