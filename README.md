@@ -22,8 +22,8 @@ pod "Illuminator"
 
 ## Authors
 
-kviksilver, berceg@paypal.com
-Ian Katz, ifreecarve@gmail.com
+* kviksilver, berceg@paypal.com
+* Ian Katz, ifreecarve@gmail.com
 
 ## License
 
