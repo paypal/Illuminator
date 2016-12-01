@@ -28,6 +28,8 @@ extension Bool: WaitForible {
 
 
 // guaranteed to run at least once (even if seconds == 0)
+// see http://stackoverflow.com/questions/31300372/uiautomation-and-xctestcase-how-to-wait-for-a-button-to-activate
+// and http://stackoverflow.com/questions/31182637/delay-wait-in-a-test-case-of-xcode-ui-testing
 public func waitForResult <A: WaitForible> (seconds: Double, desired: A, what: String, getResult: () -> A) throws {
     let startTime = NSDate()
     var lastResult: A
