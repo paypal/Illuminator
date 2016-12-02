@@ -17,7 +17,7 @@ public class IlluminatorTestcaseWrapper {
     let testCase: XCTestCase
     var continueAfterFailures = [Bool]()
 
-    init(testCase t: XCTestCase) {
+    public init(testCase t: XCTestCase) {
         testCase = t
         initContinueAfterFailure()
     }
@@ -27,13 +27,13 @@ public class IlluminatorTestcaseWrapper {
         sanityCheck()
     }
 
-    func pushContinueAfterFailure(val: Bool) {
+    public func pushContinueAfterFailure(val: Bool) {
         sanityCheck()
         continueAfterFailures.append(val)
         testCase.continueAfterFailure = val
     }
 
-    func popContinueAfterFailure() {
+    public func popContinueAfterFailure() {
         sanityCheck()
         continueAfterFailures.removeLast()
         testCase.continueAfterFailure = continueAfterFailures.last!

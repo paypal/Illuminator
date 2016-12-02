@@ -58,7 +58,7 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
     }
     
     // shortcut function to make an action tied to this screen that either reads or writes the test state
-    func makeAction(label l: String = #function, task: (T) throws -> T) -> IlluminatorActionGeneric<T> {
+    public func makeAction(label l: String = #function, task: (T) throws -> T) -> IlluminatorActionGeneric<T> {
         return IlluminatorActionGeneric(label: l, testCaseWrapper: self.testCaseWrapper, screen: self, task: task)
     }
     
