@@ -6,4 +6,4 @@ script:
    - cd Example
    - bundle install --deployment
    - bundle exec pod install
-   - xcodebuild -workspace Illuminator.xcworkspace -scheme "Illuminator-Example" -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 6,OS=10.1' test
+   - xcodebuild -workspace Illuminator.xcworkspace -scheme "Illuminator-Example" -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 6,OS=9.1' test
