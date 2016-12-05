@@ -26,7 +26,7 @@ public class XCTUIBridge: NSObject {
     
     func notificationRecieved(name:String) {
         if let listeners = clientListeners[name] {
-            for var i = 0; i < listeners.count; i++ {
+            for i in 0..<listeners.count {
                 (listeners.objectAtIndex(i) as? XCTUIBridgeCallbackContainer)?.completion()
             }
         }
