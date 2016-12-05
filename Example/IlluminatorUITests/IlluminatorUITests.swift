@@ -30,40 +30,19 @@ class IlluminatorUITests: XCTaggedTestCase {
         super.tearDown()
     }
     
-    func testExample_bug() {
+    func testExample_basic() {
         
         let app = XCUIApplication()
-        let button = app.buttons["Button"]
+        //let button = app.buttons["Button"]
         let textField = app.otherElements.containingType(.Button, identifier:"Button").childrenMatchingType(.TextField).element
         
         textField.tap()
         textField.typeText("test")
-        button.tap()
+        //button.tap()
         
-        XCTAssertEqual(textField.value as? String, "testv")
-        
-    }
-    
-    func testExceptionThrowing() {
-        
-        let exception = NSException(name: "exception", reason: nil, userInfo: nil)
-        tryBlock({
-                throwException(exception)
-            }, catchBlock: { newException in
-                XCTAssert(newException == exception)
-            }, finally:  {
-        })
-        
+        XCTAssertEqual(textField.value as? String, "test")
         
     }
     
-    func testExample_bridge() {
-        
-        let app = XCUIApplication()
-        
-        XCTUIBridge.sendNotification("showAlert")
-        
-        let alert = app.alerts["Alert"]
-        alert.collectionViews.buttons["OK"].tap()
-    }
+
 }
