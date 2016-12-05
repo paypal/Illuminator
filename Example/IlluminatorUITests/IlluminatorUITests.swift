@@ -17,8 +17,6 @@ class IlluminatorUITests: XCTaggedTestCase {
         
         // Put setup code here. This method is called before the invocation of each test method in the class.
         
-        // In UI tests it is usually best to stop immediately when a failure occurs.
-        continueAfterFailure = false
         // UI tests must launch the application that they test. Doing this in setup will make sure it happens for each test method.
         XCUIApplication().launch()
 
@@ -30,18 +28,29 @@ class IlluminatorUITests: XCTaggedTestCase {
         super.tearDown()
     }
     
-    func testExample_basic() {
+    func test_basicWithoutIlluminator() {
         
         let app = XCUIApplication()
-        //let button = app.buttons["Button"]
         let textField = app.otherElements.containingType(.Button, identifier:"Button").childrenMatchingType(.TextField).element
         
         textField.tap()
         textField.typeText("test")
-        //button.tap()
         
         XCTAssertEqual(textField.value as? String, "test")
         
+    }
+    
+    func test_basicWithIlluminator() {
+        
+        let app = ExampleTestApp(testCase: self)
+        let initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
+        
+        let myExampleText = "test123"
+        
+        initialState
+            .apply(app.home.enterText(myExampleText))
+            .apply(app.home.verifyText(myExampleText))
+        .finish()
     }
     
 
