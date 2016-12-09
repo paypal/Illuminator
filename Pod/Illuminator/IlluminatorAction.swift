@@ -6,53 +6,46 @@
 //  Copyright © 2015 PayPal, Inc. All rights reserved.
 //
 
-import KIF
+import XCTest
 
-// actions have a function that takes state (absctract type) and returns state, throws
-// actions are created from blocks within the screen defintion -- they contain a ref to the screen
-
+// - actions have a function that takes state (absctract type) and returns state, throws
+// - actions are created from blocks within the screen defintion -- they contain a ref to the screen
+// - They also need a reference to an IlluminatorTestCaseWrapper to be able to push/pop continueAfterFailure
 public protocol IlluminatorAction: CustomStringConvertible {
     var label: String { get }
-    var testCase: XCTestCase { get }
+    var testCaseWrapper: IlluminatorTestcaseWrapper { get }
     var screen: IlluminatorScreen? { get }
-    typealias AbstractStateType
+    associatedtype AbstractStateType
     func task(state: AbstractStateType) throws -> AbstractStateType
 }
 
 public extension IlluminatorAction {
+    
     var description: String {
         get {
             return "\(self.dynamicType) \(self.label)"
         }
-    }
-    
-    internal func tester(file : String = __FILE__, _ line : Int = __LINE__) -> KIFUITestActor {
-        return KIFUITestActor(inFile: file, atLine: line, delegate: self.testCase)
-    }
-    
-    internal func system(file : String = __FILE__, _ line : Int = __LINE__) -> KIFSystemTestActor {
-        return KIFSystemTestActor(inFile: file, atLine: line, delegate: self.testCase)
     }
 }
 
 
 public struct IlluminatorActionGeneric<T>: IlluminatorAction {
     public let label: String
-    public let testCase: XCTestCase
+    public let testCaseWrapper: IlluminatorTestcaseWrapper
     public let screen: IlluminatorScreen?
     
     private let _task: (T) throws -> T
     
     init<P : IlluminatorAction where P.AbstractStateType == T> (action dep: P) {
         label = dep.label
-        testCase = dep.testCase
+        testCaseWrapper = dep.testCaseWrapper
         screen = dep.screen
         _task = dep.task
     }
     
-    init(label l: String, testCase t: XCTestCase, screen s: IlluminatorScreen?, task: (T) throws -> T) {
+    init(label l: String, testCaseWrapper t: IlluminatorTestcaseWrapper, screen s: IlluminatorScreen?, task: (T) throws -> T) {
         label = l
-        testCase = t
+        testCaseWrapper = t
         screen = s
         _task = task
     }
@@ -62,5 +55,3 @@ public struct IlluminatorActionGeneric<T>: IlluminatorAction {
     }
     
 }
-
-

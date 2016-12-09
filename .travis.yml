@@ -1,0 +1,9 @@
+language: objective-c
+install: bundle install --jobs=3 --retry=3 --gemfile Gemfile
+script:
+   - pod lib lint Illuminator.podspec
+   - pod lib lint IlluminatorBridge.podspec
+   - cd Example
+   - bundle install --deployment
+   - bundle exec pod install
+   - xcodebuild -workspace Illuminator.xcworkspace -scheme "Illuminator-Example" -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 6,OS=9.1' test

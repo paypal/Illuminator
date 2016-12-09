@@ -7,53 +7,35 @@
 //
 
 import XCTest
-import KIF
+
 
 public protocol IlluminatorScreen: CustomStringConvertible {
-    var testCase: XCTestCase { get }
+    var testCaseWrapper: IlluminatorTestcaseWrapper { get }
     var label: String { get }
     var isActive: Bool { get }
     func becomesActive() throws
 }
 
 public extension IlluminatorScreen {
-
     var description: String {
         return "\(self.dynamicType) \(self.label)"
     }
-    
-
-    
-    // shortcut function to make an action tied to this screen that either reads or writes the test state
-    func makeAction<T>(label l: String = __FUNCTION__, task: (T) throws -> T) -> IlluminatorActionGeneric<T> {
-        return IlluminatorActionGeneric(label: l, testCase: self.testCase, screen: self, task: task)
-    }
-    
-    // shortcut function to make an action tied to this screen that neither reads nor writes the test state
-    func makeAction<T>(label l: String = __FUNCTION__, task: () throws -> ()) -> IlluminatorActionGeneric<T> {
-        return makeAction(label: l) { (state: T) in
-            try task()
-            return state
-        }
-    }
-    
-    func interface() -> IlluminatorInterface {
-        return IlluminatorInterface()
-    }
-    
 }
 
+
 // a screen that is always available (more like a shake action)
-public class IlluminatorSimpleScreen<T>: IlluminatorScreen {
-    public let testCase: XCTestCase
+@available(iOS 9.0, *)
+public class IlluminatorBaseScreen<T>: IlluminatorScreen {
+    public let testCaseWrapper: IlluminatorTestcaseWrapper
     public let label: String
+    public let app = XCUIApplication() // seems like the appropriate place to set this up
     
-    public init (label labelVal: String, testCase t: XCTestCase) {
-        testCase = t
+    public init (label labelVal: String, testCaseWrapper t: IlluminatorTestcaseWrapper) {
+        testCaseWrapper = t
         label = labelVal
     }
     
-  
+    
     // By default, we assume that the screen is always active.  This should be overridden with a more realistic measurement
     public var isActive: Bool {
         return true
@@ -65,26 +47,40 @@ public class IlluminatorSimpleScreen<T>: IlluminatorScreen {
     }
     
     public func verifyIsActive() -> IlluminatorActionGeneric<T> {
-        return makeAction(label: __FUNCTION__) { $0 }
+        return makeAction(label: #function) { }
     }
     
     public func verifyNotActive() -> IlluminatorActionGeneric<T> {
-        let nullScreen = IlluminatorSimpleScreen<T>(label: "null screen", testCase: self.testCase)
-        return IlluminatorActionGeneric(label: __FUNCTION__, testCase: self.testCase, screen: nullScreen) { state in
-            throw IlluminatorExceptions.IncorrectScreen(message: "IlluminatorSimpleScreen instances are always active")
+        let nullScreen = IlluminatorBaseScreen<T>(label: "null screen", testCaseWrapper: self.testCaseWrapper)
+        return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen) { state in
+            throw IlluminatorExceptions.IncorrectScreen(message: "IlluminatorBaseScreen instances are always active")
+        }
+    }
+    
+    // shortcut function to make an action tied to this screen that either reads or writes the test state
+    public func makeAction(label l: String = #function, task: (T) throws -> T) -> IlluminatorActionGeneric<T> {
+        return IlluminatorActionGeneric(label: l, testCaseWrapper: self.testCaseWrapper, screen: self, task: task)
+    }
+    
+    // shortcut function to make an action tied to this screen that neither reads nor writes the test state
+    public func makeAction(label l: String = #function, task: () throws -> ()) -> IlluminatorActionGeneric<T> {
+        return makeAction(label: l) { (state: T) in
+            try task()
+            return state
         }
     }
 }
 
 // a "normal" screen -- one that may take a moment of animation to appear
-public class IlluminatorDelayedScreen<T>: IlluminatorSimpleScreen<T> {
+@available(iOS 9.0, *)
+public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
     let screenTimeout: Double
     var nextTimeout: Double // For setting temporarily
     
-    public init (label labelVal: String, testCase t: XCTestCase, screenTimeout s: Double) {
+    public init (label labelVal: String, testCaseWrapper t: IlluminatorTestcaseWrapper, screenTimeout s: Double) {
         screenTimeout = s
         nextTimeout = s
-        super.init(label: labelVal, testCase: t)
+        super.init(label: labelVal, testCaseWrapper: t)
     }
     
     
@@ -95,8 +91,8 @@ public class IlluminatorDelayedScreen<T>: IlluminatorSimpleScreen<T> {
     }
     
     override public func verifyNotActive() -> IlluminatorActionGeneric<T> {
-        let nullScreen = IlluminatorSimpleScreen<T>(label: "null screen", testCase: self.testCase)
-        return IlluminatorActionGeneric(label: __FUNCTION__, testCase: self.testCase, screen: nullScreen) { state in
+        let nullScreen = IlluminatorBaseScreen<T>(label: "null screen", testCaseWrapper: self.testCaseWrapper)
+        return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen) { state in
             var stillActive: Bool
             do {
                 try waitForResult(self.nextTimeout, desired: false, what: "[\(self) isActive]", getResult: { self.isActive })
@@ -114,7 +110,8 @@ public class IlluminatorDelayedScreen<T>: IlluminatorSimpleScreen<T> {
 }
 
 // a screen whose appearance is linked to the (dis)appearance of a transient dialog (like a spinner)
-public class IlluminatorScreenWithTransient<T>: IlluminatorSimpleScreen<T> {
+@available(iOS 9.0, *)
+public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
     let screenTimeoutSoft: Double   // how long we'd wait if we didn't see the transient
     let screenTimeoutHard: Double   // how long we'd wait if we DID see the transient
     
@@ -122,15 +119,15 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorSimpleScreen<T> {
     var nextTimeoutHard: Double
     
     
-    public init (testCase: XCTestCase,
-          label: String,
-          screenTimeoutSoft timeoutSoft: Double,
-          screenTimeoutHard timeoutHard: Double) {
+    public init (testCaseWrapper: IlluminatorTestcaseWrapper,
+                 label: String,
+                 screenTimeoutSoft timeoutSoft: Double,
+                                   screenTimeoutHard timeoutHard: Double) {
         screenTimeoutSoft = timeoutSoft
         screenTimeoutHard = timeoutHard
         nextTimeoutSoft = screenTimeoutSoft
         nextTimeoutHard = screenTimeoutHard
-            super.init(label: label, testCase: testCase)
+        super.init(label: label, testCaseWrapper: testCaseWrapper)
     }
     
     // To be overridden by the extender of the class
@@ -153,16 +150,16 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorSimpleScreen<T> {
                 return
             }
         } while hardTime.timeIntervalSinceNow < nextTimeoutHard && softTime.timeIntervalSinceNow < nextTimeoutSoft
-
+        
         let msg = "[\(self) becomesActive] failed "
         throw IlluminatorExceptions.IncorrectScreen(
             message: msg + ((hardTime.timeIntervalSinceNow > nextTimeoutHard) ? "hard" : "soft") + " timeout")
     }
     
     override public func verifyNotActive() -> IlluminatorActionGeneric<T> {
-        let nullScreen = IlluminatorSimpleScreen<T>(label: "null screen", testCase: self.testCase)
-        return IlluminatorActionGeneric(label: __FUNCTION__, testCase: self.testCase, screen: nullScreen) { state in
-
+        let nullScreen = IlluminatorBaseScreen<T>(label: "null screen", testCaseWrapper: self.testCaseWrapper)
+        return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen) { state in
+            
             let hardTime = NSDate()
             var softTime = NSDate()
             repeat {
@@ -181,3 +178,4 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorSimpleScreen<T> {
         }
     }
 }
+

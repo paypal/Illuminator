@@ -8,12 +8,14 @@ DEPENDENCIES:
 
 EXTERNAL SOURCES:
   Illuminator:
-    :path: "../"
+    :path: ../
   IlluminatorBridge:
-    :path: "../"
+    :path: ../
 
 SPEC CHECKSUMS:
-  Illuminator: d27a66b04327bcd6f4874419991183f6c8cf5e14
-  IlluminatorBridge: 8ea50ec65a6409aa1d5d5bf71c7e3449f092c861
+  Illuminator: 6d8f24058d2a8b1140416fba8f70f347c809d8e4
+  IlluminatorBridge: c49f2ba92abf8b499dbfd41abd8e0a364adbe5c8
 
-COCOAPODS: 0.39.0
+PODFILE CHECKSUM: fa3ff777fdd8c111b7d08ae862a0492c6f836e4d
+
+COCOAPODS: 1.1.1

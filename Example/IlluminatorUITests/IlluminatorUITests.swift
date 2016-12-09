@@ -17,8 +17,6 @@ class IlluminatorUITests: XCTaggedTestCase {
         
         // Put setup code here. This method is called before the invocation of each test method in the class.
         
-        // In UI tests it is usually best to stop immediately when a failure occurs.
-        continueAfterFailure = false
         // UI tests must launch the application that they test. Doing this in setup will make sure it happens for each test method.
         XCUIApplication().launch()
 
@@ -30,40 +28,30 @@ class IlluminatorUITests: XCTaggedTestCase {
         super.tearDown()
     }
     
-    func testExample_bug() {
+    func test_basicWithoutIlluminator() {
         
         let app = XCUIApplication()
-        let button = app.buttons["Button"]
         let textField = app.otherElements.containingType(.Button, identifier:"Button").childrenMatchingType(.TextField).element
         
         textField.tap()
         textField.typeText("test")
-        button.tap()
         
-        XCTAssertEqual(textField.value as? String, "testv")
-        
-    }
-    
-    func testExceptionThrowing() {
-        
-        let exception = NSException(name: "exception", reason: nil, userInfo: nil)
-        tryBlock({
-                throwException(exception)
-            }, catchBlock: { newException in
-                XCTAssert(newException == exception)
-            }, finally:  {
-        })
-        
+        XCTAssertEqual(textField.value as? String, "test")
         
     }
     
-    func testExample_bridge() {
+    func test_basicWithIlluminator() {
         
-        let app = XCUIApplication()
+        let app = ExampleTestApp(testCase: self)
+        let initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
         
-        XCTUIBridge.sendNotification("showAlert")
+        let myExampleText = "test123"
         
-        let alert = app.alerts["Alert"]
-        alert.collectionViews.buttons["OK"].tap()
+        initialState
+            .apply(app.home.enterText(myExampleText))
+            .apply(app.home.verifyText(myExampleText))
+        .finish()
     }
+    
+
 }
