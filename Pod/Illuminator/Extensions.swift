@@ -48,133 +48,74 @@ extension XCUIElement {
     }
     
     
-    
-    func getTree(prefix: String) -> [(String, XCUIElement)] {
-        
-        let vectors: [XCUIElementType: String] = [
-            .Other: "otherElements",
-            .ActivityIndicator: "activityIndicators",
-            .Alert: "alerts",
-            .Button: "buttons",
-            .Browser: "browsers",
-            .Cell: "cells",
-            .CheckBox: "checkBoxes",
-            .CollectionView: "collectionViews",
-            .ColorWell: "colorWells",
-            .ComboBox: "comboBoxes",
-            .DatePicker: "datePickers",
-            .DecrementArrow: "decrementArrows",
-            .Dialog: "dialogs",
-            .DisclosureTriangle: "disclosureTriangles",
-            .DockItem: "dockItems",
-            .Drawer: "drawers",
-            .Grid: "grids",
-            .Group: "groups",
-            .Handle: "handles",
-            .HelpTag: "helpTags",
-            .Icon: "icons",
-            .Image: "images",
-            .IncrementArrow: "incrementArrows",
-            .Key: "keys",
-            .Keyboard: "keyboards",
-            .LayoutArea: "layoutAreas",
-            .LayoutItem: "layoutItems",
-            .LevelIndicator: "levelIndicators",
-            .Link: "links",
-            .Map: "maps",
-            .Matte: "mattes",
-            .Menu: "menus",
-            .MenuBar: "menuBars",
-            .MenuBarItem: "menuBarItems",
-            .MenuButton: "menuButtons",
-            .MenuItem: "menuItems",
-            .NavigationBar: "navigationBars",
-            .Outline: "outlines",
-            .OutlineRow: "outlineRows",
-            .PageIndicator: "pageIndicators",
-            .Picker: "pickers",
-            .PickerWheel: "pickerWheels",
-            .Popover: "popovers",
-            .PopUpButton: "popUpButtons",
-            .ProgressIndicator: "progressIndicators",
-            .RadioButton: "radioButtons",
-            .RadioGroup: "radioGroups",
-            .RatingIndicator: "ratingIndicators",
-            .RelevanceIndicator: "relevanceIndicators",
-            .Ruler: "rulers",
-            .RulerMarker: "rulerMarkers",
-            .ScrollBar: "scrollBars",
-            .ScrollView: "scrollViews",
-            .SearchField: "searchFields",
-            .SecureTextField: "secureTextFields",
-            .SegmentedControl: "segmentedControls",
-            .Sheet: "sheets",
-            .Slider: "sliders",
-            .SplitGroup: "splitGroups",
-            .Splitter: "splitters",
-            .StaticText: "staticTexts",
-            .StatusBar: "statusBars",
-            .Stepper: "steppers",
-            .Switch: "switches",
-            .Tab: "tabs",
-            .TabBar: "tabBars",
-            .TabGroup: "tabGroups",
-            .Table: "tables",
-            .TableColumn: "tableColumns",
-            .TableRow: "tableRows",
-            .TextField: "textFields",
-            .TextView: "textViews",
-            .Timeline: "timelines",
-            .Toggle: "toggles",
-            .Toolbar: "toolbars",
-            .ToolbarButton: "toolbarButtons",
-            .ValueIndicator: "valueIndicators",
-            .WebView: "webViews",
-            .Window: "windows"]
-        
-        let typesWorthChecking = vectors.filter() { (key, _) in self.descendantsMatchingType(key).count > 0 }
-        
-        var acc = [(String, XCUIElement)]() // accumulator
-        
-        // find out if .elements["name"] works instead of .elements[123]
-        func canUseStringLabel(elem: XCUIElement, container: XCUIElement) -> Bool {
-            return elem.equals(container.childrenMatchingType(elem.elementType)[elem.label])
-        }
-        
-        func getTreeHelper(inout acc: [(String, XCUIElement)], prefix: String, root: XCUIElement) {
-            print(prefix)
-            acc.append((prefix, root)) // accumulate
-            
-            //TODO: the catchall types!
-            
-            // try all children of all explicit types
-            for (elemType, propertyName) in typesWorthChecking {
-                let allChildren = root.childrenMatchingType(elemType)
-                if allChildren.count > 0 {
-                    print("Founds \(allChildren.count) children of type \(propertyName) on \(root)")
-                    print("")
-                    
-                    for (i, _) in allChildren.allElementsBoundByIndex.enumerate() {
-                        let elem = allChildren.elementBoundByIndex(UInt(i))
-                        let index = canUseStringLabel(elem, container: root) ? elem.label : String(i)
-                        let newPrefix = "\(prefix).\(propertyName)[\(index)]"
-                        getTreeHelper(&acc, prefix: newPrefix, root: elem)
-                    }
-                }
-            }
-        }
-        getTreeHelper(&acc, prefix: prefix, root: self)
-        return acc
+ }
+
+extension Array {
+    /// Returns the element at the specified index iff it is within bounds, otherwise nil.
+    // kind of surprised this isn't in the language already
+    // http://stackoverflow.com/a/30593673/2063546
+    subscript (safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
     }
     
-    func printTree(prefix: String, printFunction: (String) -> ()) {
-        let start = NSDate()
-        let tree = getTree(prefix)
-        printFunction("getTree took \(start.timeIntervalSinceNow) seconds")
-        for (accessor, _) in tree {
-            printFunction(accessor)
+    /// Returns the sub-array of the specified index, out of range values ignored
+    // kind of surprised this isn't in the language already
+    // http://stackoverflow.com/a/36249411/2063546
+    subscript(safe bounds: Range<Index>) -> ArraySlice<Element> {
+        
+        let empty = { self[self.startIndex..<self.startIndex] }
+        // swift 3 let lb = bounds.lowerBound
+        // swift 3 let ub = bounds.upperBound
+        let lb = bounds.startIndex
+        let ub = bounds.endIndex
+        guard lb < endIndex else { return empty() }
+        guard ub >= startIndex else { return empty() }
+        
+        let lo = Swift.max(startIndex, lb)
+        let hi = Swift.min(endIndex, ub)
+        
+        return self[lo..<hi]
+    }
+    
+    var tail: Array {
+        get {
+            return Array(dropFirst())
         }
-        printFunction("done printing tree")
     }
 }
+
+
+extension String {
+    // regex with capture SWIFT 3 version here: http://stackoverflow.com/a/40040472/2063546
+    func matchingStrings(regex: String) -> [[String]] {
+        guard let regex = try? NSRegularExpression(pattern: regex, options: []) else { return [] }
+        let nsString = self as NSString
+        let results  = regex.matchesInString(self, options: [], range: NSMakeRange(0, nsString.length))
+        return results.map { result in
+            (0..<result.numberOfRanges).map { result.rangeAtIndex($0).location != NSNotFound
+                ? nsString.substringWithRange(result.rangeAtIndex($0))
+                : ""
+            }
+        }
+    }
+}
+
+
+// allow for-in with elements
+// http://design.featherless.software/minimal-swift-protocol-conformance/
+//
+extension XCUIElementQuery: SequenceType {
+    public typealias Generator = AnyGenerator<XCUIElement>
+    public func generate() -> Generator {
+        var index = UInt(0)
+        return anyGenerator {
+            guard index < self.count else { return nil }
+
+            let element = self.elementBoundByIndex(index)
+            index++
+            return element
+        }
+    }
+}
+
 
