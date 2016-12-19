@@ -136,9 +136,6 @@ class IlluminatorElement: Equatable {
     }
     
     func toString() -> String {
-        // swift3 let indent = String(repeating: " ", count: depth)
-        let indent = String(count: depth, repeatedValue: Character(" "))
-        let childrenString = children.map{ $0.toString() }.joinWithSeparator("")
         let elementDesc = IlluminatorElement.stringFromElementType(elementType)
         return "\(elementDesc) - label: \(label) identifier: \(identifier) value: \(value)"
     }
@@ -146,8 +143,7 @@ class IlluminatorElement: Equatable {
     func treeToString() -> String {
         // swift3 let indent = String(repeating: " ", count: depth)
         let indent = String(count: depth, repeatedValue: Character(" "))
-        let childrenString = children.map{ $0.treeToString() }.joinWithSeparator("")
-        let elementDesc = IlluminatorElement.stringFromElementType(elementType)
+        let childrenString = children.map{ $0.toString() }.joinWithSeparator("")
         return ["\(indent)\(toString())", childrenString].joinWithSeparator("\n")
     }
     
