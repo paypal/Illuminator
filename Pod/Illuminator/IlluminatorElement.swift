@@ -6,93 +6,6 @@
 //
 
 
-let debugStringOfXCUIElementType: [XCUIElementType: String] = [
-    .Other: "Other",
-    .Application: "Application",
-    .ActivityIndicator: "ActivityIndicator",
-    .Alert: "Alert",
-    .Button: "Button",
-    .Browser: "Browser",
-    .Cell: "Cell",
-    .CheckBox: "CheckBox",   //////////
-    .CollectionView: "CollectionView",
-    .ColorWell: "ColorWell",
-    .ComboBox: "ComboBox",   /////
-    .DatePicker: "DatePicker",
-    .DecrementArrow: "DecrementArrow",
-    .Dialog: "Dialog",
-    .DisclosureTriangle: "DisclosureTriangle",
-    .DockItem: "DockItem",
-    .Drawer: "Drawer",
-    .Grid: "Grid",
-    .Group: "Group",
-    .Handle: "Handle",
-    .HelpTag: "HelpTag",
-    .Icon: "Icon",
-    .Image: "Image",
-    .IncrementArrow: "IncrementArrow",
-    .Key: "Key",
-    .Keyboard: "Keyboard",
-    .LayoutArea: "LayoutArea",
-    .LayoutItem: "LayoutItem",
-    .LevelIndicator: "LevelIndicator",
-    .Link: "Link",
-    .Map: "Map",
-    .Matte: "Matte",
-    .Menu: "Menu",
-    .MenuBar: "MenuBar",
-    .MenuBarItem: "MenuBarItem",
-    .MenuButton: "MenuButton",
-    .MenuItem: "MenuItem",
-    .NavigationBar: "NavigationBar",
-    .Outline: "Outline",
-    .OutlineRow: "OutlineRow",
-    .PageIndicator: "PageIndicator",
-    .Picker: "Picker",
-    .PickerWheel: "PickerWheel",
-    .Popover: "Popover",
-    .PopUpButton: "PopUpButton",
-    .ProgressIndicator: "ProgressIndicator",
-    .RadioButton: "RadioButton",
-    .RadioGroup: "RadioGroup",
-    .RatingIndicator: "RatingIndicator",
-    .RelevanceIndicator: "RelevanceIndicator",
-    .Ruler: "Ruler",
-    .RulerMarker: "RulerMarker",
-    .ScrollBar: "ScrollBar",
-    .ScrollView: "ScrollView",
-    .SearchField: "SearchField",
-    .SecureTextField: "SecureTextField",
-    .SegmentedControl: "SegmentedControl",
-    .Sheet: "Sheet",
-    .Slider: "Slider",
-    .SplitGroup: "SplitGroup",
-    .Splitter: "Splitter",
-    .StaticText: "StaticText",
-    .StatusBar: "StatusBar",
-    .Stepper: "Stepper",
-    .Switch: "Switch", /////
-    .Tab: "Tab",
-    .TabBar: "TabBar",
-    .TabGroup: "TabGroup",
-    .Table: "Table",
-    .TableColumn: "TableColumn",
-    .TableRow: "TableRow",
-    .TextField: "TextField",
-    .TextView: "TextView",
-    .Timeline: "Timeline",
-    .Toggle: "Toggle",
-    .Toolbar: "Toolbar",
-    .ToolbarButton: "ToolbarButton",
-    .ValueIndicator: "ValueIndicator",
-    .WebView: "WebView",
-    .Window: "Window"]
-
-let theXCUIElementTypeOfDebugString = debugStringOfXCUIElementType.reduce([String: XCUIElementType]()) { (acc, pair) in
-    var ret = acc
-    ret[pair.1] = pair.0
-    return ret
-}
 
 
 enum AbortIlluminatorTree: ErrorType { // swift3: Error {
@@ -136,7 +49,7 @@ class IlluminatorElement: Equatable {
     }
     
     func toString() -> String {
-        let elementDesc = IlluminatorElement.stringFromElementType(elementType)
+        let elementDesc = elementType.toString()
         return "\(elementDesc) - label: \(label) identifier: \(identifier) value: \(value)"
     }
     
@@ -180,7 +93,7 @@ class IlluminatorElement: Equatable {
         // build return element
         let ret = IlluminatorElement()
         ret.depth        = d
-        ret.elementType  = IlluminatorElement.elementTypeFromString(matches[2])
+        ret.elementType  = XCUIElementType.fromString(matches[2])
         ret.handle       = strtoul(matches[3], nil, 16)
         ret.x            = x
         ret.y            = y
@@ -326,7 +239,7 @@ class IlluminatorElement: Equatable {
         guard elementType != XCUIElementType.Other || index != nil else { return parent }
         guard !isMainWindow else { return parent }
         
-        let prefix = parent + ".\(IlluminatorElement.elementStringFromElementType(elementType))"
+        let prefix = parent + ".\(elementType.toElementString())"
         
         // fall back on numeric index
         guard let idx = index else {
@@ -373,28 +286,6 @@ class IlluminatorElement: Equatable {
         }
     }
     
-    
-    static func elementTypeFromString(_ description: String) -> XCUIElementType {
-        guard let val = theXCUIElementTypeOfDebugString[description] else { return .Other }
-        return val
-    }
-    
-    static func stringFromElementType(_ theType: XCUIElementType) -> String {
-        guard let val = debugStringOfXCUIElementType[theType] else { return "<Unknown \(theType)>" }
-        return val
-    }
-    
-    static func elementStringFromElementType(_ theType: XCUIElementType) -> String {
-        switch (theType) {
-        case .CheckBox: return "checkBoxes"
-        case .ComboBox: return "comboBoxes"
-        case .Switch: return "switches"
-        default:
-            let capSingular = stringFromElementType(theType)
-            let fixedCase = String(capSingular.characters.prefix(1)).lowercaseString + String(capSingular.characters.dropFirst())
-            return "\(fixedCase)s"
-        }
-    }
     
     // return a list of copy-pastable accessors representing elements on the screen
     static func accessorDump(appVarname: String, appDebugDescription: String) -> [String] {
