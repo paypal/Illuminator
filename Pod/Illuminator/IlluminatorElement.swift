@@ -250,10 +250,8 @@ class IlluminatorElement: Equatable {
         let lines = content.componentsSeparatedByString("\n")
         guard lines.count > 0 else { return nil }
         
-        print("regex all elements")
         let elems = lines.map() { (line: String) -> IlluminatorElement? in IlluminatorElement.fromDebugDescriptionLine(line) }
         let actualElems = elems.flatMap{ $0 }
-        print("done")
         
         guard elems.count == actualElems.count else {
             print("Caught a parse error in there somewhere, FIXME find where")
