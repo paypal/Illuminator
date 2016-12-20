@@ -289,9 +289,9 @@ class IlluminatorElement: Equatable {
     
     // return a list of copy-pastable accessors representing elements on the screen
     static func accessorDump(appVarname: String, appDebugDescription: String) -> [String] {
-        let parsedTree = IlluminatorElement.fromDebugDescription(appDebugDescription)
+        guard let parsedTree = IlluminatorElement.fromDebugDescription(appDebugDescription) else { return [] }
         
-        let lines = parsedTree!.reduce([String?]()) { (acc, elem) in
+        let lines = parsedTree.reduce([String?]()) { (acc, elem) in
             let str = elem.toXCUIElementString(appVarname)
             return str == nil ? acc : acc + [str]
         }
