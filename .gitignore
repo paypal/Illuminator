@@ -6,4 +6,4 @@ buildArtifacts/
 !default.xcworkspace
 xcuserdata
 Pods
-
+.bundle
