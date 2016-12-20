@@ -100,7 +100,7 @@ let theXCUIElementTypeOfDebugString = debugStringOfXCUIElementType.reduce([Strin
 
 extension XCUIElementType {
     
-    static func fromString(_ description: String) -> XCUIElementType {
+    static func fromString(description: String) -> XCUIElementType {
         guard let val = theXCUIElementTypeOfDebugString[description] else { return .Other }
         return val
     }

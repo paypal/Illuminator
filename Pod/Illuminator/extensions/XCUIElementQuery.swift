@@ -16,11 +16,11 @@ extension XCUIElementQuery: SequenceType {
     public typealias Generator = AnyGenerator<XCUIElement>
     public func generate() -> Generator {
         var index = UInt(0)
-        return anyGenerator {
+        return AnyGenerator {
             guard index < self.count else { return nil }
             
             let element = self.elementBoundByIndex(index)
-            index++
+            index = index + 1
             return element
         }
     }
