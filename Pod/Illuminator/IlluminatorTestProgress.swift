@@ -9,6 +9,42 @@
 import Foundation
 import XCTest
 
+/*
+ * This protocol allows custom handling of results.  For example, screenshots of failure states or desktop notifications
+ * isPass and isFail can both be false -- it indicates a "Flagging" state.  They are guaranteed to not both be true
+ */
+public protocol IlluminatorTestResultHandler {
+    typealias AbstractStateType
+    func handleTestResult(isPass: Bool, isFail: Bool, state: AbstractStateType?, errorMessages: [String]) -> ()
+}
+
+
+// cheap hack to get a generic protocol
+// https://milen.me/writings/swift-generic-protocols/
+struct IlluminatorTestResultHandlerThunk<T> : IlluminatorTestResultHandler {
+    typealias AbstractStateType = T
+    
+    // closure which will be used to implement `handleTestResult()` as declared in the protocol
+    private let _handleTestResult : (isPass: Bool, isFail: Bool, state: T?, errorMessages: [String]) -> ()
+    
+    // `T` is effectively a handle for `AbstractStateType` in the protocol
+    init<P : IlluminatorTestResultHandler where P.AbstractStateType == T>(_ dep : P) {
+        // requires Swift 2, otherwise create explicit closure
+        _handleTestResult = dep.handleTestResult
+    }
+    
+    func handleTestResult(isPass: Bool, isFail: Bool, state: AbstractStateType?, errorMessages: [String]) -> () {
+        // any protocol methods are implemented by forwarding
+        return _handleTestResult(isPass: isPass, isFail: isFail, state: state, errorMessages: errorMessages)
+    }
+}
+
+
+/*
+ * This enum uses some functional magic to apply a set of device actions to an initial (passing) state.
+ * Each action acts on the current state of the XCUIApplication() and a state variable that may optionally be passed to it
+ * Thus, each action is by itself stateless.
+ */
 @available(iOS 9.0, *)
 public enum IlluminatorTestProgress<T> {
     case Passing(T)
@@ -95,10 +131,20 @@ public enum IlluminatorTestProgress<T> {
         return applyAction(action, checkScreen: false)
     }
     
+    // handle the final result in terms of a test case
+    public func finish<P: IlluminatorTestResultHandler where P.AbstractStateType == T>(handler: P) {
+        let (isPassing, isFailing, state, errorMessages) = normalize()
+        
+        let genericHandler: IlluminatorTestResultHandlerThunk<T> = IlluminatorTestResultHandlerThunk(handler)
+        genericHandler.handleTestResult(isPassing, isFail: isFailing, state: state, errorMessages: errorMessages)
+        
+        // worst case, we handle it ourselves with a default implementation
+        finish()
+    }
+    
     // interpret the final result in terms of a test case
     public func finish() {
         let (isPassing, _, _, errorMessages) = normalize()
-        print(XCUIApplication().debugDescription)
         XCTAssert(isPassing, errorMessages.joinWithSeparator("; "))
     }
     
