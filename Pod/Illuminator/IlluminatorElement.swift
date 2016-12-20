@@ -61,7 +61,7 @@ class IlluminatorElement: Equatable {
     }
     
     // from a line of a debug description, create a standalone element
-    static func fromDebugDescriptionLine(_ content: String) -> IlluminatorElement? {
+    static func fromDebugDescriptionLine(content: String) -> IlluminatorElement? {
         // regex crap
         let fc = "([\\d\\.]+)"        // float capture
         let pc = "\\{\(fc), \(fc)\\}" // pair capture
@@ -155,7 +155,7 @@ class IlluminatorElement: Equatable {
     
     // return a tree of IlluminatorElements from the relevant section of a debugDescription
     // or nil if there is a parse error
-    private static func parseTree(_ content: String) -> IlluminatorElement? {
+    private static func parseTree(content: String) -> IlluminatorElement? {
         let lines = content.componentsSeparatedByString("\n")
         guard lines.count > 0 else { return nil }
         
@@ -180,7 +180,7 @@ class IlluminatorElement: Equatable {
     }
     
     // return a tree of IlluminatorElements from a debugDescription
-    static func fromDebugDescription(_ content: String) -> IlluminatorElement? {
+    static func fromDebugDescription(content: String) -> IlluminatorElement? {
         let outerRE = "\\n([^:]+):\\n( →.+(\\n .*)*)"
         let matches = content.matchingStrings(outerRE)
         let sections = matches.reduce([String: String]()) { dict, matches in
