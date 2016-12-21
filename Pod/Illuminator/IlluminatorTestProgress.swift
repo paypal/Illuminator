@@ -142,12 +142,12 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
 }
 
 // How to assert Illuminator test progress is pass
-public func XCTAssert<T>(progress: IlluminatorTestProgress<T>) {
+public func XCTAssert<T>(progress: IlluminatorTestProgress<T>, file f: StaticString = #file, line l: UInt = #line) {
     switch progress {
     case .Failing(_, let errStrings):
-        XCTAssert(false,  errStrings.joinWithSeparator("; "))
+        XCTFail("Illuminator Failure: \(errStrings.joinWithSeparator("; "))", file: f, line: l)
     case .Flagging(_, let errStrings):
-        XCTAssert(false,  errStrings.joinWithSeparator("; "))
+        XCTFail("Illuminator Deferred Failure: \(errStrings.joinWithSeparator("; "))", file: f, line: l)
     case .Passing:
         return
     }
