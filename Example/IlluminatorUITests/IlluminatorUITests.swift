@@ -71,6 +71,18 @@ class IlluminatorUITests: XCTestCase, IlluminatorTestResultHandler {
             .apply(interface.home.verifyText(myExampleText))
             .finish()
     }
+
+    func test_basicWithIlluminatorCompositeAction() {
+
+        let interface = ExampleTestApp(testCase: self)
+        let initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
+
+        let myExampleText = "test123"
+
+        initialState
+            .apply(interface.home.enterAndVerifyText(myExampleText))
+            .finish(self)
+    }
     
     func test_basicWithIlluminatorAndHandlerProtocol() {
 
