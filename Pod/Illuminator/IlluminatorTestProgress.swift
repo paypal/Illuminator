@@ -125,7 +125,8 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
         return applyAction(action, checkScreen: false)
     }
     
-    // handle the final result in terms of a test case
+    // handle the final result using a protocol-conformant object
+    // then either pass or fail
     public func finish<P: IlluminatorTestResultHandler where P.AbstractStateType == T>(handler: P) {
         let genericHandler: IlluminatorTestResultHandlerThunk<T> = IlluminatorTestResultHandlerThunk(handler)
         genericHandler.handleTestResult(self)
@@ -133,8 +134,15 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
         // worst case, we handle it ourselves with a default implementation
         finish()
     }
+
+    // handle the final result using a passed-in closure 
+    // then either pass or fail
+    public func finish(handler: (IlluminatorTestProgress<T>) -> ()) {
+        handler(self)
+        finish()
+    }
     
-    // interpret the final result in terms of a test case
+    // interpret the final result in XCTest terms.  this will pass or fail
     public func finish() {
         XCTAssert(self)
     }
