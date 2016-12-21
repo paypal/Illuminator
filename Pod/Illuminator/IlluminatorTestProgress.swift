@@ -14,18 +14,18 @@ import XCTest
  * isPass and isFail can both be false -- it indicates a "Flagging" state.  They are guaranteed to not both be true
  */
 public protocol IlluminatorTestResultHandler {
-    associatedtype AbstractStateType
-    func handleTestResult(isPass: Bool, isFail: Bool, state: AbstractStateType?, errorMessages: [String]) -> ()
+    associatedtype AbstractStateType: CustomStringConvertible
+    func handleTestResult(progress: IlluminatorTestProgress<AbstractStateType>) -> ()
 }
 
 
 // cheap hack to get a generic protocol
 // https://milen.me/writings/swift-generic-protocols/
-struct IlluminatorTestResultHandlerThunk<T> : IlluminatorTestResultHandler {
+struct IlluminatorTestResultHandlerThunk<T: CustomStringConvertible> : IlluminatorTestResultHandler {
     typealias AbstractStateType = T
     
     // closure which will be used to implement `handleTestResult()` as declared in the protocol
-    private let _handleTestResult : (isPass: Bool, isFail: Bool, state: T?, errorMessages: [String]) -> ()
+    private let _handleTestResult : (IlluminatorTestProgress<T>) -> ()
     
     // `T` is effectively a handle for `AbstractStateType` in the protocol
     init<P : IlluminatorTestResultHandler where P.AbstractStateType == T>(_ dep : P) {
@@ -33,9 +33,9 @@ struct IlluminatorTestResultHandlerThunk<T> : IlluminatorTestResultHandler {
         _handleTestResult = dep.handleTestResult
     }
     
-    func handleTestResult(isPass: Bool, isFail: Bool, state: AbstractStateType?, errorMessages: [String]) -> () {
+    func handleTestResult(progress: IlluminatorTestProgress<AbstractStateType>) -> () {
         // any protocol methods are implemented by forwarding
-        return _handleTestResult(isPass: isPass, isFail: isFail, state: state, errorMessages: errorMessages)
+        return _handleTestResult(progress)
     }
 }
 
@@ -46,34 +46,28 @@ struct IlluminatorTestResultHandlerThunk<T> : IlluminatorTestResultHandler {
  * Thus, each action is by itself stateless.
  */
 @available(iOS 9.0, *)
-public enum IlluminatorTestProgress<T> {
+public enum IlluminatorTestProgress<T: CustomStringConvertible> {
     case Passing(T)
     case Flagging(T, [String])
-    case Failing([String])
-    
-    // single purpose parsing of enum's state
-    func normalize() -> (isPass: Bool, isFail: Bool, state: T?, errorMessages: [String]) {
-        switch self {
-        case Failing(let errStrings):
-            return (false, true, nil, errStrings)
-        case Flagging(let state, let errStrings):
-            return (false, false, state, errStrings)
-        case Passing(let state):
-            return (true, false, state, [])
-        }
-    }
+    case Failing(T, [String])
     
     // apply an action to a state of progress, returning a new state of progress
     func applyAction(action: IlluminatorActionGeneric<T>, checkScreen: Bool) -> IlluminatorTestProgress<T> {
+        var myState: T!
+        var myErrStrings: [String]!
         
-        let info = normalize()
-        
-        if info.isFail {
-            return .Failing(info.errorMessages)
+        // fall-through fail, or pick up state and strings
+        switch self {
+        case .Failing:
+            return self
+        case .Flagging(let state, let errStrings):
+            myState = state
+            myErrStrings = errStrings
+        case .Passing(let state):
+            myState = state
+            myErrStrings = []
         }
         
-        let myState = info.state!
-        var myErrStrings = info.errorMessages
         
         // check the screen first, because if it fails here then it's a total failure
         if checkScreen {
@@ -82,10 +76,10 @@ public enum IlluminatorTestProgress<T> {
                     try s.becomesActive()
                 } catch IlluminatorExceptions.IncorrectScreen(let message) {
                     myErrStrings.append(message)
-                    return .Failing(myErrStrings)
+                    return .Failing(myState, myErrStrings)
                 } catch let unknownError {
                     myErrStrings.append("Caught error: \(unknownError)")
-                    return .Failing(myErrStrings)
+                    return .Failing(myState, myErrStrings)
                 }
             }
         }
@@ -108,7 +102,7 @@ public enum IlluminatorTestProgress<T> {
             return .Flagging(myState, myErrStrings)
         } catch IlluminatorExceptions.IncorrectScreen(let message) {
             myErrStrings.append(decorate("failed screen check", message))
-            return .Failing(myErrStrings)
+            return .Failing(myState, myErrStrings)
             //} catch IlluminatorExceptions.IndeterminateState(let message) {
             //    myErrStrings.append(decorate("indeterminate state", message))
             //    return .Failing(myErrStrings)
@@ -117,7 +111,7 @@ public enum IlluminatorTestProgress<T> {
             //    return .Failing(myErrStrings)
         } catch let unknownError {
             myErrStrings.append("Caught error: \(unknownError)")
-            return .Failing(myErrStrings)
+            return .Failing(myState, myErrStrings)
         }
     }
     
@@ -133,10 +127,8 @@ public enum IlluminatorTestProgress<T> {
     
     // handle the final result in terms of a test case
     public func finish<P: IlluminatorTestResultHandler where P.AbstractStateType == T>(handler: P) {
-        let (isPassing, isFailing, state, errorMessages) = normalize()
-        
         let genericHandler: IlluminatorTestResultHandlerThunk<T> = IlluminatorTestResultHandlerThunk(handler)
-        genericHandler.handleTestResult(isPassing, isFail: isFailing, state: state, errorMessages: errorMessages)
+        genericHandler.handleTestResult(self)
         
         // worst case, we handle it ourselves with a default implementation
         finish()
@@ -144,8 +136,20 @@ public enum IlluminatorTestProgress<T> {
     
     // interpret the final result in terms of a test case
     public func finish() {
-        let (isPassing, _, _, errorMessages) = normalize()
-        XCTAssert(isPassing, errorMessages.joinWithSeparator("; "))
+        XCTAssert(self)
     }
     
 }
+
+// How to assert Illuminator test progress is pass
+public func XCTAssert<T>(progress: IlluminatorTestProgress<T>) {
+    switch progress {
+    case .Failing(_, let errStrings):
+        XCTAssert(false,  errStrings.joinWithSeparator("; "))
+    case .Flagging(_, let errStrings):
+        XCTAssert(false,  errStrings.joinWithSeparator("; "))
+    case .Passing:
+        return
+    }
+}
+

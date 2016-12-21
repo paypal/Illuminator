@@ -14,16 +14,17 @@ class IlluminatorUITests: XCTestCase, IlluminatorTestResultHandler {
     
     // implement IlluminatorTestResultHandler protocol
     typealias AbstractStateType = AppTestState
-    func handleTestResult(isPass: Bool, isFail: Bool, state: AbstractStateType?, errorMessages: [String]) -> (){
-        // on failure, print out what was on the screen when things failed
-        if isFail {
+    func handleTestResult(progress: IlluminatorTestProgress<AbstractStateType>) -> (){
+
+        switch progress {
+        case .Failing(let state):
+            print("Failing state was \(state)")
+            // on failure, print out what was on the screen when things failed
             for line in IlluminatorElement.accessorDump("app", appDebugDescription: app.debugDescription) {
                 print(line)
             }
-        }
-        
-        if isPass {
-            print("THE RESULT WAS A PASS! but generally we don't do anything for passing tests")
+         default:
+            () // do nothing, fall back on default implementation of finish()
         }
     }
     
