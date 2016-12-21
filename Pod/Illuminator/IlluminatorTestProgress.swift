@@ -14,7 +14,7 @@ import XCTest
  * isPass and isFail can both be false -- it indicates a "Flagging" state.  They are guaranteed to not both be true
  */
 public protocol IlluminatorTestResultHandler {
-    typealias AbstractStateType
+    associatedtype AbstractStateType
     func handleTestResult(isPass: Bool, isFail: Bool, state: AbstractStateType?, errorMessages: [String]) -> ()
 }
 
