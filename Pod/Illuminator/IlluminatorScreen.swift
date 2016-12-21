@@ -69,6 +69,26 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
             return state
         }
     }
+    
+    // shortcut function to make composite actions
+    public func makeAction(firstAction: IlluminatorActionGeneric<T>, secondAction: IlluminatorActionGeneric<T>, label l: String = #function) -> IlluminatorActionGeneric<T> {
+        return makeAction(label: l) { (state: T) in
+            return try secondAction.task(try firstAction.task(state))
+        }
+    }
+    
+    // shortcut function to make composite actions
+    public func makeAction(actions: [IlluminatorActionGeneric<T>], label l: String = #function) -> IlluminatorActionGeneric<T> {
+        // need 2 actions to do anything useful
+        guard actions.count > 0 else {
+            return makeAction() {
+                throw IlluminatorExceptions.DeveloperError(message: "Trying to make a composite Illuminator action from none")
+            }
+        }
+        guard actions.count > 1 else { return actions[0] }
+  
+        return actions.tail.reduce(actions[0]) { makeAction($0, secondAction: $1) }
+    }
 }
 
 // a "normal" screen -- one that may take a moment of animation to appear
