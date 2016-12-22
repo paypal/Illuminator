@@ -14,6 +14,7 @@ public enum IlluminatorExceptions: ErrorType {
     case IncorrectScreen(message: String)     // we're on the wrong screen
     //case IndeterminateState(message: String)  // the saved state doesn't make sense
     //case VerificationFailed(message: String)  // we wanted something that wasn't there
+    case DeveloperError(message: String)      // the writer of the test is using Illuminator incorrectly
 }
 
 public protocol WaitForible: Equatable, CustomStringConvertible {}

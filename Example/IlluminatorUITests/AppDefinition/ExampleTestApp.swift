@@ -21,8 +21,11 @@ import Illuminator
 // Actions can both read and write the state object, or ignore it completely
 //
 // In this example, we just use a simple (named) boolean flag.
-struct AppTestState {
-  var didSomething: Bool
+struct AppTestState: CustomStringConvertible {
+    var didSomething: Bool
+    var description: String {
+        get { return "\(didSomething)" }
+    }
 }
 
 
