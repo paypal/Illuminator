@@ -41,7 +41,6 @@ public func waitForResult <A: WaitForible> (seconds: Double, desired: A, what: S
         // http://stackoverflow.com/a/39743244 refresh hierarchy
         _ = XCUIApplication().navigationBars.count
 
-        print("Waiting for \(what) to become \(desired), \(startTime.timeIntervalSinceNow) of \(seconds) seconds; got \(lastResult)")
     } while (0 - startTime.timeIntervalSinceNow) < seconds
     throw IlluminatorExceptions.IncorrectScreen(
         message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
