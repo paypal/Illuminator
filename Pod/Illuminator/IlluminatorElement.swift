@@ -252,9 +252,9 @@ class IlluminatorElement: Equatable {
             switch numericIndexPair {
             case (.None, _):
                 return "\(prefix).elementAtIndex(-1)"
-            case (.Some(let nidx), 0):
+            case (.Some, 0):
                 return "\(prefix).FAIL()"
-            case (.Some(let nidx), 1):
+            case (.Some, 1):
                 return "\(prefix)"
             case (.Some(let nidx), _):
                 return "\(prefix).elementAtIndex(\(nidx))"
