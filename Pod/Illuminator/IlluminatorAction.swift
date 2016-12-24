@@ -26,6 +26,12 @@ public extension IlluminatorAction {
             return "\(self.dynamicType) \(self.label)"
         }
     }
+
+    var testCase: XCTestCase {
+        get {
+            return testCaseWrapper.testCase
+        }
+    }
 }
 
 

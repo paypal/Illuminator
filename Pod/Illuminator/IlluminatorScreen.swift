@@ -20,6 +20,12 @@ public extension IlluminatorScreen {
     var description: String {
         return "\(self.dynamicType) \(self.label)"
     }
+
+    var testCase: XCTestCase {
+        get {
+            return testCaseWrapper.testCase
+        }
+    }
 }
 
 
