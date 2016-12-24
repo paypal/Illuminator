@@ -42,12 +42,17 @@ class IlluminatorElement: Equatable {
     
     var numericIndex: UInt? {
         get {
-            guard let parent = parent else { return 0 }
-            guard let idx = parent.childrenMatchingType(elementType).indexOf(self) else { return nil }
-            return UInt(idx)
+            return getNumericIndexMembership().0
         }
     }
-    
+
+    func getNumericIndexMembership() -> (UInt?, UInt) {
+        guard let parent = parent else { return (0, 1) }
+        let cohort = parent.childrenMatchingType(elementType)
+        guard let idx = cohort.indexOf(self) else { return (nil, 0) }
+        return (UInt(idx), UInt(cohort.count))
+    }
+
     func toString() -> String {
         let elementDesc = elementType.toString()
         return "\(elementDesc) - label: \(label) identifier: \(identifier) value: \(value)"
@@ -242,11 +247,20 @@ class IlluminatorElement: Equatable {
         
         // fall back on numeric index
         guard let idx = index else {
-            if let nidx = numericIndex {
-                return "\(prefix).elementAtIndex(\(nidx))"
-            } else {
+            let numericIndexPair = getNumericIndexMembership()
+
+            switch numericIndexPair {
+            case (.None, _):
                 return "\(prefix).elementAtIndex(-1)"
+            case (.Some(let nidx), 0):
+                return "\(prefix).FAIL()"
+            case (.Some(let nidx), 1):
+                return "\(prefix)"
+            case (.Some(let nidx), _):
+                return "\(prefix).elementAtIndex(\(nidx))"
+ 
             }
+
         }
 
         return "\(prefix)[\"\(idx)\"]"
