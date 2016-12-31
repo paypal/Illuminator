@@ -23,7 +23,7 @@ public extension IlluminatorAction {
     
     var description: String {
         get {
-            return "\(self.dynamicType) \(self.label)"
+            return label
         }
     }
 
