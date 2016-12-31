@@ -45,7 +45,39 @@ extension XCUIElement {
         
         return result
     }
-    
-    
+
+    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws {
+        repeat {
+            switch direction {
+            case UISwipeGestureRecognizerDirection.Down:
+                swipeDown()
+            case UISwipeGestureRecognizerDirection.Up:
+                swipeUp()
+            case UISwipeGestureRecognizerDirection.Left:
+                swipeLeft()
+            case UISwipeGestureRecognizerDirection.Right:
+                swipeRight()
+            default:
+                ()
+            }
+            if element.inMainWindow { return }
+        } while !giveUpCondition(self, element)
+        throw IlluminatorExceptions.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
+    }
+
+    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws {
+        let startTime = NSDate()
+        try swipeTo(target: element, direction: direction, failMessage: "scrolling for \(seconds) seconds") { (_, _) in
+            return (0 - startTime.timeIntervalSinceNow) < seconds
+        }
+    }
+
+    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, maxSwipes: UInt) throws {
+        var totalSwipes: UInt = 0
+        try swipeTo(target: element, direction: direction, failMessage: "swiping \(maxSwipes) times") { (_, _) in
+            totalSwipes = totalSwipes + 1
+            return totalSwipes > maxSwipes
+        }
+    }
 }
 
