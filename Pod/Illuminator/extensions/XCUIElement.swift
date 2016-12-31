@@ -20,6 +20,22 @@ import XCTest
  point.
  
  */
+
+public struct IlluminatorElementReadiness {
+    var exists: Bool = true
+    var inMainWindow: Bool = true
+    var hittable: Bool = true
+
+    init(exists ex: Bool = true, inMainWindow mw: Bool = true, hittable hit: Bool = true) {
+        exists = ex
+        inMainWindow = mw
+        hittable = hit
+    }
+
+}
+
+let defaultReadiness = IlluminatorElementReadiness(exists: true, inMainWindow: false, hittable: true)
+
 extension XCUIElement {
     
     // best effort
@@ -78,6 +94,59 @@ extension XCUIElement {
             totalSwipes = totalSwipes + 1
             return totalSwipes > maxSwipes
         }
+    }
+
+    // check the rectangle of an element and see if it is in the main window.
+    var inMainWindow: Bool {
+        get {
+            guard exists else { return false }
+            let window = XCUIApplication().windows.elementBoundByIndex(0)
+            return CGRectContainsRect(window.frame, self.frame)
+        }
+    }
+
+    // general purpose function for checking that an element is ready for an action
+    // in order to throw an illuminator error instead of simply XCTFailing with no info
+    func ready(usingCriteria desired: IlluminatorElementReadiness, otherwiseFailWith description: String) throws -> XCUIElement {
+        let failMessage = { (message: String) -> String in "\(description); element not ready: \(message)" }
+        if desired.exists && !exists {
+            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element does not exist"))
+        }
+
+        if desired.inMainWindow && !inMainWindow {
+            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element is not within the bounds of the main window"))
+        }
+
+        if desired.hittable && !hittable {
+            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element is not hittable"))
+        }
+
+        return self
+    }
+
+    func ready(usingCriteria desired: IlluminatorElementReadiness) throws -> XCUIElement {
+        return try ready(usingCriteria: desired, otherwiseFailWith: "Failed readiness check")
+    }
+
+    func ready() throws -> XCUIElement {
+        return try ready(usingCriteria: defaultReadiness)
+    }
+
+    // wait for readiness condition for a given number of seconds; throw or return self
+    func whenReady(usingCriteria desired: IlluminatorElementReadiness, withTimeout seconds: Double) throws -> XCUIElement {
+        try waitForResult(seconds, desired: true, what: "element.ready()") {
+            do {
+                try self.ready(usingCriteria: desired)
+                return true
+            } catch {
+                return false
+            }
+        }
+        return self
+    }
+
+    func whenReady(secondsToWait: Double = 3.0) throws -> XCUIElement {
+        return try whenReady(usingCriteria: defaultReadiness, withTimeout: secondsToWait)
     }
 }
 
