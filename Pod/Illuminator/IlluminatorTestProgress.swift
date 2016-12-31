@@ -50,7 +50,14 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
     case Passing(T)
     case Flagging(T, [String])
     case Failing(T, [String])
-    
+
+    func actionDescription(action: IlluminatorActionGeneric<T>) -> String {
+        guard let screen = action.screen else {
+            return "<screenless> \(action.description)"
+        }
+        return "\(screen.description).\(action.description)"
+    }
+
     // apply an action to a state of progress, returning a new state of progress
     func applyAction(action: IlluminatorActionGeneric<T>, checkScreen: Bool) -> IlluminatorTestProgress<T> {
         var myState: T!
@@ -68,7 +75,8 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
             myErrStrings = []
         }
         
-        
+        print("Applying \(actionDescription(action))")
+
         // check the screen first, because if it fails here then it's a total failure
         if checkScreen {
             if let s = action.screen {
