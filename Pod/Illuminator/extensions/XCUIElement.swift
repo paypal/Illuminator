@@ -8,19 +8,6 @@
 
 import XCTest
 @available(iOS 9.0, *)
-/*
- 
- It should be noted here that all the extensions here are ported from the
- UIAutomation-based Illuminator code written in JavaScript.  Due to
- limitations in XCTest, they are both impractical (descendentsMatchingType
- taking too long) and unworkable (certain element operations directly fail
- tests rather than throw exceptions).
- 
- This code remains here in the hopes that it can be salvaged at some future
- point.
- 
- */
-
 public struct IlluminatorElementReadiness {
     var exists: Bool = true
     var inMainWindow: Bool = true
@@ -39,6 +26,8 @@ let defaultReadiness = IlluminatorElementReadiness(exists: true, inMainWindow: f
 extension XCUIElement {
     
     // best effort
+    // this code was adapted from the original javascript implementation of Illuminator
+    // and it may no longer be relevant.  It is here until we can find a more relevant equality operation
     func equals(e: XCUIElement) -> Bool {
         
         // nonexistent elements can't be equal to anything
