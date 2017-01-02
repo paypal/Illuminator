@@ -24,15 +24,15 @@ class IlluminatorElement: Equatable {
     var elementType: XCUIElementType = .Other    // tie back to automation elements
     var handle: UInt = 0                         // memory address, probably
     var traits: UInt = 0                         // bit flags, probably
-    var x: Double? = nil
-    var y: Double? = nil
-    var w: Double? = nil
-    var h: Double? = nil
+    var x: Double?
+    var y: Double?
+    var w: Double?
+    var h: Double?
     var isMainWindow = false                     // mainWindow is special
-    var label: String? = nil                     // accessibility label
-    var identifier: String? = nil                // accessibility identifier
-    var value: String? = nil                     // field value
-    var placeholderValue: String? = nil          //
+    var label: String?                           // accessibility label
+    var identifier: String?                      // accessibility identifier
+    var value: String?                           // field value
+    var placeholderValue: String?                //
     
     var index: String? {
         get {
