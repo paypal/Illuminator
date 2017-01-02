@@ -8,20 +8,48 @@
 
 import XCTest
 @available(iOS 9.0, *)
-public struct IlluminatorElementReadiness {
-    var exists: Bool = true
-    var inMainWindow: Bool = true
-    var hittable: Bool = true
 
-    init(exists ex: Bool = true, inMainWindow mw: Bool = true, hittable hit: Bool = true) {
-        exists = ex
-        inMainWindow = mw
-        hittable = hit
+
+// string-representable optionset
+// pattern via http://www.swift-studies.com/blog/2015/6/17/exploring-swift-20-optionsettypes
+public struct IlluminatorElementReadiness: OptionSetType, CustomStringConvertible {
+    private enum Readiness: Int, CustomStringConvertible {
+        case Exists       = 1
+        case InMainWindow = 2
+        case Hittable     = 4
+
+        var description : String {
+            var shift = 0
+            while (rawValue >> shift != 1) { shift = shift + 1 } // TODO: probably a better way to do this
+            return ["Exists", "Down", "Hittable"][shift]
+        }
     }
 
+    public  let rawValue: Int
+    public  init(rawValue: Int) { self.rawValue = rawValue}
+    private init(_ readiness: Readiness) { self.rawValue = readiness.rawValue }
+
+    static let Exists        = IlluminatorElementReadiness(Readiness.Exists)
+    static let InMainWindow  = IlluminatorElementReadiness(Readiness.InMainWindow)
+    static let Hittable      = IlluminatorElementReadiness(Readiness.Hittable)
+
+    public var description : String{
+        var result = [String]()
+        var shift = 0
+
+        // TODO: probably a better way to reduce()
+        while let v = Readiness(rawValue: 1 << shift) {
+            shift = shift + 1
+            if self.contains(IlluminatorElementReadiness(v)){
+                result.append("\(v)")
+            }
+        }
+        return "[\(result.joinWithSeparator(","))]"
+    }
 }
 
-let defaultReadiness = IlluminatorElementReadiness(exists: true, inMainWindow: false, hittable: true)
+
+let defaultReadiness: IlluminatorElementReadiness = [.Exists, .Hittable]
 
 extension XCUIElement {
     
@@ -98,15 +126,15 @@ extension XCUIElement {
     // in order to throw an illuminator error instead of simply XCTFailing with no info
     func ready(usingCriteria desired: IlluminatorElementReadiness, otherwiseFailWith description: String) throws -> XCUIElement {
         let failMessage = { (message: String) -> String in "\(description); element not ready: \(message)" }
-        if desired.exists && !exists {
+        if desired.contains(.Exists) && !exists {
             throw IlluminatorExceptions.ElementNotReady(message: failMessage("element does not exist"))
         }
 
-        if desired.inMainWindow && !inMainWindow {
+        if desired.contains(.InMainWindow) && !inMainWindow {
             throw IlluminatorExceptions.ElementNotReady(message: failMessage("element is not within the bounds of the main window"))
         }
 
-        if desired.hittable && !hittable {
+        if desired.contains(.Hittable) && !hittable {
             throw IlluminatorExceptions.ElementNotReady(message: failMessage("element is not hittable"))
         }
 
