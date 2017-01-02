@@ -24,15 +24,15 @@ class IlluminatorElement: Equatable {
     var elementType: XCUIElementType = .Other    // tie back to automation elements
     var handle: UInt = 0                         // memory address, probably
     var traits: UInt = 0                         // bit flags, probably
-    var x = 0.0                                  // coordinates
-    var y = 0.0
-    var w = 0.0
-    var h = 0.0
+    var x: Double?
+    var y: Double?
+    var w: Double?
+    var h: Double?
     var isMainWindow = false                     // mainWindow is special
-    var label: String? = nil                     // accessibility label
-    var identifier: String? = nil                // accessibility identifier
-    var value: String? = nil                     // field value
-    var placeholderValue: String? = nil          //
+    var label: String?                           // accessibility label
+    var identifier: String?                      // accessibility identifier
+    var value: String?                           // field value
+    var placeholderValue: String?                //
     
     var index: String? {
         get {
@@ -42,12 +42,17 @@ class IlluminatorElement: Equatable {
     
     var numericIndex: UInt? {
         get {
-            guard let parent = parent else { return 0 }
-            guard let idx = parent.childrenMatchingType(elementType).indexOf(self) else { return nil }
-            return UInt(idx)
+            return getNumericIndexMembership().0
         }
     }
-    
+
+    func getNumericIndexMembership() -> (UInt?, UInt) {
+        guard let parent = parent else { return (0, 1) }
+        let cohort = parent.childrenMatchingType(elementType)
+        guard let idx = cohort.indexOf(self) else { return (nil, 0) }
+        return (UInt(idx), UInt(cohort.count))
+    }
+
     func toString() -> String {
         let elementDesc = elementType.toString()
         return "\(elementDesc) - label: \(label) identifier: \(identifier) value: \(value)"
@@ -65,7 +70,7 @@ class IlluminatorElement: Equatable {
         // regex crap
         let fc = "([\\d\\.]+)"        // float capture
         let pc = "\\{\(fc), \(fc)\\}" // pair capture
-        let innerRE = "([ →]*)([^\\s]+) 0x([\\dabcdef]+): (.*)?\\{\(pc), \(pc)\\}(, )?(.*)?"
+        let innerRE = "([ →]*)([^\\s]+) 0x([\\dabcdef]+): ([^{]*)?((\\{\(pc), \(pc)\\})?(, )?(.*)?)?"
         
         // safely regex capture
         let safeRegex = { (input: String, regex: String, capture: Int) -> String? in
@@ -77,12 +82,7 @@ class IlluminatorElement: Equatable {
         let safeExtra = { (input: String, label: String) -> String? in safeRegex(input, "\(label): '([^']*)'($|,)", 1) }
         
         // ensure doubles parse
-        guard let matches = content.matchingStrings(innerRE)[safe: 0] where matches.count > 10,
-        let x = Double(matches[safe: 5] ?? ""),
-        let y = Double(matches[safe: 6] ?? ""),
-        let w = Double(matches[safe: 7] ?? ""),
-        let h = Double(matches[safe: 8] ?? "")
-        else {
+        guard let matches = content.matchingStrings(innerRE)[safe: 0] where matches.count > 12 else {
             return nil
         }
         
@@ -95,10 +95,10 @@ class IlluminatorElement: Equatable {
         ret.depth        = d
         ret.elementType  = XCUIElementType.fromString(matches[2])
         ret.handle       = strtoul(matches[3], nil, 16)
-        ret.x            = x
-        ret.y            = y
-        ret.w            = w
-        ret.h            = h
+        ret.x            = Double(matches[safe: 7] ?? "")
+        ret.y            = Double(matches[safe: 8] ?? "")
+        ret.w            = Double(matches[safe: 9] ?? "")
+        ret.h            = Double(matches[safe: 10] ?? "")
         ret.source       = content
         
         let special      = matches[4]
@@ -108,7 +108,7 @@ class IlluminatorElement: Equatable {
             ret.traits = trait
         }
         
-        let extras           = matches[10]
+        let extras           = matches[12]
         ret.label            = safeExtra(extras, "label")
         ret.identifier       = safeExtra(extras, "identifier")
         ret.value            = safeExtra(extras, "value")
@@ -163,7 +163,11 @@ class IlluminatorElement: Equatable {
         let actualElems = elems.flatMap{ $0 }
         
         guard elems.count == actualElems.count else {
-            print("Caught a parse error in there somewhere, FIXME find where")
+            for (i, elem) in elems.enumerate() {
+                if elem == nil {
+                    print("Illuminator BUG while parsing debugDescription line: \(lines[i])")
+                }
+            }
             return nil
         }
         
@@ -243,11 +247,20 @@ class IlluminatorElement: Equatable {
         
         // fall back on numeric index
         guard let idx = index else {
-            if let nidx = numericIndex {
-                return "\(prefix).elementAtIndex(\(nidx))"
-            } else {
+            let numericIndexPair = getNumericIndexMembership()
+
+            switch numericIndexPair {
+            case (.None, _):
                 return "\(prefix).elementAtIndex(-1)"
+            case (.Some, 0):
+                return "\(prefix).FAIL()"
+            case (.Some, 1):
+                return "\(prefix)"
+            case (.Some(let nidx), _):
+                return "\(prefix).elementAtIndex(\(nidx))"
+ 
             }
+
         }
 
         return "\(prefix)[\"\(idx)\"]"

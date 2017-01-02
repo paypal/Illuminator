@@ -18,7 +18,13 @@ public protocol IlluminatorScreen: CustomStringConvertible {
 
 public extension IlluminatorScreen {
     var description: String {
-        return "\(self.dynamicType) \(self.label)"
+        return label
+    }
+
+    var testCase: XCTestCase {
+        get {
+            return testCaseWrapper.testCase
+        }
     }
 }
 

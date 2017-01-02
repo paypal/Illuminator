@@ -10,11 +10,14 @@ import XCTest
 
 
 public enum IlluminatorExceptions: ErrorType {
-    case Warning(message: String)             // non-fatal error; can be deferred. doesn't interrupt flow
-    case IncorrectScreen(message: String)     // we're on the wrong screen
-    //case IndeterminateState(message: String)  // the saved state doesn't make sense
-    //case VerificationFailed(message: String)  // we wanted something that wasn't there
-    case DeveloperError(message: String)      // the writer of the test is using Illuminator incorrectly
+    case Warning(message: String)                   // non-fatal error; can be deferred. doesn't interrupt flow
+    case IncorrectScreen(message: String)           // we're on the wrong screen
+    //case IndeterminateState(message: String)        // the saved state doesn't make sense
+    //case VerificationFailed(message: String)        // we wanted something that wasn't there
+    case DeveloperError(message: String)            // the writer of the test is using Illuminator incorrectly
+    case ElementNotReady(message: String)           // an element failed readiness check
+    case MultipleElementsFound(message: String)     // multiple elements exist
+    case ElementNotFound(message: String)           // no element exists
 }
 
 public protocol WaitForible: Equatable, CustomStringConvertible {}
@@ -37,7 +40,10 @@ public func waitForResult <A: WaitForible> (seconds: Double, desired: A, what: S
     repeat {
         lastResult = getResult()
         if desired == lastResult {return}
-        print("Waiting for \(what) to become \(desired), \(startTime.timeIntervalSinceNow) of \(seconds) seconds; got \(lastResult)")
+        
+        // http://stackoverflow.com/a/39743244 refresh hierarchy
+        _ = XCUIApplication().navigationBars.count
+
     } while (0 - startTime.timeIntervalSinceNow) < seconds
     throw IlluminatorExceptions.IncorrectScreen(
         message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
