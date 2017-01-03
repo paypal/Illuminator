@@ -101,7 +101,7 @@ extension XCUIElement {
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws {
         let startTime = NSDate()
         try swipeTo(target: element, direction: direction, failMessage: "scrolling for \(seconds) seconds") { (_, _) in
-            return (0 - startTime.timeIntervalSinceNow) < seconds
+            return (0 - startTime.timeIntervalSinceNow) > seconds
         }
     }
 
