@@ -30,6 +30,16 @@ extension Bool: WaitForible {
     }
 }
 
+// fix a VERY cryptic error
+// https://bugs.swift.org/browse/SR-2936
+extension String: WaitForible {
+    public var description: String {
+        get {
+            return self
+        }
+    }
+}
+
 
 // guaranteed to run at least once (even if seconds == 0)
 // see http://stackoverflow.com/questions/31300372/uiautomation-and-xctestcase-how-to-wait-for-a-button-to-activate
