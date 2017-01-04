@@ -113,7 +113,11 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
     // By default, we assume that the screen
     override public func becomesActive() throws {
         defer { nextTimeout = screenTimeout }  // reset the timeout after we run
-        try waitForResult(nextTimeout, desired: true, what: "[\(self) isActive]", getResult: { self.isActive })
+        do {
+            try waitForResult(nextTimeout, desired: true, what: "[\(self) isActive]", getResult: { self.isActive })
+        } catch IlluminatorExceptions.VerificationFailed(let message) {
+            throw IlluminatorExceptions.IncorrectScreen(message: message)
+        }
     }
     
     override public func verifyNotActive() -> IlluminatorActionGeneric<T> {
@@ -123,7 +127,7 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
             do {
                 try waitForResult(self.nextTimeout, desired: false, what: "[\(self) isActive]", getResult: { self.isActive })
                 stillActive = false
-            } catch IlluminatorExceptions.IncorrectScreen {
+            } catch IlluminatorExceptions.VerificationFailed {
                 stillActive = true
             }
             
