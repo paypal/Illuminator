@@ -13,7 +13,7 @@ public enum IlluminatorExceptions: ErrorType {
     case Warning(message: String)                   // non-fatal error; can be deferred. doesn't interrupt flow
     case IncorrectScreen(message: String)           // we're on the wrong screen
     //case IndeterminateState(message: String)        // the saved state doesn't make sense
-    //case VerificationFailed(message: String)        // we wanted something that wasn't there
+    case VerificationFailed(message: String)        // we wanted something that wasn't there
     case DeveloperError(message: String)            // the writer of the test is using Illuminator incorrectly
     case ElementNotReady(message: String)           // an element failed readiness check
     case MultipleElementsFound(message: String)     // multiple elements exist
@@ -34,9 +34,9 @@ extension Bool: WaitForible {
 // guaranteed to run at least once (even if seconds == 0)
 // see http://stackoverflow.com/questions/31300372/uiautomation-and-xctestcase-how-to-wait-for-a-button-to-activate
 // and http://stackoverflow.com/questions/31182637/delay-wait-in-a-test-case-of-xcode-ui-testing
-public func waitForResult <A: WaitForible> (seconds: Double, desired: A, what: String, getResult: () -> A) throws {
+public func waitForResult <T: WaitForible> (seconds: Double, desired: T, what: String, getResult: () -> T) throws {
     let startTime = NSDate()
-    var lastResult: A
+    var lastResult: T
     repeat {
         lastResult = getResult()
         if desired == lastResult {return}
@@ -45,6 +45,6 @@ public func waitForResult <A: WaitForible> (seconds: Double, desired: A, what: S
         _ = XCUIApplication().navigationBars.count
 
     } while (0 - startTime.timeIntervalSinceNow) < seconds
-    throw IlluminatorExceptions.IncorrectScreen(
+    throw IlluminatorExceptions.VerificationFailed(
         message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
 }
