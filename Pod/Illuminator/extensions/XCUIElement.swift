@@ -81,6 +81,8 @@ extension XCUIElement {
 
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws {
         repeat {
+            if element.inMainWindow { return }
+
             switch direction {
             case UISwipeGestureRecognizerDirection.Down:
                 swipeDown()
@@ -93,9 +95,11 @@ extension XCUIElement {
             default:
                 ()
             }
-            if element.inMainWindow { return }
         } while !giveUpCondition(self, element)
-        throw IlluminatorExceptions.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
+
+        if !element.inMainWindow {
+            throw IlluminatorExceptions.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
+        }
     }
 
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws {
