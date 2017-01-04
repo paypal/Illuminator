@@ -169,5 +169,11 @@ extension XCUIElement {
     func whenReady(secondsToWait: Double = 3.0) throws -> XCUIElement {
         return try whenReady(usingCriteria: defaultReadiness, withTimeout: secondsToWait)
     }
+
+    public func waitForProperty<T: WaitForible>(seconds: Double, desired: T, getProperty: (XCUIElement) -> T) throws {
+        try waitForResult(seconds, desired: desired, what: "waitForProperty") { () -> T in
+            return getProperty(self)
+        }
+    }
 }
 
