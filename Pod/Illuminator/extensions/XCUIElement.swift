@@ -81,6 +81,8 @@ extension XCUIElement {
 
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws {
         repeat {
+            if element.inMainWindow { return }
+
             switch direction {
             case UISwipeGestureRecognizerDirection.Down:
                 swipeDown()
@@ -93,9 +95,11 @@ extension XCUIElement {
             default:
                 ()
             }
-            if element.inMainWindow { return }
         } while !giveUpCondition(self, element)
-        throw IlluminatorExceptions.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
+
+        if !element.inMainWindow {
+            throw IlluminatorExceptions.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
+        }
     }
 
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws {
@@ -151,19 +155,35 @@ extension XCUIElement {
 
     // wait for readiness condition for a given number of seconds; throw or return self
     func whenReady(usingCriteria desired: IlluminatorElementReadiness, withTimeout seconds: Double) throws -> XCUIElement {
-        try waitForResult(seconds, desired: true, what: "element.ready()") {
-            do {
-                try self.ready(usingCriteria: desired)
-                return true
-            } catch {
-                return false
+        var lastMessage: String? = nil
+        // this flow looks strange, but basically we're working around waitForResult()'s exception -- it throws
+        // VerificationFailed, and we want ElementNotReady
+        do {
+            try waitForProperty(seconds, desired: true) {
+                do {
+                    try $0.ready(usingCriteria: desired)
+                    return true
+                } catch IlluminatorExceptions.ElementNotReady(let message) {
+                    lastMessage = message
+                    return false
+                } catch {
+                    return false
+                }
             }
+            return self
+        } catch IlluminatorExceptions.VerificationFailed(let failMessage) {
+            throw IlluminatorExceptions.ElementNotReady(message: (lastMessage ?? failMessage))
         }
-        return self
     }
 
     func whenReady(secondsToWait: Double = 3.0) throws -> XCUIElement {
         return try whenReady(usingCriteria: defaultReadiness, withTimeout: secondsToWait)
+    }
+
+    public func waitForProperty<T: WaitForible>(seconds: Double, desired: T, getProperty: (XCUIElement) -> T) throws {
+        try waitForResult(seconds, desired: desired, what: "waitForProperty") { () -> T in
+            return getProperty(self)
+        }
     }
 }
 
