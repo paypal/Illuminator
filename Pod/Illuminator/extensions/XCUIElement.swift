@@ -81,7 +81,9 @@ extension XCUIElement {
 
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws {
         repeat {
-            if element.hittable { return }
+            if element.exists {
+                if element.hittable { return }
+            }
 
             switch direction {
             case UISwipeGestureRecognizerDirection.Down:
