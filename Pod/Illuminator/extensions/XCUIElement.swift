@@ -79,10 +79,19 @@ extension XCUIElement {
         return result
     }
 
-    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws {
+    /**
+     Swipe until an element is revealed
+     @param target the element being searched for
+     @param direction the swipe direction (the reverse of the scroll direction)
+     @param failMessage Text to append to the failure message, indicating the exit condition
+     @param giveUpCondition Closure that returns true when the swipe operations should terminate
+     @return the target element
+     @throws IlluminatorExceptions.ElementNotReady If the target is not found
+     */
+    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws -> XCUIElement  {
         repeat {
             if element.exists {
-                if element.hittable { return }
+                if element.hittable { return element }
             }
 
             switch direction {
@@ -102,18 +111,35 @@ extension XCUIElement {
         if !element.inMainWindow {
             throw IlluminatorExceptions.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
         }
+        return element
     }
 
-    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws {
+    /**
+     Swipe until an element is revealed or a timeout is reached
+     @param target the element being searched for
+     @param direction the swipe direction (the reverse of the scroll direction)
+     @param withTimeout the number of seconds to wait before failing
+     @return the target element
+     @throws IlluminatorExceptions.ElementNotReady If the target is not found
+     */
+    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws -> XCUIElement {
         let startTime = NSDate()
-        try swipeTo(target: element, direction: direction, failMessage: "scrolling for \(seconds) seconds") { (_, _) in
+        return try swipeTo(target: element, direction: direction, failMessage: "scrolling for \(seconds) seconds") { (_, _) in
             return (0 - startTime.timeIntervalSinceNow) > seconds
         }
     }
 
-    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, maxSwipes: UInt) throws {
+    /**
+     Swipe until an element is revealed or a timeout is reached
+     @param target the element being searched for
+     @param direction the swipe direction (the reverse of the scroll direction)
+     @param maxSwipes the number of times to swipe before failing
+     @return the target element
+     @throws IlluminatorExceptions.ElementNotReady If the target is not found
+     */
+    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, maxSwipes: UInt) throws -> XCUIElement {
         var totalSwipes: UInt = 0
-        try swipeTo(target: element, direction: direction, failMessage: "swiping \(maxSwipes) times") { (_, _) in
+        return try swipeTo(target: element, direction: direction, failMessage: "swiping \(maxSwipes) times") { (_, _) in
             totalSwipes = totalSwipes + 1
             return totalSwipes > maxSwipes
         }
