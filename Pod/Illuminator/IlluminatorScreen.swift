@@ -167,20 +167,36 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
             nextTimeoutSoft = screenTimeoutSoft
             nextTimeoutHard = screenTimeoutHard
         }
-        
-        let hardTime = NSDate()
-        var softTime = NSDate()
-        repeat {
-            if transientIsActive {
-                softTime = NSDate()
-            } else if isActive {
-                return
+
+        do {
+            // full time if transientIsActive
+            // early fail if !transientIsActive and failed to wait for isActive
+            try waitForResult(nextTimeoutHard, desired: false, what: "[\(self) transientIsActive]") {
+
+                do {
+                    try waitForResult(self.nextTimeoutHard, desired: false, what: "[\(self) transientIsActive]") {
+                        self.transientIsActive
+                    }
+                    try waitForResult(self.nextTimeoutSoft, desired: true, what: "[\(self) isActive]") {
+                        self.isActive
+                    }
+                } catch IlluminatorExceptions.VerificationFailed {
+                    // dont worry about it; if transient is active, we go around again
+                    // if transient is not active,
+                } catch {
+                    print("Please report this IlluminatorScreenWithTransient becomesActive error! \(error)")
+                }
+                
+                return self.transientIsActive
             }
-        } while hardTime.timeIntervalSinceNow < nextTimeoutHard && softTime.timeIntervalSinceNow < nextTimeoutSoft
-        
-        let msg = "[\(self) becomesActive] failed "
-        throw IlluminatorExceptions.IncorrectScreen(
-            message: msg + ((hardTime.timeIntervalSinceNow > nextTimeoutHard) ? "hard" : "soft") + " timeout")
+        } catch IlluminatorExceptions.VerificationFailed {
+            throw IlluminatorExceptions.IncorrectScreen(message: "\(self) failed to become active (and transient inactive) before hard timeout \(nextTimeoutHard)")
+        }
+
+
+        if !isActive {
+            throw IlluminatorExceptions.IncorrectScreen(message: "\(self) failed to become active (after transient inactive) before soft timeout \(nextTimeoutSoft)")
+        }
     }
     
     override public func verifyNotActive() -> IlluminatorActionGeneric<T> {
@@ -195,8 +211,7 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
                 } else if !self.isActive {
                     return state
                 }
-            } while hardTime.timeIntervalSinceNow < self.nextTimeoutHard && softTime.timeIntervalSinceNow < self.nextTimeoutSoft
-            
+            } while (0 - hardTime.timeIntervalSinceNow) < self.nextTimeoutHard && (0 - softTime.timeIntervalSinceNow) < self.nextTimeoutSoft
             
             if self.isActive {
                 throw IlluminatorExceptions.IncorrectScreen(message: "\(self) failed to become inactive")
