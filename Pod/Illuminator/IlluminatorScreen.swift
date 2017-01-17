@@ -149,15 +149,12 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
     var nextTimeoutHard: Double
     
     
-    public init (testCaseWrapper: IlluminatorTestcaseWrapper,
-                 label: String,
-                 screenTimeoutSoft timeoutSoft: Double,
-                                   screenTimeoutHard timeoutHard: Double) {
+    public init (label labelVal: String, testCaseWrapper t: IlluminatorTestcaseWrapper,                                       screenTimeoutSoft timeoutSoft: Double, screenTimeoutHard timeoutHard: Double) {
         screenTimeoutSoft = timeoutSoft
         screenTimeoutHard = timeoutHard
         nextTimeoutSoft = screenTimeoutSoft
         nextTimeoutHard = screenTimeoutHard
-        super.init(label: label, testCaseWrapper: testCaseWrapper)
+        super.init(label: labelVal, testCaseWrapper: t)
     }
     
     // To be overridden by the extender of the class
