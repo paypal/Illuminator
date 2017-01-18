@@ -208,10 +208,34 @@ extension XCUIElement {
         return try whenReady(usingCriteria: defaultReadiness, withTimeout: secondsToWait)
     }
 
-    public func waitForProperty<T: WaitForible>(seconds: Double, desired: T, getProperty: (XCUIElement) -> T) throws {
+    /**
+     Wait until an element property reaches a specific value or a timeout is reached
+     @param seconds the time to wait
+     @param desired the desired value
+     @param getProperty a closure that returns the property, given the element
+     @return the element
+     @throws IlluminatorExceptions.VerificationFailed If the property fails to attains the value
+     */
+    public func waitForProperty<T: WaitForible>(seconds: Double, desired: T, getProperty: (XCUIElement) -> T) throws -> XCUIElement {
         try waitForResult(seconds, desired: desired, what: "waitForProperty") { () -> T in
             return getProperty(self)
         }
+        return self
+    }
+
+    /**
+     Assert an element property
+     @param desired the desired value
+     @param getProperty a closure that returns the property, given the element
+     @return the element
+     @throws IlluminatorExceptions.VerificationFailed If the property fails to attains the value
+     */
+    public func assertProperty<T: WaitForible>(desired: T, getProperty: (XCUIElement) -> T) throws -> XCUIElement {
+        let actual = getProperty(self)
+        if desired != actual {
+            throw IlluminatorExceptions.VerificationFailed(message: "Expected property to be '\(desired)', got '\(actual)'")
+         }
+        return self
     }
 }
 
