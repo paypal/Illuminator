@@ -61,6 +61,16 @@ public func 〚 (query: XCUIElementQuery, index: WhiteBracketIndex) -> [XCUIElem
 
 
 extension XCUIElementQuery {
+    
+    /**
+        Return all elements matching a subscript
+     
+        This works around an Apple problem where elements cannot be accessed if "multiple matches exist" (causing tests to immediately fail)
+
+        - Parameters:
+            - label: the accessibilty label to use as a subscript
+        - Returns: all elements matching the label
+     */
     func subscriptsMatching(label: String) -> [XCUIElement] {
         return self.allElementsBoundByAccessibilityElement.reduce([XCUIElement]()) { (acc, elem) in
             print("Checking \(elem) (\(elem.elementType)): \(elem.label)")
@@ -71,7 +81,15 @@ extension XCUIElementQuery {
         }
     }
 
-    // Do a subscript operation, but fail immediately unless the subscript returns one and only one match
+    /**
+         Do a subscript operation, but throw an exception immediately unless the subscript returns one and only one match
+
+         This works around an Apple problem where elements cannot be accessed if "multiple matches exist" (causing tests to immediately fail).  Instead of failing, we throw a catchable exception
+
+         - Parameters:
+            - index: the accessibilty label to use as a subscript
+         - Returns: all elements matching the label
+     */
     func hardSubscript(index: String) throws -> XCUIElement {
         let matchingElements = allElementsBoundByAccessibilityElement.reduce(0) { (acc, elem) in
             guard elem.label == index else { return acc }

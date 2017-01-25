@@ -9,9 +9,8 @@
 import Foundation
 import XCTest
 
-/*
- * This protocol allows custom handling of results.  For example, screenshots of failure states or desktop notifications
- * isPass and isFail can both be false -- it indicates a "Flagging" state.  They are guaranteed to not both be true
+/**
+    This protocol allows custom handling of results.  For example, screenshots of failure states or desktop notifications
  */
 public protocol IlluminatorTestResultHandler {
     associatedtype AbstractStateType: CustomStringConvertible
@@ -19,8 +18,11 @@ public protocol IlluminatorTestResultHandler {
 }
 
 
-// cheap hack to get a generic protocol
-// https://milen.me/writings/swift-generic-protocols/
+/**
+    This struct is a cheap hack to get a generic protocol
+
+    https://milen.me/writings/swift-generic-protocols/
+ */
 struct IlluminatorTestResultHandlerThunk<T: CustomStringConvertible> : IlluminatorTestResultHandler {
     typealias AbstractStateType = T
     
@@ -40,10 +42,10 @@ struct IlluminatorTestResultHandlerThunk<T: CustomStringConvertible> : Illuminat
 }
 
 
-/*
- * This enum uses some functional magic to apply a set of device actions to an initial (passing) state.
- * Each action acts on the current state of the XCUIApplication() and a state variable that may optionally be passed to it
- * Thus, each action is by itself stateless.
+/**
+    This enum uses a functional technique to apply a set of device actions to an initial (passing) state.
+
+    Each action acts on the current state of the XCUIApplication() and a state variable that may optionally be passed to it.  Thus, each action is by itself stateless.
  */
 @available(iOS 9.0, *)
 public enum IlluminatorTestProgress<T: CustomStringConvertible> {
@@ -51,6 +53,13 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
     case Flagging(T, [String])
     case Failing(T, [String])
 
+    /**
+        A description of an action, with the screen if that exists
+
+        - Parameters:
+            - action: the action to render
+        - Returns: The description
+     */
     func actionDescription(action: IlluminatorActionGeneric<T>) -> String {
         guard let screen = action.screen else {
             return "<screenless> \(action.description)"
@@ -58,7 +67,14 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
         return "\(screen.description).\(action.description)"
     }
 
-    // apply an action to a state of progress, returning a new state of progress
+    /**
+        Apply an action to a state of progress, returning a new state of progress
+        
+        - Parameters:
+            - action: The action to apply
+            - checkScreen: whether to assert that the action's screen is active
+        - Returns: A new test progress state, according to the result of the action
+     */
     func applyAction(action: IlluminatorActionGeneric<T>, checkScreen: Bool) -> IlluminatorTestProgress<T> {
         var myState: T!
         var myErrStrings: [String]!
@@ -123,18 +139,38 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
         }
     }
     
-    // apply an action, checking the screen first
+    /**
+        Apply an action after asserting that its screen is active
+
+        Note that a failure to apply an action may not result in a test failure unless the `.finish()` function is called.
+
+        - Parameters:
+            - action: The action to apply
+        - Returns: The progress state as a result of the action
+     */
     public func apply(action: IlluminatorActionGeneric<T>) -> IlluminatorTestProgress<T> {
         return applyAction(action, checkScreen: true)
     }
     
-    // apply an action, without checking the screen first
+    /**
+        Apply an action without asserting that its screen is active
+
+        Note that a failure to apply an action may not result in a test failure unless the `.finish()` function is called.
+
+        - Parameters:
+            - action: The action to apply
+        - Returns: The progress state as a result of the action
+     */
     public func blindly(action: IlluminatorActionGeneric<T>) -> IlluminatorTestProgress<T> {
         return applyAction(action, checkScreen: false)
     }
     
-    // handle the final result using a protocol-conformant object
-    // then either pass or fail
+    /**
+        Handle the final test result using a protocol-conformant object, then pass or fail as appropriate
+
+        - Parameters:
+            - handler: The protocol-conformant object that will handle the test result
+     */
     public func finish<P: IlluminatorTestResultHandler where P.AbstractStateType == T>(handler: P) {
         let genericHandler: IlluminatorTestResultHandlerThunk<T> = IlluminatorTestResultHandlerThunk(handler)
         genericHandler.handleTestResult(self)
@@ -143,21 +179,35 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
         finish()
     }
 
-    // handle the final result using a passed-in closure 
-    // then either pass or fail
+    /**
+        Handle the final test result using a closure, then pass or fail as appropriate
+
+        - Parameters:
+            - handler: The closure that will handle the test result
+     */
     public func finish(handler: (IlluminatorTestProgress<T>) -> ()) {
         handler(self)
         finish()
     }
     
-    // interpret the final result in XCTest terms.  this will pass or fail
+    /**
+        Interpret the final result in XCTest terms -- triggering a test failure if appropriate
+     */
     public func finish() {
+        // We have overloaded XCTAssert specifically to be able to do this
         XCTAssert(self)
     }
     
 }
 
-// How to assert Illuminator test progress is pass
+/**
+    Interpret Illuminator test progress as either passing or failing
+
+    - Parameters:
+        - progress: The state of an Illuminator test
+        - file: The file in which the test may have failed
+        - line: The line on which the test may have failed
+ */
 public func XCTAssert<T>(progress: IlluminatorTestProgress<T>, file f: StaticString = #file, line l: UInt = #line) {
     switch progress {
     case .Failing(_, let errStrings):

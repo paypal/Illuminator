@@ -8,6 +8,9 @@
 
 import XCTest
 
+/**
+    Illuminator applications are a logical grouping for Illuminator screens
+ */
 public protocol IlluminatorApplication: CustomStringConvertible {
     var testCaseWrapper: IlluminatorTestcaseWrapper { get }
     //var app: XCUIApplication { get }
@@ -15,7 +18,11 @@ public protocol IlluminatorApplication: CustomStringConvertible {
 }
 
 public extension IlluminatorApplication {
+    /**
+        CustomStringConvertible implementation
+        - Returns: The application's name (label)
+     */
     var description: String {
-        return "\(self.dynamicType) \(self.label)"
+        return label
     }
 }
