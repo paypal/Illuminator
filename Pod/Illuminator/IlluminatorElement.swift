@@ -7,7 +7,9 @@
 
 
 
-
+/**
+    These errors control the parsing behavior to generate the element tree
+ */
 enum AbortIlluminatorTree: ErrorType { // swift3: Error {
     case backtrack(data: IlluminatorElement?)
     case eof()
@@ -15,7 +17,11 @@ enum AbortIlluminatorTree: ErrorType { // swift3: Error {
     case doubleDepth(badLine: String)
 }
 
-
+/**
+    An IlluminatorElement is a workaround for the shortcomings of XCUIElement -- namely, the ability to inspect an element and its children without causing a test failure or taking the better part of 3 hours to recursively (and safely) check the descendants of the root element.
+ 
+    Author's note: this functionality has become consistently harder to supply as Apple continues to update its automation system.  It currently relies on the format of `.debugDescription`, which the Apple documentation says not to do.  The day Apple releases code that can supply the Illuminator equivalent of `.dumpAccessors()`, this class can disappear.
+ */
 class IlluminatorElement: Equatable {
     var source = ""                              // input data
     var depth = 0                                // interpretation of whitespace
@@ -33,19 +39,31 @@ class IlluminatorElement: Equatable {
     var identifier: String?                      // accessibility identifier
     var value: String?                           // field value
     var placeholderValue: String?                //
-    
+
+    /**
+        A UI element is indexed by its label, but that is overridden by its identifier
+        - Returns: the most appropriate indexing string for the element
+     */
     var index: String? {
         get {
             return identifier ?? label
         }
     }
     
+    /**
+        The numeric index for this element, as if the element is bound by a numeric index
+        - Returns: the best guess for the element's numeric index within its parent collection
+     */
     var numericIndex: UInt? {
         get {
             return getNumericIndexMembership().0
         }
     }
 
+    /**
+        The numeric index for this element, as if the element is bound by a numeric index
+        - Returns: A pair: index of this element, and the total number of elements
+     */
     func getNumericIndexMembership() -> (UInt?, UInt) {
         guard let parent = parent else { return (0, 1) }
         let cohort = parent.childrenMatchingType(elementType)
@@ -53,11 +71,17 @@ class IlluminatorElement: Equatable {
         return (UInt(idx), UInt(cohort.count))
     }
 
+    /**
+        - Returns: A short summary of the most relevant element information
+     */
     func toString() -> String {
         let elementDesc = elementType.toString()
         return "\(elementDesc) - label: \(label) identifier: \(identifier) value: \(value)"
     }
     
+    /**
+        - Returns: An indented multiline summary of the most relevant element information, and its children
+     */
     func treeToString() -> String {
         // swift3 let indent = String(repeating: " ", count: depth)
         let indent = String(count: depth, repeatedValue: Character(" "))
@@ -65,7 +89,12 @@ class IlluminatorElement: Equatable {
         return ["\(indent)\(toString())", childrenString].joinWithSeparator("\n")
     }
     
-    // from a line of a debug description, create a standalone element
+    /**
+        Create an IlluminatorElement from its debug description
+        - Parameters:
+            - content: one line of `debugDescription` describing an element
+        - Returns: An IlluminatorElement, or nil if the parsing fails
+     */
     static func fromDebugDescriptionLine(content: String) -> IlluminatorElement? {
         // regex crap
         let fc = "([\\d\\.]+)"        // float capture
@@ -117,6 +146,16 @@ class IlluminatorElement: Equatable {
         return ret
     }
     
+    /**
+        Create an IlluminatorElement and its children from the lines of the debug description
+        - Parameters:
+            - parent: The element that is assumed to be the direct ancestor of the current line
+            - source: the remaining (un-parsed) lines of `debugDescription`
+        - Returns: An IlluminatorElement representing all the information in `source`
+        - Throws: `AbortIlluminatorTree.parseError` if the element fails ot parse
+        - Throws: `AbortIlluminatorTree.backtrack` if the element cannot be the child of the supplied parent
+        - Throws: `AbortIlluminatorTree.eof` if there are no more lines to parse
+     */
     private static func parseTreeHelper(parent: IlluminatorElement?, source: [String]) throws -> IlluminatorElement {
         guard let line = source.first else { throw AbortIlluminatorTree.eof() }
         
@@ -153,8 +192,13 @@ class IlluminatorElement: Equatable {
         return elem
     }
     
-    // return a tree of IlluminatorElements from the relevant section of a debugDescription
-    // or nil if there is a parse error
+    /**
+        Create a tree of IlluminatorElements from the relevant section of a debugDescription
+
+        - Parameters:
+            - content: the section of `debugDescription` related to the element tree
+        - Returns: An IlluminatorElement representing all the information in `content`, or nil
+     */
     private static func parseTree(content: String) -> IlluminatorElement? {
         let lines = content.componentsSeparatedByString("\n")
         guard lines.count > 0 else { return nil }
@@ -183,7 +227,13 @@ class IlluminatorElement: Equatable {
         return nil
     }
     
-    // return a tree of IlluminatorElements from a debugDescription
+    /**
+        Create a tree of IlluminatorElements from a debugDescription
+
+        - Parameters:
+            - content: the unadulterated `debugDescription` of an XCUIElement
+        - Returns: An IlluminatorElement representing the tree information in `content`, or nil
+     */
     static func fromDebugDescription(content: String) -> IlluminatorElement? {
         let outerRE = "\\n([^:]+):\\n( →.+(\\n .*)*)"
         let matches = content.matchingStrings(outerRE)
@@ -196,7 +246,13 @@ class IlluminatorElement: Equatable {
         return parseTree(section)
     }
     
-    // given a chain of elements and a top level app, get the tail element
+    /**
+        Convert an IlluminatorElement to an XCUIElement
+        - Parameters:
+            - acc: a chain of elements, topmost-first
+            - app: the XCUIApplication representing the known root
+        - Returns: The XCUIElement representing this element
+     */
     private func toXCUIElementHelper(acc: [IlluminatorElement], app: XCUIApplication) -> XCUIElement {
         
         let finish = { (top: XCUIElement) in
@@ -211,17 +267,33 @@ class IlluminatorElement: Equatable {
         return parent.toXCUIElementHelper([self] + acc, app: app)
     }
     
-    // given the parent element, get this element
+    /**
+        Convert an IlluminatorElement to an XCUIElement by indexing the parent XCUIElement with this IlluminatorElement's information
+        - Parameters:
+            - parent: a chain of elements, topmost-first
+        - Returns: The XCUIElement represented by this element
+     */
     func toXCUIElementWith(parent p: XCUIElement) -> XCUIElement {
         return p.childrenMatchingType(elementType)[index ?? ""]
     }
     
-    // given the app, work out the full reference to this element
+    /**
+        Convert an IlluminatorElement to an XCUIElement by traversing up the tree until the XCUIApplication is reached, then derererencing back down
+        - Parameters:
+            - app: the actual application
+        - Returns: The XCUIElement represented by this element
+     */
     func toXCUIElement(app: XCUIApplication) -> XCUIElement {
         return toXCUIElementHelper([], app: app)
     }
     
-    // recursively find the toplevel then construct a string
+    /**
+        Get a swift expression (as string) that could be used to get the XCUIElement represented by this element
+        - Parameters:
+            - acc: a chain of elements, topmost-first
+            - appString: the string representing the known root
+        - Returns: A copy-pastable swift expression representing this element
+     */
     private func toXCUIElementStringHelper(acc: [IlluminatorElement], appString: String) -> String? {
         let finish = { (top: String) -> String? in
             guard let last = acc.last else { return appString }
@@ -238,7 +310,13 @@ class IlluminatorElement: Equatable {
         return parent.toXCUIElementStringHelper([self] + acc, appString: appString)
     }
     
-    // given the parent element, get the string that comes from this element
+    /**
+        Get a swift expression (as string) that could be used to get the XCUIElement represented by this element by appending this IlluminatorElement's information to the expression for the parent element
+        - Parameters:
+            - parent: the string representing the parent element
+        - Returns: A copy-pastable swift expression representing this element
+
+     */
     func toXCUIElementStringWith(parent: String) -> String {
         guard elementType != XCUIElementType.Other || index != nil else { return parent }
         guard !isMainWindow else { return parent }
@@ -266,12 +344,22 @@ class IlluminatorElement: Equatable {
         return "\(prefix)[\"\(idx)\"]"
     }
     
-    // given the app string, work out the full string representing this element
+    /**
+        Get a swift expression (as string) that could be used to get the XCUIElement represented by this element
+        - Parameters:
+            - appString: the string representing the known root
+        - Returns: A copy-pastable swift expression representing this element
+     */
     func toXCUIElementString(appString: String) -> String? {
         return toXCUIElementStringHelper([], appString: appString)
     }
     
-    // get a dictionary of label -> element for the children
+    /**
+        Get all children of this element, of the given type
+        - Parameters:
+            - elementType: the specific type of element to index
+        - Returns: An array of elements indexed numerically
+     */
     func childrenMatchingType(elementType: XCUIElementType) -> [IlluminatorElement] {
         
         return children.reduce([IlluminatorElement]()) { arr, elem in
@@ -281,7 +369,13 @@ class IlluminatorElement: Equatable {
             return ret
         }
     }
-    // get a dictionary of label -> element for the children
+
+    /**
+        Get the labeled children of this element, indexed by their label
+        - Parameters:
+            - elementType: the specific type of element to index
+        - Returns: A dictionary of elements indexed by their label
+     */
     func childrenMatchingTypeDict(elementType: XCUIElementType) -> [String: IlluminatorElement] {
         
         return children.reduce([String: IlluminatorElement]()) { dict, elem in
@@ -293,6 +387,17 @@ class IlluminatorElement: Equatable {
         }
     }
     
+    /**
+        Returns the result of repeatedly calling `nextPartialResult` with an
+        accumulated value initialized to `initialResult` and each element of
+        a depth-first search of `self`, in turn, i.e. return
+        `nextPartialResult(nextPartialResult(...nextPartialResult(nextPartialResult(initialResult, root),
+        child1),...child_n_minus_1), child_n)`.
+        - Parameters:
+             - initialResult: the specific type of element to index
+             - nextPartialResult: a closure that takes the latest initialResult and a tree element, returning a result
+        - Returns: The final result
+     */
     func reduce<T>(initialResult: T, nextPartialResult: (T, IlluminatorElement) throws -> T) rethrows -> T {
         return try children.reduce(nextPartialResult(initialResult, self)) { (acc, nextElem) in
             return try nextElem.reduce(acc, nextPartialResult: nextPartialResult)
@@ -300,7 +405,16 @@ class IlluminatorElement: Equatable {
     }
     
     
-    // return a list of copy-pastable accessors representing elements on the screen
+    /**
+        Get a list of swift expressions (as strings) that could be used to get the XCUIElements currently shown in the app hierarchy
+
+        These strings are meant to be copy-pastable into test code
+     
+        - Parameters:
+            - appVarname: Whatever the variable representing the XCUIApplication is called in code (e.g. `self.app` or `XCUIApplication()`
+            - appDebugDescription: the `debugDescription` string to parse
+        - Returns: A list of copy-pastable swift expressions for XCUIElements
+     */
     static func accessorDump(appVarname: String, appDebugDescription: String) -> [String] {
         guard let parsedTree = IlluminatorElement.fromDebugDescription(appDebugDescription) else { return [] }
         
