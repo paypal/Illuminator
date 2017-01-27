@@ -1,7 +1,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "Illuminator"
-  s.version          = "1.0.0"
+  s.version          = "0.9.0"
   s.summary          = "ILLUMINATOR - the iOS Automator"
   s.description      = <<-DESC
                          Illuminator enables continuous integration for iOS apps.
