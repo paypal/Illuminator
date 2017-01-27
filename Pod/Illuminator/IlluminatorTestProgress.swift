@@ -43,12 +43,13 @@ struct IlluminatorTestResultHandlerThunk<T: CustomStringConvertible> : Illuminat
 
 
 /**
-    This enum uses a functional technique to apply a set of device actions to an initial (passing) state.
+    IllumintorTestProgress is a composite state.  It contains the app test state (any stateful data that must be shared between test steps), and the state of the test itself (passing, failing, or flagging).
+ 
+    This enum uses a functional technique to apply an IlluminatorAction to an given state, returning a new state.  These applciations are designed to chain together.
 
-    Each action acts on the current state of the XCUIApplication() and a state variable that may optionally be passed to it.  Thus, each action is by itself stateless.
  */
 @available(iOS 9.0, *)
-public enum IlluminatorTestProgress<T: CustomStringConvertible> {
+public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringConvertible {
     case Passing(T)
     case Flagging(T, [String])
     case Failing(T, [String])
@@ -197,7 +198,24 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
         // We have overloaded XCTAssert specifically to be able to do this
         XCTAssert(self)
     }
-    
+
+    /**
+        CustomStringConvertible implementation
+        - Returns: A summary of the composite (test & app) state
+     */
+    public var description: String {
+        get {
+            switch self {
+            case .Failing(let state, let messages):
+                return "Failing: \(messages); App state: \(state)"
+            case .Flagging(let state, let messages):
+                return "Flagging: \(messages); App state: \(state)"
+            case .Passing(let state):
+                return "Passing; App state: \(state)"
+            }
+        }
+    }
+
 }
 
 /**
