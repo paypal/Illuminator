@@ -147,3 +147,110 @@ try app.buttons.hardSubscript("Delete").tap()   // Good
 
 try app.buttons⁅"Delete"⁆.tap()                 // Experimental unicode operator
 ```
+
+
+# Best Practices
+
+## Make Screens Atomic
+
+If a particular user interaction spans a change of screens, break that into separate actions on separate screens.  The most common blunder here is considering a modal to be the same "screen" as the page it obscures.
+
+For example:
+
+```swift
+// snip from what might be an "account" screen
+
+public override var isActive: Bool {
+    return app.navigationBars["Account"].exists
+}
+
+func logIn(username: String, password: String) -> IlluminatorActionGeneric<AppTestState> {
+    return makeAction() {
+        app.buttons["Log in"].tap()                    // trigger the login modal
+        sleep(1)                                       // THIS IS BAD
+        app.textFields["Username"].typeText(username)  // THIS IS A NEW SCREEN
+        app.textFields["Password"].typeText(password)
+        app.buttons["Submit credentials"].tap()
+    }
+}
+```
+
+### What to Do Instead
+
+Split this action into two separate screens.  First, the Account screen:
+
+```swift
+public override var isActive: Bool {
+    return app.navigationBars["Account"].exists
+}
+
+func openLoginModal() -> IlluminatorActionGeneric<AppTestState> {
+    return makeAction() {
+        try app.buttons["Log in"].ready().tap()
+    }
+}
+```
+
+Next, the modal screen:
+
+```swift
+public override var isActive: Bool {
+    return app.buttons["Submit credentials"].exists
+}
+
+func logIn(username: String, password: String) -> IlluminatorActionGeneric<AppTestState> {
+    return makeAction() {
+        try app.textFields["Username"].ready().typeText(username)
+        app.textFields["Password"].typeText(password)
+        app.buttons["Submit credentials"].tap()
+    }
+}
+```
+
+
+## Use Protocol Extensions to Provide Common functions
+
+Consider the case where you have the same tab bar of navigational elements on several screens.  Rather than making a base screen that the others inherit from, it's easier (and necessary, just in case you'd run into multiple inheritance problems) to define a protocol extension for screens, that supply the extra features.
+
+```swift
+protocol TabBarScreen {
+    var app: XCUIApplication { get }
+    var testCaseWrapper: IlluminatorTestcaseWrapper { get }
+    func makeAction(label l: String, task: () throws -> ()) -> IlluminatorActionGeneric<AppTestState>
+}
+
+extension TabBarScreen {
+    // The tab bar should be able to assert its own existence
+    var tabBarIsActive: Bool {
+        get {
+            return app.tabBars.elementBoundByIndex(0).exists
+        }
+    }
+    
+    func toHome() -> IlluminatorActionGeneric<AppTestState> {
+        return makeAction(label: #function) {
+            try self.app.tabBars.buttons["Home"].whenReady(3).tap()
+        }
+    }
+}
+```
+
+
+Adding tab bar functionality to a screen is now as simple as marking it with the protocol.
+
+```swift
+public class HomeScreen: IlluminatorDelayedScreen<AppTestState>, SearchFieldScreen, TabBarScreen {
+    // consider the tab bar in whether the screen is active
+    public override var isActive: Bool {
+        guard tabBarIsActive else       { return false }
+        guard searchScreenIsActive else { return false }
+        return app.navigationBars["Home"].exists
+    }
+```
+
+# Common Pitfalls
+
+### "I watched my app fail, but the test passed"
+
+Make sure that your `IlluminatorTestProgress` variable calls `.finish()`, otherwise `XCFail()` will never trigger.
+
