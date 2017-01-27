@@ -11,7 +11,11 @@ import XCTest
 /**
     Illuminator Actions are discrete chunks of UI interaction that can be scripted into more sophisticated tests.
  
-    Actions rely on a state, whose type may be specific to the application.  This state supplies information that might be relevant to the UI action (which is otherwise stateless).
+    Actions (part of screens, which are part of the app) don't contain state; they simply act, and either succeed or fail in doing so.  In the rare case where stateful information is required by an action, Illuminator provides the AbstractStateType (essentially, a generic) to contain and convey this information to subsequent actions.
+
+    Actions can both read and write the test state object, or ignore it completely.  In the vast majority of cases, they will ignore it; the test writer should be able to supply nearly all expected values for the test to verify.  One notable exception would be functions that depend on a random seed -- the seed would be part of the test state.  Another would be a test of a stopwatch function, in which the timestamp of taapping the "start" button might be saved in order to properly verify the correctness of the elapsed time.
+
+    Actions rely on a test state, whose type is generic -- specific to the application.  This state supplies information that might be relevant to the UI action (which is otherwise stateless).
 
     - they have a function that takes state (absctract type) and returns state, throws
     - they are created from blocks within the screen defintion -- they contain a ref to the screen
