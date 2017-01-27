@@ -40,6 +40,13 @@ class HomeScreen: IlluminatorDelayedScreen<AppTestState> {
         }
     }
 
+    func doSomething(thing: Bool) -> IlluminatorActionGeneric<AppTestState> {
+        return makeAction() { (state: AppTestState) in
+            let newState = AppTestState(didSomething: thing)
+            return newState
+        }
+    }
+
     func enterAndVerifyText(what: String) -> IlluminatorActionGeneric<AppTestState> {
         return makeAction([
             enterText(what),
