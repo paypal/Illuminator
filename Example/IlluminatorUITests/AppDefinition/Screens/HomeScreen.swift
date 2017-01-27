@@ -32,7 +32,11 @@ class HomeScreen: IlluminatorDelayedScreen<AppTestState> {
     func verifyText(expected: String) -> IlluminatorActionGeneric<AppTestState> {
         return makeAction() {
             let textField = self.app.otherElements.containingType(.Button, identifier:"Button").childrenMatchingType(.TextField).element
-            XCTAssertEqual(textField.value as? String, expected)
+            try textField.assertProperty(expected) {
+                guard let value = $0.value else { return "" }
+                guard let valString = value as? String else { return "" }
+                return valString
+            }
         }
     }
 
