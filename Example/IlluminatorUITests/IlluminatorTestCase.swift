@@ -1,14 +1,5 @@
 //
-//  IlluminatorBaseTest.swift
-//  Illuminator
-//
-//  Created by Ian Katz on 1/26/17.
-//  Copyright © 2017 CocoaPods. All rights reserved.
-//
-
-import Foundation
-//
-//  IlluminatorUITests.swift
+//  IlluminatorTestCase.swift
 //  IlluminatorUITests
 //
 //  Created by Ian Katz on 2017/01/26.
@@ -20,7 +11,10 @@ import XCTest
 
 class IlluminatorTestCase: XCTestCase, IlluminatorTestResultHandler {
 
-    // implement IlluminatorTestResultHandler protocol
+    // Implement IlluminatorTestResultHandler protocol.
+    // This allows the base class to provide standardzied error handling
+    // across all your test classes by ending tests with `.finish(self)`
+    // as opposed to supplying a closure each time
     typealias AbstractStateType = AppTestState
     func handleTestResult(progress: IlluminatorTestProgress<AbstractStateType>) -> (){
 
@@ -44,25 +38,20 @@ class IlluminatorTestCase: XCTestCase, IlluminatorTestResultHandler {
         }
     }
 
-    var app: XCUIApplication!
 
+    var app: XCUIApplication!
+    var interface: ExampleTestApp!
+    var initialState: IlluminatorTestProgress<AppTestState>!
 
     override func setUp() {
         super.setUp()
 
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // UI tests must launch the application that they test. Doing this in setup will make sure it happens for each test method.
         app = XCUIApplication()
         app.launch()
 
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
+        interface = ExampleTestApp(testCase: self)
+        initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
     }
 
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
 
-    
 }
