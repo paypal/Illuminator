@@ -97,11 +97,10 @@ extension XCUIElementQuery {
         }
 
         switch matchingElements {
-        case 0: try illuminate(IlluminatorError.ElementNotFound, message: "No elements match the label \"\(index)\"")
+        case 0: throw IlluminatorError.ElementNotFound(message: "No elements match the label \"\(index)\"")
         case 1: return self[index]
-        default: try illuminate(IlluminatorError.MultipleElementsFound, message: "Multiple elements match the label \"\(index)\"")
+        default: throw IlluminatorError.MultipleElementsFound(message: "Multiple elements match the label \"\(index)\"")
         }
-        return XCUIApplication() // This line never executes, but it's necessary because the compiler doesn't know that illuminate() always throws
     }
     
 

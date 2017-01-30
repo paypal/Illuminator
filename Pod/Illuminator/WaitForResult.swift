@@ -53,6 +53,5 @@ public func waitForResult <T: WaitForible> (seconds: Double, desired: T, what: S
         _ = XCUIApplication().navigationBars.count
 
     } while (0 - startTime.timeIntervalSinceNow) < seconds
-    try illuminate(IlluminatorError.VerificationFailed,
-        message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
+        throw IlluminatorError.VerificationFailed(message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
 }

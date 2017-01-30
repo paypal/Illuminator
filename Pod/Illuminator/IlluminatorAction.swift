@@ -25,6 +25,8 @@ public protocol IlluminatorAction: CustomStringConvertible {
     var label: String { get }
     var testCaseWrapper: IlluminatorTestcaseWrapper { get }
     var screen: IlluminatorScreen? { get }
+    var file: StaticString { get }
+    var line: UInt { get }
     associatedtype AbstractStateType
     func task(state: AbstractStateType) throws -> AbstractStateType
 }
@@ -61,20 +63,26 @@ public struct IlluminatorActionGeneric<T>: IlluminatorAction {
     public let label: String
     public let testCaseWrapper: IlluminatorTestcaseWrapper
     public let screen: IlluminatorScreen?
+    public let file: StaticString
+    public let line: UInt
     
     private let _task: (T) throws -> T
     
-    init<P : IlluminatorAction where P.AbstractStateType == T> (action dep: P) {
+    init<P : IlluminatorAction where P.AbstractStateType == T> (file fi: StaticString, line li: UInt, action dep: P) {
         label = dep.label
         testCaseWrapper = dep.testCaseWrapper
         screen = dep.screen
+        file = fi
+        line = li
         _task = dep.task
     }
     
-    init(label l: String, testCaseWrapper t: IlluminatorTestcaseWrapper, screen s: IlluminatorScreen?, task: (T) throws -> T) {
+    init(label l: String, testCaseWrapper t: IlluminatorTestcaseWrapper, screen s: IlluminatorScreen?, file fi: StaticString, line li: UInt, task: (T) throws -> T) {
         label = l
         testCaseWrapper = t
         screen = s
+        file = fi
+        line = li
         _task = task
     }
     

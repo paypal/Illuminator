@@ -41,6 +41,15 @@ struct IlluminatorTestResultHandlerThunk<T: CustomStringConvertible> : Illuminat
     }
 }
 
+/**
+    This struct captures file and line information to give good feedback when run from the IDE
+ */
+public struct IlluminatorErrorInfo {
+    var message: String
+    var file: StaticString
+    var line: UInt
+}
+
 
 /**
     IllumintorTestProgress is a composite state.  It contains the app test state (any stateful data that must be shared between test steps), and the state of the test itself (passing, failing, or flagging).
@@ -74,9 +83,11 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
         - Parameters:
             - action: The action to apply
             - checkScreen: whether to assert that the action's screen is active
+            - file: The file in which the action was applied
+            - line: The line on which the action was applied
         - Returns: A new test progress state, according to the result of the action
      */
-    func applyAction(action: IlluminatorActionGeneric<T>, checkScreen: Bool) -> IlluminatorTestProgress<T> {
+    func applyAction(action: IlluminatorActionGeneric<T>, checkScreen: Bool, file: StaticString, line: UInt) -> IlluminatorTestProgress<T> {
         var myState: T!
         var myErrors: [IlluminatorErrorInfo]!
         
@@ -99,20 +110,24 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
             if let s = action.screen {
                 do {
                     try s.becomesActive()
-                } catch IlluminatorError.IncorrectScreen(let errInfo) {
+                } catch IlluminatorError.IncorrectScreen(let message) {
+                    // for incorrect screen, show the IDE error at the action application
+                    let errInfo = IlluminatorErrorInfo(message: "Incorrect screen for \(actionDescription(action)): \(message)", file: file, line: line)
                     myErrors.append(errInfo)
                     return .Failing(myState, myErrors)
                 } catch let unknownError {
-                    myErrors.append(IlluminatorErrorInfo(message: "Error applying \(actionDescription(action)): \(unknownError)", file: #file, line: #line))
+                    // for all other errors, show the IDE error at the action implementation
+                    let errInfo = IlluminatorErrorInfo(message: "Error applying \(actionDescription(action)): \(unknownError)", file: action.file, line: action.line)
+                    myErrors.append(errInfo)
                     return .Failing(myState, myErrors)
                 }
             }
         }
         
         // tiny function to decorate action errors
-        let decorate = {(label: String, errInfo: IlluminatorErrorInfo) -> IlluminatorErrorInfo in
-            let newMessage = "\(action.description) \(label): \(errInfo.message)"
-            return IlluminatorErrorInfo(message: newMessage, file: errInfo.file, line: errInfo.line)
+        let decorate = {(label: String, errMessage: String) -> IlluminatorErrorInfo in
+            let newMessage = "\(action.description) \(label): \(errMessage)"
+            return IlluminatorErrorInfo(message: newMessage, file: action.file, line: action.line)
         }
         
         // passing, flagging, or failing as appropriate
@@ -123,29 +138,11 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
             } else {
                 return .Flagging(newState, myErrors)
             }
-        } catch IlluminatorError.Warning(let errInfo) {
-            myErrors.append(decorate("warning", errInfo))
+        } catch IlluminatorError.Warning(let message) {
+            myErrors.append(decorate("Warning", message))
             return .Flagging(myState, myErrors)
-        } catch IlluminatorError.IncorrectScreen(let errInfo) {
-            myErrors.append(decorate("failed screen check", errInfo))
-            return .Failing(myState, myErrors)
-        } catch IlluminatorError.VerificationFailed(let errInfo) {
-            myErrors.append(errInfo)
-            return .Failing(myState, myErrors)
-        } catch IlluminatorError.ElementNotFound(let errInfo) {
-            myErrors.append(errInfo)
-            return .Failing(myState, myErrors)
-        } catch IlluminatorError.MultipleElementsFound(let errInfo) {
-            myErrors.append(errInfo)
-            return .Failing(myState, myErrors)
-        } catch IlluminatorError.ElementNotReady(let errInfo) {
-            myErrors.append(errInfo)
-            return .Failing(myState, myErrors)
-        } catch IlluminatorError.DeveloperError(let errInfo) {
-            myErrors.append(decorate("DEVELOPER ERROR", errInfo))
-            return .Failing(myState, myErrors)
         } catch let unknownError {
-            myErrors.append(IlluminatorErrorInfo(message: "Caught error: \(unknownError)", file: #file, line: #line))
+            myErrors.append(decorate("Error", "\(unknownError)"))
             return .Failing(myState, myErrors)
         }
     }
@@ -157,10 +154,12 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
 
         - Parameters:
             - action: The action to apply
+            - file: The file in which the action was applied
+            - line: The line on which the action was applied
         - Returns: The progress state as a result of the action
      */
-    public func apply(action: IlluminatorActionGeneric<T>) -> IlluminatorTestProgress<T> {
-        return applyAction(action, checkScreen: true)
+    public func apply(action: IlluminatorActionGeneric<T>, file: StaticString = #file, line: UInt = #line) -> IlluminatorTestProgress<T> {
+        return applyAction(action, checkScreen: true, file: file, line: line)
     }
     
     /**
@@ -170,10 +169,12 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
 
         - Parameters:
             - action: The action to apply
+            - file: The file in which the action was applied
+            - line: The line on which the action was applied
         - Returns: The progress state as a result of the action
      */
-    public func blindly(action: IlluminatorActionGeneric<T>) -> IlluminatorTestProgress<T> {
-        return applyAction(action, checkScreen: false)
+    public func blindly(action: IlluminatorActionGeneric<T>, file: StaticString = #file, line: UInt = #line) -> IlluminatorTestProgress<T> {
+        return applyAction(action, checkScreen: false, file: file, line: line)
     }
     
     /**
