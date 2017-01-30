@@ -44,10 +44,15 @@ struct IlluminatorTestResultHandlerThunk<T: CustomStringConvertible> : Illuminat
 /**
     This struct captures file and line information to give good feedback when run from the IDE
  */
-public struct IlluminatorErrorInfo {
+public struct IlluminatorErrorInfo: CustomStringConvertible {
     var message: String
     var file: StaticString
     var line: UInt
+
+    public var description: String {
+        let basename = ("\(file)" as NSString).lastPathComponent
+        return "\(message) (\(basename):\(line))"
+    }
 }
 
 
