@@ -128,7 +128,7 @@ extension XCUIElement {
         } while !giveUpCondition(self, element)
 
         if !element.inMainWindow {
-            throw IlluminatorExceptions.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
+            try illuminate(IlluminatorError.ElementNotReady, message: "Couldn't find \(element) after \(failMessage)")
         }
         return element
     }
@@ -193,15 +193,15 @@ extension XCUIElement {
     func ready(usingCriteria desired: IlluminatorElementReadiness, otherwiseFailWith description: String) throws -> XCUIElement {
         let failMessage = { (message: String) -> String in "\(description); element not ready: \(message)" }
         if desired.contains(.Exists) && !exists {
-            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element does not exist"))
+            try illuminate(IlluminatorError.ElementNotReady, message: failMessage("element does not exist"))
         }
 
         if desired.contains(.InMainWindow) && !inMainWindow {
-            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element is not within the bounds of the main window"))
+            try illuminate(IlluminatorError.ElementNotReady, message: failMessage("element is not within the bounds of the main window"))
         }
 
         if desired.contains(.Hittable) && !hittable {
-            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element is not hittable"))
+            try illuminate(IlluminatorError.ElementNotReady, message: failMessage("element is not hittable"))
         }
 
         return self
@@ -247,16 +247,18 @@ extension XCUIElement {
                 do {
                     try $0.ready(usingCriteria: desired)
                     return true
-                } catch IlluminatorExceptions.ElementNotReady(let message) {
-                    lastMessage = message
+                } catch IlluminatorError.ElementNotReady(let info) {
+                    lastMessage = info.message
                     return false
                 } catch {
                     return false
                 }
             }
             return self
-        } catch IlluminatorExceptions.VerificationFailed(let failMessage) {
-            throw IlluminatorExceptions.ElementNotReady(message: (lastMessage ?? failMessage))
+        } catch IlluminatorError.VerificationFailed(let info) {
+            let newMessage = lastMessage ?? info.message
+            let newInfo = IlluminatorErrorInfo(message: newMessage, file: info.file, line: info.line)
+            throw IlluminatorError.ElementNotReady(info: newInfo)
         }
     }
 
@@ -301,7 +303,7 @@ extension XCUIElement {
     public func assertProperty<T: WaitForible>(desired: T, getProperty: (XCUIElement) -> T) throws -> XCUIElement {
         let actual = getProperty(self)
         if desired != actual {
-            throw IlluminatorExceptions.VerificationFailed(message: "Expected property to be '\(desired)', got '\(actual)'")
+            try illuminate(IlluminatorError.VerificationFailed, message: "Expected property to be '\(desired)', got '\(actual)'")
          }
         return self
     }

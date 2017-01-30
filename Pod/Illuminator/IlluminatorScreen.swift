@@ -104,7 +104,8 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
     public func verifyNotActive() -> IlluminatorActionGeneric<T> {
         let nullScreen = IlluminatorBaseScreen<T>(label: "null screen", testCaseWrapper: self.testCaseWrapper)
         return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen) { state in
-            throw IlluminatorExceptions.IncorrectScreen(message: "IlluminatorBaseScreen instances are always active")
+            try illuminate(IlluminatorError.IncorrectScreen, message: "IlluminatorBaseScreen instances are always active")
+            return state
         }
     }
     
@@ -170,7 +171,7 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
         // need 2 actions to do anything useful
         guard actions.count > 0 else {
             return makeAction() {
-                throw IlluminatorExceptions.DeveloperError(message: "Trying to make a composite Illuminator action from none")
+                try illuminate(IlluminatorError.DeveloperError, message: "Trying to make a composite Illuminator action from none")
             }
         }
         guard actions.count > 1 else { return actions[0] }
@@ -212,8 +213,9 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
         defer { nextTimeout = screenTimeout }  // reset the timeout after we run
         do {
             try waitForResult(nextTimeout, desired: true, what: "[\(self) isActive]", getResult: { self.isActive })
-        } catch IlluminatorExceptions.VerificationFailed(let message) {
-            throw IlluminatorExceptions.IncorrectScreen(message: message)
+        } catch IlluminatorError.VerificationFailed(let errInfo) {
+            // convert error type, for accuracy
+            throw IlluminatorError.IncorrectScreen(info: errInfo)
         }
     }
     
@@ -229,12 +231,12 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
             do {
                 try waitForResult(self.nextTimeout, desired: false, what: "[\(self) isActive]", getResult: { self.isActive })
                 stillActive = false
-            } catch IlluminatorExceptions.VerificationFailed {
+            } catch IlluminatorError.VerificationFailed {
                 stillActive = true
             }
             
             if stillActive {
-                throw IlluminatorExceptions.IncorrectScreen(message: "\(self) failed to become inactive")
+                try illuminate(IlluminatorError.IncorrectScreen, message: "\(self) failed to become inactive")
             }
             return state
         }
@@ -305,7 +307,7 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
                     try waitForResult(self.nextTimeoutSoft, desired: true, what: "[\(self) isActive]") {
                         self.isActive
                     }
-                } catch IlluminatorExceptions.VerificationFailed {
+                } catch IlluminatorError.VerificationFailed {
                     // dont worry about it; if transient is active, we go around again
                     // if transient is not active,
                 } catch {
@@ -314,13 +316,13 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
                 
                 return self.transientIsActive
             }
-        } catch IlluminatorExceptions.VerificationFailed {
-            throw IlluminatorExceptions.IncorrectScreen(message: "\(self) failed to become active (and transient inactive) before hard timeout \(nextTimeoutHard)")
+        } catch IlluminatorError.VerificationFailed {
+            try illuminate(IlluminatorError.IncorrectScreen, message: "\(self) failed to become active (and transient inactive) before hard timeout \(nextTimeoutHard)")
         }
 
 
         if !isActive {
-            throw IlluminatorExceptions.IncorrectScreen(message: "\(self) failed to become active (after transient inactive) before soft timeout \(nextTimeoutSoft)")
+            try illuminate(IlluminatorError.IncorrectScreen, message: "\(self) failed to become active (after transient inactive) before soft timeout \(nextTimeoutSoft)")
         }
     }
     
@@ -346,7 +348,7 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
             } while (0 - hardTime.timeIntervalSinceNow) < self.nextTimeoutHard && (0 - softTime.timeIntervalSinceNow) < self.nextTimeoutSoft
             
             if self.isActive {
-                throw IlluminatorExceptions.IncorrectScreen(message: "\(self) failed to become inactive")
+                try illuminate(IlluminatorError.IncorrectScreen, message: "\(self) failed to become inactive")
             }
             return state
         }
