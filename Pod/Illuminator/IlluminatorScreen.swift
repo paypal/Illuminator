@@ -103,9 +103,8 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
      */
     public func verifyNotActive() -> IlluminatorActionGeneric<T> {
         let nullScreen = IlluminatorBaseScreen<T>(label: "null screen", testCaseWrapper: self.testCaseWrapper)
-        return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen) { state in
-            try illuminate(IlluminatorError.IncorrectScreen, message: "IlluminatorBaseScreen instances are always active")
-            return state
+        return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen, file: #file, line: #line) { state in
+            throw IlluminatorError.IncorrectScreen(message: "IlluminatorBaseScreen instances are always active")
         }
     }
     
@@ -119,8 +118,8 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
             - task: The action's actual action
         - Returns: an action that, when applied, executes the supplied closure
      */
-    public func makeAction(label l: String = #function, task: (T) throws -> T) -> IlluminatorActionGeneric<T> {
-        return IlluminatorActionGeneric(label: l, testCaseWrapper: self.testCaseWrapper, screen: self, task: task)
+    public func makeAction(label l: String = #function, file: StaticString = #file, line: UInt = #line, task: (T) throws -> T) -> IlluminatorActionGeneric<T> {
+        return IlluminatorActionGeneric(label: l, testCaseWrapper: self.testCaseWrapper, screen: self, file: file, line: line, task: task)
     }
     
     /**
@@ -133,8 +132,8 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
             - task: The action's actual action
         - Returns: an action that, when applied, executes the supplied closure
      */
-    public func makeAction(label l: String = #function, task: () throws -> ()) -> IlluminatorActionGeneric<T> {
-        return makeAction(label: l) { (state: T) in
+    public func makeAction(label l: String = #function, file: StaticString = #file, line: UInt = #line, task: () throws -> ()) -> IlluminatorActionGeneric<T> {
+        return makeAction(label: l, file: file, line: line) { (state: T) in
             try task()
             return state
         }
@@ -151,8 +150,8 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
             - label: The action's name -- by default, taken as the name of the function that calls `makeAction`
         - Returns: an action that, when applied, executes the supplied closure
      */
-    public func makeAction(firstAction: IlluminatorActionGeneric<T>, secondAction: IlluminatorActionGeneric<T>, label l: String = #function) -> IlluminatorActionGeneric<T> {
-        return makeAction(label: l) { (state: T) in
+    public func makeAction(firstAction: IlluminatorActionGeneric<T>, secondAction: IlluminatorActionGeneric<T>, label l: String = #function, file: StaticString = #file, line: UInt = #line) -> IlluminatorActionGeneric<T> {
+        return makeAction(label: l, file: file, line: line) { (state: T) in
             return try secondAction.task(try firstAction.task(state))
         }
     }
@@ -167,16 +166,16 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
             - label: The action's name -- by default, taken as the name of the function that calls `makeAction`
         - Returns: an action that, when applied, executes the supplied closure
      */
-    public func makeAction(actions: [IlluminatorActionGeneric<T>], label l: String = #function) -> IlluminatorActionGeneric<T> {
+    public func makeAction(actions: [IlluminatorActionGeneric<T>], label l: String = #function, file: StaticString = #file, line: UInt = #line) -> IlluminatorActionGeneric<T> {
         // need 2 actions to do anything useful
         guard actions.count > 0 else {
             return makeAction() {
-                try illuminate(IlluminatorError.DeveloperError, message: "Trying to make a composite Illuminator action from none")
+                throw IlluminatorError.DeveloperError(message: "Trying to make a composite Illuminator action from none")
             }
         }
         guard actions.count > 1 else { return actions[0] }
   
-        return actions.tail.reduce(actions[0]) { makeAction($0, secondAction: $1) }
+        return actions.tail.reduce(actions[0]) { makeAction($0, secondAction: $1, file: file, line: line) }
     }
 }
 
@@ -213,9 +212,9 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
         defer { nextTimeout = screenTimeout }  // reset the timeout after we run
         do {
             try waitForResult(nextTimeout, desired: true, what: "[\(self) isActive]", getResult: { self.isActive })
-        } catch IlluminatorError.VerificationFailed(let errInfo) {
+        } catch IlluminatorError.VerificationFailed(let message) {
             // convert error type, for accuracy
-            throw IlluminatorError.IncorrectScreen(info: errInfo)
+            throw IlluminatorError.IncorrectScreen(message: message)
         }
     }
     
@@ -226,7 +225,7 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
      */
     override public func verifyNotActive() -> IlluminatorActionGeneric<T> {
         let nullScreen = IlluminatorBaseScreen<T>(label: "null screen", testCaseWrapper: self.testCaseWrapper)
-        return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen) { state in
+        return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen, file: #file, line: #line) { state in
             var stillActive: Bool
             do {
                 try waitForResult(self.nextTimeout, desired: false, what: "[\(self) isActive]", getResult: { self.isActive })
@@ -236,7 +235,7 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
             }
             
             if stillActive {
-                try illuminate(IlluminatorError.IncorrectScreen, message: "\(self) failed to become inactive")
+                throw IlluminatorError.IncorrectScreen(message: "\(self) failed to become inactive")
             }
             return state
         }
@@ -317,12 +316,12 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
                 return self.transientIsActive
             }
         } catch IlluminatorError.VerificationFailed {
-            try illuminate(IlluminatorError.IncorrectScreen, message: "\(self) failed to become active (and transient inactive) before hard timeout \(nextTimeoutHard)")
+            throw IlluminatorError.IncorrectScreen(message: "\(self) failed to become active (and transient inactive) before hard timeout \(nextTimeoutHard)")
         }
 
 
         if !isActive {
-            try illuminate(IlluminatorError.IncorrectScreen, message: "\(self) failed to become active (after transient inactive) before soft timeout \(nextTimeoutSoft)")
+            throw IlluminatorError.IncorrectScreen(message: "\(self) failed to become active (after transient inactive) before soft timeout \(nextTimeoutSoft)")
         }
     }
     
@@ -335,7 +334,7 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
      */
    override public func verifyNotActive() -> IlluminatorActionGeneric<T> {
         let nullScreen = IlluminatorBaseScreen<T>(label: "null screen", testCaseWrapper: self.testCaseWrapper)
-        return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen) { state in
+    return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen, file: #file, line: #line) { state in
             
             let hardTime = NSDate()
             var softTime = NSDate()
@@ -348,7 +347,7 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
             } while (0 - hardTime.timeIntervalSinceNow) < self.nextTimeoutHard && (0 - softTime.timeIntervalSinceNow) < self.nextTimeoutSoft
             
             if self.isActive {
-                try illuminate(IlluminatorError.IncorrectScreen, message: "\(self) failed to become inactive")
+                throw IlluminatorError.IncorrectScreen(message: "\(self) failed to become inactive")
             }
             return state
         }
