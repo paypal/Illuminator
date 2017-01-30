@@ -51,8 +51,8 @@ struct IlluminatorTestResultHandlerThunk<T: CustomStringConvertible> : Illuminat
 @available(iOS 9.0, *)
 public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringConvertible {
     case Passing(T)
-    case Flagging(T, [String])
-    case Failing(T, [String])
+    case Flagging(T, [IlluminatorErrorInfo])
+    case Failing(T, [IlluminatorErrorInfo])
 
     /**
         A description of an action, with the screen if that exists
@@ -78,18 +78,18 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
      */
     func applyAction(action: IlluminatorActionGeneric<T>, checkScreen: Bool) -> IlluminatorTestProgress<T> {
         var myState: T!
-        var myErrStrings: [String]!
+        var myErrors: [IlluminatorErrorInfo]!
         
         // fall-through fail, or pick up state and strings
         switch self {
         case .Failing:
             return self
-        case .Flagging(let state, let errStrings):
+        case .Flagging(let state, let errInfos):
             myState = state
-            myErrStrings = errStrings
+            myErrors = errInfos
         case .Passing(let state):
             myState = state
-            myErrStrings = []
+            myErrors = []
         }
         
         print("Applying \(actionDescription(action))")
@@ -99,44 +99,54 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
             if let s = action.screen {
                 do {
                     try s.becomesActive()
-                } catch IlluminatorExceptions.IncorrectScreen(let message) {
-                    myErrStrings.append(message)
-                    return .Failing(myState, myErrStrings)
+                } catch IlluminatorError.IncorrectScreen(let errInfo) {
+                    myErrors.append(errInfo)
+                    return .Failing(myState, myErrors)
                 } catch let unknownError {
-                    myErrStrings.append("Caught error: \(unknownError)")
-                    return .Failing(myState, myErrStrings)
+                    myErrors.append(IlluminatorErrorInfo(message: "Error applying \(actionDescription(action)): \(unknownError)", file: #file, line: #line))
+                    return .Failing(myState, myErrors)
                 }
             }
         }
         
         // tiny function to decorate action errors
-        let decorate = {(label: String, message: String) -> String in
-            return "\(action.description) \(label): \(message)"
+        let decorate = {(label: String, errInfo: IlluminatorErrorInfo) -> IlluminatorErrorInfo in
+            let newMessage = "\(action.description) \(label): \(errInfo.message)"
+            return IlluminatorErrorInfo(message: newMessage, file: errInfo.file, line: errInfo.line)
         }
         
         // passing, flagging, or failing as appropriate
         do {
             let newState = try action.task(myState)
-            if myErrStrings.isEmpty {
+            if myErrors.isEmpty {
                 return .Passing(newState)
             } else {
-                return .Flagging(newState, myErrStrings)
+                return .Flagging(newState, myErrors)
             }
-        } catch IlluminatorExceptions.Warning(let message) {
-            myErrStrings.append(decorate("warning", message))
-            return .Flagging(myState, myErrStrings)
-        } catch IlluminatorExceptions.IncorrectScreen(let message) {
-            myErrStrings.append(decorate("failed screen check", message))
-            return .Failing(myState, myErrStrings)
-            //} catch IlluminatorExceptions.IndeterminateState(let message) {
-            //    myErrStrings.append(decorate("indeterminate state", message))
-            //    return .Failing(myErrStrings)
-            //} catch IlluminatorExceptions.VerificationFailed(let message) {
-            //    myErrStrings.append(decorate("verification failed", message))
-            //    return .Failing(myErrStrings)
+        } catch IlluminatorError.Warning(let errInfo) {
+            myErrors.append(decorate("warning", errInfo))
+            return .Flagging(myState, myErrors)
+        } catch IlluminatorError.IncorrectScreen(let errInfo) {
+            myErrors.append(decorate("failed screen check", errInfo))
+            return .Failing(myState, myErrors)
+        } catch IlluminatorError.VerificationFailed(let errInfo) {
+            myErrors.append(errInfo)
+            return .Failing(myState, myErrors)
+        } catch IlluminatorError.ElementNotFound(let errInfo) {
+            myErrors.append(errInfo)
+            return .Failing(myState, myErrors)
+        } catch IlluminatorError.MultipleElementsFound(let errInfo) {
+            myErrors.append(errInfo)
+            return .Failing(myState, myErrors)
+        } catch IlluminatorError.ElementNotReady(let errInfo) {
+            myErrors.append(errInfo)
+            return .Failing(myState, myErrors)
+        } catch IlluminatorError.DeveloperError(let errInfo) {
+            myErrors.append(decorate("DEVELOPER ERROR", errInfo))
+            return .Failing(myState, myErrors)
         } catch let unknownError {
-            myErrStrings.append("Caught error: \(unknownError)")
-            return .Failing(myState, myErrStrings)
+            myErrors.append(IlluminatorErrorInfo(message: "Caught error: \(unknownError)", file: #file, line: #line))
+            return .Failing(myState, myErrors)
         }
     }
     
@@ -223,15 +233,15 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
 
     - Parameters:
         - progress: The state of an Illuminator test
-        - file: The file in which the test may have failed
-        - line: The line on which the test may have failed
  */
-public func XCTAssert<T>(progress: IlluminatorTestProgress<T>, file f: StaticString = #file, line l: UInt = #line) {
+public func XCTAssert<T>(progress: IlluminatorTestProgress<T>) {
     switch progress {
-    case .Failing(_, let errStrings):
-        XCTFail("Illuminator Failure: \(errStrings.joinWithSeparator("; "))", file: f, line: l)
-    case .Flagging(_, let errStrings):
-        XCTFail("Illuminator Deferred Failure: \(errStrings.joinWithSeparator("; "))", file: f, line: l)
+    case .Failing(_, let errInfos):
+        let info = errInfos[0]
+        XCTFail("Illuminator Failure: \(errInfos.map({$0.message}).joinWithSeparator("; "))", file: info.file, line: info.line)
+    case .Flagging(_, let errInfos):
+        let info = errInfos[0]
+        XCTFail("Illuminator Deferred Failure: \(errInfos.map({$0.message}).joinWithSeparator("; "))", file: info.file, line: info.line)
     case .Passing:
         return
     }
