@@ -12,15 +12,8 @@ import XCTest
 import Illuminator
 
 
-// Actions (part of screens, which are part of the app) don't contain state.
-// The current state of the app is passed to them -- for example:
-// - whether a one-time alert has been dismissed might affect the expected 
-//   value or behavior of an action.
-// - knowing that a mock network request has been asked to fail
-//
-// Actions can both read and write the state object, or ignore it completely
-//
 // In this example, we just use a simple (named) boolean flag.
+// For more information on what this is for, see the IlluminatorAction class description
 struct AppTestState: CustomStringConvertible {
     var didSomething: Bool
     var description: String {
@@ -28,7 +21,7 @@ struct AppTestState: CustomStringConvertible {
     }
 }
 
-
+// The basic structure; this is a minimum implementation
 struct ExampleTestApp: IlluminatorApplication {
     let label: String = "ExampleApp"
     let testCaseWrapper: IlluminatorTestcaseWrapper
@@ -36,7 +29,8 @@ struct ExampleTestApp: IlluminatorApplication {
     init(testCase t: XCTestCase) {
         testCaseWrapper = IlluminatorTestcaseWrapper(testCase: t)
     }
-    
+
+    // all screens are defined as read-only variables to save boilerplate code in the test definitions
     var home: HomeScreen {
         get {
             return HomeScreen(testCaseWrapper: testCaseWrapper)

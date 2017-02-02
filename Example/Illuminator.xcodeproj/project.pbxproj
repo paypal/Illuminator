@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5105C42A1E3AF7E700BC2E93 /* IlluminatorTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5105C4291E3AF7E700BC2E93 /* IlluminatorTestCase.swift */; };
+		5105C42C1E3B6AA100BC2E93 /* IlluminatorTestComparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5105C42B1E3B6AA100BC2E93 /* IlluminatorTestComparison.swift */; };
 		518C87351DF5B71C00104CAD /* ExampleTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 518C87341DF5B71C00104CAD /* ExampleTestApp.swift */; };
 		518C87371DF5B7A900104CAD /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 518C87361DF5B7A900104CAD /* HomeScreen.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
@@ -31,6 +33,8 @@
 
 /* Begin PBXFileReference section */
 		050568E587F4D79A7B282BEC /* Pods-IlluminatorUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IlluminatorUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-IlluminatorUITests/Pods-IlluminatorUITests.release.xcconfig"; sourceTree = "<group>"; };
+		5105C4291E3AF7E700BC2E93 /* IlluminatorTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IlluminatorTestCase.swift; sourceTree = "<group>"; };
+		5105C42B1E3B6AA100BC2E93 /* IlluminatorTestComparison.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IlluminatorTestComparison.swift; sourceTree = "<group>"; };
 		518C87341DF5B71C00104CAD /* ExampleTestApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ExampleTestApp.swift; path = AppDefinition/ExampleTestApp.swift; sourceTree = "<group>"; };
 		518C87361DF5B7A900104CAD /* HomeScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HomeScreen.swift; path = AppDefinition/Screens/HomeScreen.swift; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* Illuminator_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Illuminator_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -156,7 +160,9 @@
 			children = (
 				518C87321DF5B6F800104CAD /* AppDefinition */,
 				881FF4011BD142A50094DFC3 /* IlluminatorUITests.swift */,
+				5105C4291E3AF7E700BC2E93 /* IlluminatorTestCase.swift */,
 				881FF4031BD142A50094DFC3 /* Info.plist */,
+				5105C42B1E3B6AA100BC2E93 /* IlluminatorTestComparison.swift */,
 			);
 			path = IlluminatorUITests;
 			sourceTree = "<group>";
@@ -384,8 +390,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				518C87351DF5B71C00104CAD /* ExampleTestApp.swift in Sources */,
+				5105C42C1E3B6AA100BC2E93 /* IlluminatorTestComparison.swift in Sources */,
 				881FF4021BD142A50094DFC3 /* IlluminatorUITests.swift in Sources */,
 				518C87371DF5B7A900104CAD /* HomeScreen.swift in Sources */,
+				5105C42A1E3AF7E700BC2E93 /* IlluminatorTestCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

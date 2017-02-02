@@ -9,6 +9,8 @@
 import XCTest
 @available(iOS 9.0, *)
 
+// The string representation of the element type
+// Comment slashes indicate plurals that are more complicated than adding "s"
 let debugStringOfXCUIElementType: [XCUIElementType: String] = [
     .Other: "Other",
     .Application: "Application",
@@ -91,6 +93,7 @@ let debugStringOfXCUIElementType: [XCUIElementType: String] = [
     .WebView: "WebView",
     .Window: "Window"]
 
+// Reverse lookup of the above dictionary
 let theXCUIElementTypeOfDebugString = debugStringOfXCUIElementType.reduce([String: XCUIElementType]()) { (acc, pair) in
     var ret = acc
     ret[pair.1] = pair.0
@@ -100,16 +103,35 @@ let theXCUIElementTypeOfDebugString = debugStringOfXCUIElementType.reduce([Strin
 
 extension XCUIElementType {
     
+    /**
+        Get an element type (enum value) from a string
+
+        - Parameters:
+            - description: the string representation of the element type
+        - Returns: The type matching the string
+     */
     static func fromString(description: String) -> XCUIElementType {
         guard let val = theXCUIElementTypeOfDebugString[description] else { return .Other }
         return val
     }
     
+    /**
+        Get an element type (enum value) from a string
+
+        - Returns: the string representation of the element type
+     */
     func toString() -> String {
         guard let val = debugStringOfXCUIElementType[self] else { return "<Unknown \(self)>" }
         return val
     }
     
+    /**
+        The XCUIElement string for this element type -- what would be in a query
+        
+        This is essentially just a plural of the type
+
+        - Returns: the string representation of the element type as used in a query expression
+     */
     func toElementString() -> String {
         switch (self) {
         case .CheckBox: return "checkBoxes"

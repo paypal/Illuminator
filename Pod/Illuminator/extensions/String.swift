@@ -7,7 +7,15 @@
 //
 
 extension String {
-    // regex with capture SWIFT 3 version here: http://stackoverflow.com/a/40040472/2063546
+    /**
+        Get the capture groups from an applied regular expression
+
+        SWIFT 3 version here: http://stackoverflow.com/a/40040472/2063546
+
+        - Parameters:
+            - regex: the regex to apply
+        - Returns: An array of arrays; the matches, and the capture groups of those matches
+     */
     func matchingStrings(regex: String) -> [[String]] {
         guard let regex = try? NSRegularExpression(pattern: regex, options: []) else { return [] }
         let nsString = self as NSString
