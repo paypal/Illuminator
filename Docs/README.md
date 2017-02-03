@@ -40,14 +40,14 @@ These functions are test cancer -- they prematurely terminate the life of a test
 
 Throw exceptions within your actions -- they will automatically be caught and, later, interpreted as a test failure in the `.finish()` method.
 
-For proper communication of the file and line number of failures, use one of the `IlluminatorError` cases.  A convenience function has been provided to properly handle the boilerplate of file and line.
+For general purpose comparisons, throw `IlluminatorExceptions.VerificationFailed`.
 
 ```swift
-XCTAssertEqual(foo, 3)                                                    // Bad
+XCTAssertEqual(app.allElementsBoundByAccessibilityElement.count, 3)   // Bad
 
-guard foo == 3 else {                                                     // 
-    try illuminate(IlluminatorError.VerificationFailed, message: "!= 3")) // Good
-}                                                                         // 
+guard app.allElementsBoundByAccessibilityElement.count == 3 else {    // 
+    throw IlluminatorExceptions.VerificationFailed(message: "!= 3")   // Good
+}                                                                     // (In practice, wrap it to make a one-liner)
 ```
 
 
@@ -126,15 +126,15 @@ Consider the situation in which multiple matches might appear, but you only ever
 
 ```swift
 // Assume that multiple "Delete" buttons exist
-app.buttons["Delete"].tap()                                              // Bad
+app.buttons["Delete"].tap()                                          // Bad
 
-let matches = app.buttons.subscriptsMatching("Delete")                   //
-guard let myButton = matches[safe: 0] else {                             //
-    try illuminate(IlluminatorError.VerificationFailed(message: "None")) // Good
-}                                                                        //
-myButton.tap()                                                           //
+let matches = app.buttons.subscriptsMatching("Delete")               //
+guard let myButton = matches[safe: 0] else {                         //
+    throw IlluminatorExceptions.VerificationFailed(message: "None")  // Good
+}                                                                    //
+myButton.tap()                                                       //
 
-let matches = app.buttons〚"Delete"〛                                     // Experimental unicode operator
+let matches = app.buttons〚"Delete"〛                                 // Experimental unicode operator
 ```
 
 Or, perhaps you expect one and only one match.  Illuminator has an operator for that as well.
