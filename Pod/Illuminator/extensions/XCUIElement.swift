@@ -105,7 +105,7 @@ extension XCUIElement {
             - failMessage: Text to append to the failure message, indicating the exit condition
             - giveUpCondition: Closure that returns true when the swipe operations should terminate (indicating a failure)
         - Returns: the target element
-        - Throws: `IlluminatorExceptions.ElementNotReady` If the target is not found
+        - Throws: `IlluminatorError.ElementNotReady` If the target is not found
      */
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws -> XCUIElement  {
         repeat {
@@ -141,7 +141,7 @@ extension XCUIElement {
             - direction: the swipe direction (the reverse of the scroll direction)
             - withTimeout: the number of seconds to wait before failing
         - Returns: the target element
-        - Throws: `IlluminatorExceptions.ElementNotReady` If the target is not found
+        - Throws: `IlluminatorError.ElementNotReady` If the target is not found
      */
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws -> XCUIElement {
         let startTime = NSDate()
@@ -158,7 +158,7 @@ extension XCUIElement {
             - direction: the swipe direction (the reverse of the scroll direction)
             - maxSwipes: the number of times to swipe before failing
         - Returns: the target element
-        - Throws: `IlluminatorExceptions.ElementNotReady` If the target is not found
+        - Throws: `IlluminatorError.ElementNotReady` If the target is not found
      */
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, maxSwipes: UInt) throws -> XCUIElement {
         var totalSwipes: UInt = 0
@@ -188,7 +188,7 @@ extension XCUIElement {
             - usingCriteria: the readiness criteria to check
             - otherwiseFailWith: text to annotate the exception on failure
         - Returns: the element
-        - Throws: `IlluminatorExceptions.ElementNotReady` If the target is not ready
+        - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
      */
     func ready(usingCriteria desired: IlluminatorElementReadiness, otherwiseFailWith description: String) throws -> XCUIElement {
         let failMessage = { (message: String) -> String in "\(description); element not ready: \(message)" }
@@ -213,7 +213,7 @@ extension XCUIElement {
          - Parameters:
             - usingCriteria: the readiness criteria to check
          - Returns: the element
-         - Throws: `IlluminatorExceptions.ElementNotReady` If the target is not ready
+         - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
      */
     func ready(usingCriteria desired: IlluminatorElementReadiness) throws -> XCUIElement {
         return try ready(usingCriteria: desired, otherwiseFailWith: "Failed readiness check")
@@ -223,7 +223,7 @@ extension XCUIElement {
      Throw an exception if an element is not ready for an action, using default description and criteria
 
      - Returns: the element
-     - Throws: `IlluminatorExceptions.ElementNotReady` If the target is not ready
+     - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
      */
     func ready() throws -> XCUIElement {
         return try ready(usingCriteria: defaultReadiness)
@@ -236,7 +236,7 @@ extension XCUIElement {
              - usingCriteria: the readiness criteria to check
              - withTimeout: the number of seconds to wait
          - Returns: the element
-         - Throws: `IlluminatorExceptions.ElementNotReady` If the target is not ready
+         - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
      */
     func whenReady(usingCriteria desired: IlluminatorElementReadiness, withTimeout seconds: Double) throws -> XCUIElement {
         var lastMessage: String? = nil
@@ -266,7 +266,7 @@ extension XCUIElement {
          - Parameters:
              - secondsToWait: the number of seconds to wait
          - Returns: the element
-         - Throws: `IlluminatorExceptions.ElementNotReady` If the target is not ready
+         - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
      */
     func whenReady(secondsToWait: Double = 3.0) throws -> XCUIElement {
         return try whenReady(usingCriteria: defaultReadiness, withTimeout: secondsToWait)

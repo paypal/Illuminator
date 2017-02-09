@@ -10,11 +10,11 @@
 ```swift
 
 func testUsingIlluminatorForTheFirstTime() {
-    // these 2 lines should go in the setUp() method for your test class, 
+    // these 2 lines should go in the setUp() method for your test class,
     // or better yet: the IlluminatorTestCase class
     let interface = ExampleTestApp(testCase: self)
     let initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
-        
+
     initialState                                  // The initial state is "passing"
         .apply(interface.home.enterText("123"))   // to which we apply an action
         .apply(interface.home.verifyText("123"))  // and another action
@@ -40,13 +40,13 @@ These functions are test cancer -- they prematurely terminate the life of a test
 
 Throw exceptions within your actions -- they will automatically be caught and, later, interpreted as a test failure in the `.finish()` method.
 
-For general purpose comparisons, throw `IlluminatorExceptions.VerificationFailed`.
+For general purpose comparisons, throw `IlluminatorError.VerificationFailed`.
 
 ```swift
 XCTAssertEqual(app.allElementsBoundByAccessibilityElement.count, 3)   // Bad
 
-guard app.allElementsBoundByAccessibilityElement.count == 3 else {    // 
-    throw IlluminatorExceptions.VerificationFailed(message: "!= 3")   // Good
+guard app.allElementsBoundByAccessibilityElement.count == 3 else {    //
+    throw IlluminatorError.VerificationFailed(message: "!= 3")   // Good
 }                                                                     // (In practice, wrap it to make a one-liner)
 ```
 
@@ -90,8 +90,8 @@ waitForExpectationsWithTimeout(5, handler: nil)                      //
 try myElement.waitForProperty(5, desired: true) { $0.exists }        // Good
 myElement.tap()                                                      // (you can even chain these calls)
 ```
- 
- 
+
+
 ## Anything Like `sleep()` or Delaying
 
 Sleeping is a naive way of waiting for some UI change to happen.  It's better to simply watch for the change and move on as soon as it happens.  There are 2 anti-patterns here, one within a screen and one between screens.
@@ -103,8 +103,8 @@ Within the same screen, consider this example where tapping `myButton` causes `s
 
 ```swift
 myButton.tap()                          //
-sleep(3)                                // Bad 
-someOtherButton.tap()                   // 
+sleep(3)                                // Bad
+someOtherButton.tap()                   //
 
 myButton.tap()                          //
 try someOtherButton.whenReady(3).tap()  // Good
@@ -130,7 +130,7 @@ app.buttons["Delete"].tap()                                          // Bad
 
 let matches = app.buttons.subscriptsMatching("Delete")               //
 guard let myButton = matches[safe: 0] else {                         //
-    throw IlluminatorExceptions.VerificationFailed(message: "None")  // Good
+    throw IlluminatorError.VerificationFailed(message: "None")       // Good
 }                                                                    //
 myButton.tap()                                                       //
 
@@ -226,7 +226,7 @@ extension TabBarScreen {
             return app.tabBars.elementBoundByIndex(0).exists
         }
     }
-    
+
     func toHome() -> IlluminatorActionGeneric<AppTestState> {
         return makeAction(label: #function) {
             try self.app.tabBars.buttons["Home"].whenReady(3).tap()
@@ -253,4 +253,3 @@ public class HomeScreen: IlluminatorDelayedScreen<AppTestState>, SearchFieldScre
 ### "I watched my app fail, but the test passed"
 
 Make sure that your `IlluminatorTestProgress` variable calls `.finish()`, otherwise `XCFail()` will never trigger.
-

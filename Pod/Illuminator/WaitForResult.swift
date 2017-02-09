@@ -40,7 +40,7 @@ extension String: WaitForible {
         - desired: The value needed for successful exit
         - what: A description of what is being waited for, for logging
         - getResult: A function that returns the value that will be compared with the desired value
-    - Throws: `IlluminatorExceptions.VerificationFailed` if the desired and actual values do not become equal before the time limit has passed
+    - Throws: `IlluminatorError.VerificationFailed` if the desired and actual values do not become equal before the time limit has passed
  */
 public func waitForResult <T: WaitForible> (seconds: Double, desired: T, what: String, getResult: () -> T) throws {
     let startTime = NSDate()
