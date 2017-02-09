@@ -206,7 +206,7 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
     
     /**
         Wait for the screen to become active; return if it does, throw if it times out.
-        - Throws: `IlluminatorExceptions.IncorrectScreen` if the screen does not become active
+        - Throws: `IlluminatorError.IncorrectScreen` if the screen does not become active
      */
     override public func becomesActive() throws {
         defer { nextTimeout = screenTimeout }  // reset the timeout after we run
@@ -286,7 +286,7 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
     
     /**
         Wait for the screen to become active; return if it does, throw if it times out.
-        - Throws: `IlluminatorExceptions.IncorrectScreen` if the screen does not become active
+        - Throws: `IlluminatorError.IncorrectScreen` if the screen does not become active
      */
     override public func becomesActive() throws {
         defer {

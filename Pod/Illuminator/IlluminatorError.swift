@@ -1,5 +1,5 @@
 //
-//  IlluminatorExceptions.swift
+//  IlluminatorError.swift
 //  Illuminator
 //
 //  Created by Ian Katz on 20/10/15.
