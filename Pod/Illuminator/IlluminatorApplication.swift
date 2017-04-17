@@ -16,6 +16,6 @@ public protocol IlluminatorApplication: CustomStringConvertible {
 
 public extension IlluminatorApplication {
     var description: String {
-        return "\(self.dynamicType) \(self.label)"
+        return "\(type(of: self)) \(self.label)"
     }
 }

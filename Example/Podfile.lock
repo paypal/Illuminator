@@ -8,9 +8,9 @@ DEPENDENCIES:
 
 EXTERNAL SOURCES:
   Illuminator:
-    :path: ../
+    :path: "../"
   IlluminatorBridge:
-    :path: ../
+    :path: "../"
 
 SPEC CHECKSUMS:
   Illuminator: 6d8f24058d2a8b1140416fba8f70f347c809d8e4
@@ -18,4 +18,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: fa3ff777fdd8c111b7d08ae862a0492c6f836e4d
 
-COCOAPODS: 1.1.1
+COCOAPODS: 1.2.0

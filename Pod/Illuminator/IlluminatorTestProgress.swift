@@ -15,7 +15,7 @@ import XCTest
  */
 public protocol IlluminatorTestResultHandler {
     associatedtype AbstractStateType: CustomStringConvertible
-    func handleTestResult(progress: IlluminatorTestProgress<AbstractStateType>) -> ()
+    func handleTestResult(_ progress: IlluminatorTestProgress<AbstractStateType>) -> ()
 }
 
 
@@ -25,15 +25,15 @@ struct IlluminatorTestResultHandlerThunk<T: CustomStringConvertible> : Illuminat
     typealias AbstractStateType = T
     
     // closure which will be used to implement `handleTestResult()` as declared in the protocol
-    private let _handleTestResult : (IlluminatorTestProgress<T>) -> ()
+    fileprivate let _handleTestResult : (IlluminatorTestProgress<T>) -> ()
     
     // `T` is effectively a handle for `AbstractStateType` in the protocol
-    init<P : IlluminatorTestResultHandler where P.AbstractStateType == T>(_ dep : P) {
+    init<P : IlluminatorTestResultHandler>(_ dep : P) where P.AbstractStateType == T {
         // requires Swift 2, otherwise create explicit closure
         _handleTestResult = dep.handleTestResult
     }
     
-    func handleTestResult(progress: IlluminatorTestProgress<AbstractStateType>) -> () {
+    func handleTestResult(_ progress: IlluminatorTestProgress<AbstractStateType>) -> () {
         // any protocol methods are implemented by forwarding
         return _handleTestResult(progress)
     }
@@ -47,11 +47,11 @@ struct IlluminatorTestResultHandlerThunk<T: CustomStringConvertible> : Illuminat
  */
 @available(iOS 9.0, *)
 public enum IlluminatorTestProgress<T: CustomStringConvertible> {
-    case Passing(T)
-    case Flagging(T, [String])
-    case Failing(T, [String])
+    case passing(T)
+    case flagging(T, [String])
+    case failing(T, [String])
 
-    func actionDescription(action: IlluminatorActionGeneric<T>) -> String {
+    func actionDescription(_ action: IlluminatorActionGeneric<T>) -> String {
         guard let screen = action.screen else {
             return "<screenless> \(action.description)"
         }
@@ -59,18 +59,18 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
     }
 
     // apply an action to a state of progress, returning a new state of progress
-    func applyAction(action: IlluminatorActionGeneric<T>, checkScreen: Bool) -> IlluminatorTestProgress<T> {
+    func applyAction(_ action: IlluminatorActionGeneric<T>, checkScreen: Bool) -> IlluminatorTestProgress<T> {
         var myState: T!
         var myErrStrings: [String]!
         
         // fall-through fail, or pick up state and strings
         switch self {
-        case .Failing:
+        case .failing:
             return self
-        case .Flagging(let state, let errStrings):
+        case .flagging(let state, let errStrings):
             myState = state
             myErrStrings = errStrings
-        case .Passing(let state):
+        case .passing(let state):
             myState = state
             myErrStrings = []
         }
@@ -82,12 +82,12 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
             if let s = action.screen {
                 do {
                     try s.becomesActive()
-                } catch IlluminatorExceptions.IncorrectScreen(let message) {
+                } catch IlluminatorExceptions.incorrectScreen(let message) {
                     myErrStrings.append(message)
-                    return .Failing(myState, myErrStrings)
+                    return .failing(myState, myErrStrings)
                 } catch let unknownError {
                     myErrStrings.append("Caught error: \(unknownError)")
-                    return .Failing(myState, myErrStrings)
+                    return .failing(myState, myErrStrings)
                 }
             }
         }
@@ -101,16 +101,16 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
         do {
             let newState = try action.task(myState)
             if myErrStrings.isEmpty {
-                return .Passing(newState)
+                return .passing(newState)
             } else {
-                return .Flagging(newState, myErrStrings)
+                return .flagging(newState, myErrStrings)
             }
-        } catch IlluminatorExceptions.Warning(let message) {
+        } catch IlluminatorExceptions.warning(let message) {
             myErrStrings.append(decorate("warning", message))
-            return .Flagging(myState, myErrStrings)
-        } catch IlluminatorExceptions.IncorrectScreen(let message) {
+            return .flagging(myState, myErrStrings)
+        } catch IlluminatorExceptions.incorrectScreen(let message) {
             myErrStrings.append(decorate("failed screen check", message))
-            return .Failing(myState, myErrStrings)
+            return .failing(myState, myErrStrings)
             //} catch IlluminatorExceptions.IndeterminateState(let message) {
             //    myErrStrings.append(decorate("indeterminate state", message))
             //    return .Failing(myErrStrings)
@@ -119,23 +119,23 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
             //    return .Failing(myErrStrings)
         } catch let unknownError {
             myErrStrings.append("Caught error: \(unknownError)")
-            return .Failing(myState, myErrStrings)
+            return .failing(myState, myErrStrings)
         }
     }
     
     // apply an action, checking the screen first
-    public func apply(action: IlluminatorActionGeneric<T>) -> IlluminatorTestProgress<T> {
+    public func apply(_ action: IlluminatorActionGeneric<T>) -> IlluminatorTestProgress<T> {
         return applyAction(action, checkScreen: true)
     }
     
     // apply an action, without checking the screen first
-    public func blindly(action: IlluminatorActionGeneric<T>) -> IlluminatorTestProgress<T> {
+    public func blindly(_ action: IlluminatorActionGeneric<T>) -> IlluminatorTestProgress<T> {
         return applyAction(action, checkScreen: false)
     }
     
     // handle the final result using a protocol-conformant object
     // then either pass or fail
-    public func finish<P: IlluminatorTestResultHandler where P.AbstractStateType == T>(handler: P) {
+    public func finish<P: IlluminatorTestResultHandler>(_ handler: P) where P.AbstractStateType == T {
         let genericHandler: IlluminatorTestResultHandlerThunk<T> = IlluminatorTestResultHandlerThunk(handler)
         genericHandler.handleTestResult(self)
         
@@ -145,7 +145,7 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
 
     // handle the final result using a passed-in closure 
     // then either pass or fail
-    public func finish(handler: (IlluminatorTestProgress<T>) -> ()) {
+    public func finish(_ handler: (IlluminatorTestProgress<T>) -> ()) {
         handler(self)
         finish()
     }
@@ -158,13 +158,13 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible> {
 }
 
 // How to assert Illuminator test progress is pass
-public func XCTAssert<T>(progress: IlluminatorTestProgress<T>, file f: StaticString = #file, line l: UInt = #line) {
+public func XCTAssert<T>(_ progress: IlluminatorTestProgress<T>, file f: StaticString = #file, line l: UInt = #line) {
     switch progress {
-    case .Failing(_, let errStrings):
-        XCTFail("Illuminator Failure: \(errStrings.joinWithSeparator("; "))", file: f, line: l)
-    case .Flagging(_, let errStrings):
-        XCTFail("Illuminator Deferred Failure: \(errStrings.joinWithSeparator("; "))", file: f, line: l)
-    case .Passing:
+    case .failing(_, let errStrings):
+        XCTFail("Illuminator Failure: \(errStrings.joined(separator: "; "))", file: f, line: l)
+    case .flagging(_, let errStrings):
+        XCTFail("Illuminator Deferred Failure: \(errStrings.joined(separator: "; "))", file: f, line: l)
+    case .passing:
         return
     }
 }

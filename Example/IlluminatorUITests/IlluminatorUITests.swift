@@ -14,10 +14,10 @@ class IlluminatorUITests: XCTestCase, IlluminatorTestResultHandler {
     
     // implement IlluminatorTestResultHandler protocol
     typealias AbstractStateType = AppTestState
-    func handleTestResult(progress: IlluminatorTestProgress<AbstractStateType>) -> (){
+    func handleTestResult(_ progress: IlluminatorTestProgress<AbstractStateType>) -> (){
 
         switch progress {
-        case .Failing(let state):
+        case .failing(let state):
             print("Failing state was \(state)")
             // on failure, print out what was on the screen when things failed
             for line in IlluminatorElement.accessorDump("app", appDebugDescription: app.debugDescription) {
@@ -50,7 +50,7 @@ class IlluminatorUITests: XCTestCase, IlluminatorTestResultHandler {
     
     func test_basicWithoutIlluminator() {
         
-        let textField = app.otherElements.containingType(.Button, identifier:"Button").childrenMatchingType(.TextField).element
+        let textField = app.otherElements.containing(.button, identifier:"Button").children(matching: .textField).element
         
         textField.tap()
         textField.typeText("test")
@@ -62,7 +62,7 @@ class IlluminatorUITests: XCTestCase, IlluminatorTestResultHandler {
     func test_basicWithIlluminator() {
         
         let interface = ExampleTestApp(testCase: self)
-        let initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
+        let initialState = IlluminatorTestProgress<AppTestState>.passing(AppTestState(didSomething: false))
         
         let myExampleText = "test123"
         
@@ -75,7 +75,7 @@ class IlluminatorUITests: XCTestCase, IlluminatorTestResultHandler {
     func test_basicWithIlluminatorCompositeAction() {
 
         let interface = ExampleTestApp(testCase: self)
-        let initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
+        let initialState = IlluminatorTestProgress<AppTestState>.passing(AppTestState(didSomething: false))
 
         let myExampleText = "test123"
 
@@ -87,7 +87,7 @@ class IlluminatorUITests: XCTestCase, IlluminatorTestResultHandler {
     func test_basicWithIlluminatorAndHandlerProtocol() {
 
         let interface = ExampleTestApp(testCase: self)
-        let initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
+        let initialState = IlluminatorTestProgress<AppTestState>.passing(AppTestState(didSomething: false))
 
         let myExampleText = "test123"
 
@@ -100,7 +100,7 @@ class IlluminatorUITests: XCTestCase, IlluminatorTestResultHandler {
     func test_basicWithIlluminatorAndHandlerClosure() {
 
         let interface = ExampleTestApp(testCase: self)
-        let initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
+        let initialState = IlluminatorTestProgress<AppTestState>.passing(AppTestState(didSomething: false))
 
         let myExampleText = "test123"
 

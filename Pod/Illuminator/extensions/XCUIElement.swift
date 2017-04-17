@@ -12,11 +12,11 @@ import XCTest
 
 // string-representable optionset
 // pattern via http://www.swift-studies.com/blog/2015/6/17/exploring-swift-20-optionsettypes
-public struct IlluminatorElementReadiness: OptionSetType, CustomStringConvertible {
-    private enum Readiness: Int, CustomStringConvertible {
-        case Exists       = 1
-        case InMainWindow = 2
-        case Hittable     = 4
+public struct IlluminatorElementReadiness: OptionSet, CustomStringConvertible {
+    fileprivate enum Readiness: Int, CustomStringConvertible {
+        case exists       = 1
+        case inMainWindow = 2
+        case hittable     = 4
 
         var description : String {
             var shift = 0
@@ -27,11 +27,11 @@ public struct IlluminatorElementReadiness: OptionSetType, CustomStringConvertibl
 
     public  let rawValue: Int
     public  init(rawValue: Int) { self.rawValue = rawValue}
-    private init(_ readiness: Readiness) { self.rawValue = readiness.rawValue }
+    fileprivate init(_ readiness: Readiness) { self.rawValue = readiness.rawValue }
 
-    static let Exists        = IlluminatorElementReadiness(Readiness.Exists)
-    static let InMainWindow  = IlluminatorElementReadiness(Readiness.InMainWindow)
-    static let Hittable      = IlluminatorElementReadiness(Readiness.Hittable)
+    static let Exists        = IlluminatorElementReadiness(Readiness.exists)
+    static let InMainWindow  = IlluminatorElementReadiness(Readiness.inMainWindow)
+    static let Hittable      = IlluminatorElementReadiness(Readiness.hittable)
 
     public var description : String{
         var result = [String]()
@@ -44,7 +44,7 @@ public struct IlluminatorElementReadiness: OptionSetType, CustomStringConvertibl
                 result.append("\(v)")
             }
         }
-        return "[\(result.joinWithSeparator(","))]"
+        return "[\(result.joined(separator: ","))]"
     }
 }
 
@@ -56,7 +56,7 @@ extension XCUIElement {
     // best effort
     // this code was adapted from the original javascript implementation of Illuminator
     // and it may no longer be relevant.  It is here until we can find a more relevant equality operation
-    func equals(e: XCUIElement) -> Bool {
+    func equals(_ e: XCUIElement) -> Bool {
         
         // nonexistent elements can't be equal to anything
         guard exists && e.exists else {
@@ -68,11 +68,11 @@ extension XCUIElement {
         let c1 = self.elementType == e.elementType
         let c2 = self.self.label == e.label
         let c3 = self.identifier == e.identifier
-        let c4 = self.hittable == e.hittable
+        let c4 = self.isHittable == e.isHittable
         let c5 = self.frame == e.frame
-        let c6 = self.enabled == e.enabled
+        let c6 = self.isEnabled == e.isEnabled
         let c7 = self.accessibilityLabel == e.accessibilityLabel
-        let c8 = self.selected == e.selected
+        let c8 = self.isSelected == e.isSelected
         
         result = c1 && c2 && c3 && c4 && c5 && c6 && c7 && c8
         
@@ -82,17 +82,17 @@ extension XCUIElement {
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws {
         repeat {
             if element.exists {
-                if element.hittable { return }
+                if element.isHittable { return }
             }
 
             switch direction {
-            case UISwipeGestureRecognizerDirection.Down:
+            case UISwipeGestureRecognizerDirection.down:
                 swipeDown()
-            case UISwipeGestureRecognizerDirection.Up:
+            case UISwipeGestureRecognizerDirection.up:
                 swipeUp()
-            case UISwipeGestureRecognizerDirection.Left:
+            case UISwipeGestureRecognizerDirection.left:
                 swipeLeft()
-            case UISwipeGestureRecognizerDirection.Right:
+            case UISwipeGestureRecognizerDirection.right:
                 swipeRight()
             default:
                 ()
@@ -100,12 +100,12 @@ extension XCUIElement {
         } while !giveUpCondition(self, element)
 
         if !element.inMainWindow {
-            throw IlluminatorExceptions.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
+            throw IlluminatorExceptions.elementNotReady(message: "Couldn't find \(element) after \(failMessage)")
         }
     }
 
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws {
-        let startTime = NSDate()
+        let startTime = Date()
         try swipeTo(target: element, direction: direction, failMessage: "scrolling for \(seconds) seconds") { (_, _) in
             return (0 - startTime.timeIntervalSinceNow) > seconds
         }
@@ -123,8 +123,8 @@ extension XCUIElement {
     var inMainWindow: Bool {
         get {
             guard exists else { return false }
-            let window = XCUIApplication().windows.elementBoundByIndex(0)
-            return CGRectContainsRect(window.frame, self.frame)
+            let window = XCUIApplication().windows.element(boundBy: 0)
+            return window.frame.contains(self.frame)
         }
     }
 
@@ -133,20 +133,21 @@ extension XCUIElement {
     func ready(usingCriteria desired: IlluminatorElementReadiness, otherwiseFailWith description: String) throws -> XCUIElement {
         let failMessage = { (message: String) -> String in "\(description); element not ready: \(message)" }
         if desired.contains(.Exists) && !exists {
-            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element does not exist"))
+            throw IlluminatorExceptions.elementNotReady(message: failMessage("element does not exist"))
         }
 
         if desired.contains(.InMainWindow) && !inMainWindow {
-            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element is not within the bounds of the main window"))
+            throw IlluminatorExceptions.elementNotReady(message: failMessage("element is not within the bounds of the main window"))
         }
 
-        if desired.contains(.Hittable) && !hittable {
-            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element is not hittable"))
+        if desired.contains(.Hittable) && !isHittable {
+            throw IlluminatorExceptions.elementNotReady(message: failMessage("element is not hittable"))
         }
 
         return self
     }
 
+    @discardableResult
     func ready(usingCriteria desired: IlluminatorElementReadiness) throws -> XCUIElement {
         return try ready(usingCriteria: desired, otherwiseFailWith: "Failed readiness check")
     }
@@ -165,7 +166,7 @@ extension XCUIElement {
                 do {
                     try $0.ready(usingCriteria: desired)
                     return true
-                } catch IlluminatorExceptions.ElementNotReady(let message) {
+                } catch IlluminatorExceptions.elementNotReady(let message) {
                     lastMessage = message
                     return false
                 } catch {
@@ -173,16 +174,16 @@ extension XCUIElement {
                 }
             }
             return self
-        } catch IlluminatorExceptions.VerificationFailed(let failMessage) {
-            throw IlluminatorExceptions.ElementNotReady(message: (lastMessage ?? failMessage))
+        } catch IlluminatorExceptions.verificationFailed(let failMessage) {
+            throw IlluminatorExceptions.elementNotReady(message: (lastMessage ?? failMessage))
         }
     }
 
-    func whenReady(secondsToWait: Double = 3.0) throws -> XCUIElement {
+    func whenReady(_ secondsToWait: Double = 3.0) throws -> XCUIElement {
         return try whenReady(usingCriteria: defaultReadiness, withTimeout: secondsToWait)
     }
 
-    public func waitForProperty<T: WaitForible>(seconds: Double, desired: T, getProperty: (XCUIElement) -> T) throws {
+    public func waitForProperty<T: WaitForible>(_ seconds: Double, desired: T, getProperty: (XCUIElement) -> T) throws {
         try waitForResult(seconds, desired: desired, what: "waitForProperty") { () -> T in
             return getProperty(self)
         }

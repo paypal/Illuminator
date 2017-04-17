@@ -29,8 +29,8 @@ extension String: WaitForible {
 // guaranteed to run at least once (even if seconds == 0)
 // see http://stackoverflow.com/questions/31300372/uiautomation-and-xctestcase-how-to-wait-for-a-button-to-activate
 // and http://stackoverflow.com/questions/31182637/delay-wait-in-a-test-case-of-xcode-ui-testing
-public func waitForResult <T: WaitForible> (seconds: Double, desired: T, what: String, getResult: () -> T) throws {
-    let startTime = NSDate()
+public func waitForResult <T: WaitForible> (_ seconds: Double, desired: T, what: String, getResult: () -> T) throws {
+    let startTime = Date()
     var lastResult: T
     repeat {
         lastResult = getResult()
@@ -40,6 +40,6 @@ public func waitForResult <T: WaitForible> (seconds: Double, desired: T, what: S
         _ = XCUIApplication().navigationBars.count
 
     } while (0 - startTime.timeIntervalSinceNow) < seconds
-    throw IlluminatorExceptions.VerificationFailed(
+    throw IlluminatorExceptions.verificationFailed(
         message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
 }

@@ -26,7 +26,7 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    @IBAction func buttonPressed(sender: AnyObject) {
+    @IBAction func buttonPressed(_ sender: AnyObject) {
         showAlert()
     }
     

@@ -61,7 +61,7 @@ public func 〚 (query: XCUIElementQuery, index: WhiteBracketIndex) -> [XCUIElem
 
 
 extension XCUIElementQuery {
-    func subscriptsMatching(label: String) -> [XCUIElement] {
+    func subscriptsMatching(_ label: String) -> [XCUIElement] {
         return self.allElementsBoundByAccessibilityElement.reduce([XCUIElement]()) { (acc, elem) in
             print("Checking \(elem) (\(elem.elementType)): \(elem.label)")
             guard elem.label == label else { return acc }
@@ -72,16 +72,16 @@ extension XCUIElementQuery {
     }
 
     // Do a subscript operation, but fail immediately unless the subscript returns one and only one match
-    func hardSubscript(index: String) throws -> XCUIElement {
+    func hardSubscript(_ index: String) throws -> XCUIElement {
         let matchingElements = allElementsBoundByAccessibilityElement.reduce(0) { (acc, elem) in
             guard elem.label == index else { return acc }
             return acc + 1
         }
 
         switch matchingElements {
-        case 0: throw IlluminatorExceptions.ElementNotFound(message: "No elements match the label \"\(index)\"")
+        case 0: throw IlluminatorExceptions.elementNotFound(message: "No elements match the label \"\(index)\"")
         case 1: return self[index]
-        default: throw IlluminatorExceptions.MultipleElementsFound(message: "Multiple elements match the label \"\(index)\"")
+        default: throw IlluminatorExceptions.multipleElementsFound(message: "Multiple elements match the label \"\(index)\"")
         }
     }
     
@@ -91,14 +91,14 @@ extension XCUIElementQuery {
 // allow for-in with elements
 // http://design.featherless.software/minimal-swift-protocol-conformance/
 //
-extension XCUIElementQuery: SequenceType {
-    public typealias Generator = AnyGenerator<XCUIElement>
-    public func generate() -> Generator {
+extension XCUIElementQuery: Sequence {
+    public typealias Iterator = AnyIterator<XCUIElement>
+    public func makeIterator() -> Iterator {
         var index = UInt(0)
-        return AnyGenerator {
+        return AnyIterator {
             guard index < self.count else { return nil }
             
-            let element = self.elementBoundByIndex(index)
+            let element = self.element(boundBy: index)
             index = index + 1
             return element
         }

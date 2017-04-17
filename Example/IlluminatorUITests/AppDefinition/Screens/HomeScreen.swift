@@ -20,23 +20,23 @@ class HomeScreen: IlluminatorDelayedScreen<AppTestState> {
         return app.buttons["Button"].exists
     }
     
-    func enterText(what: String) -> IlluminatorActionGeneric<AppTestState> {
+    func enterText(_ what: String) -> IlluminatorActionGeneric<AppTestState> {
         return makeAction() {
-            let textField = self.app.otherElements.containingType(.Button,
-                identifier:"Button").childrenMatchingType(.TextField).element
+            let textField = self.app.otherElements.containing(.button,
+                identifier:"Button").children(matching: .textField).element
             textField.tap()
             textField.typeText(what)
         }
     }
 
-    func verifyText(expected: String) -> IlluminatorActionGeneric<AppTestState> {
+    func verifyText(_ expected: String) -> IlluminatorActionGeneric<AppTestState> {
         return makeAction() {
-            let textField = self.app.otherElements.containingType(.Button, identifier:"Button").childrenMatchingType(.TextField).element
+            let textField = self.app.otherElements.containing(.button, identifier:"Button").children(matching: .textField).element
             XCTAssertEqual(textField.value as? String, expected)
         }
     }
 
-    func enterAndVerifyText(what: String) -> IlluminatorActionGeneric<AppTestState> {
+    func enterAndVerifyText(_ what: String) -> IlluminatorActionGeneric<AppTestState> {
         return makeAction([
             enterText(what),
             verifyText(what)

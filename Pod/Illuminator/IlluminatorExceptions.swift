@@ -9,14 +9,14 @@
 import XCTest
 
 
-public enum IlluminatorExceptions: ErrorType {
-    case Warning(message: String)                   // non-fatal error; can be deferred. doesn't interrupt flow
-    case IncorrectScreen(message: String)           // we're on the wrong screen
+public enum IlluminatorExceptions: Error {
+    case warning(message: String)                   // non-fatal error; can be deferred. doesn't interrupt flow
+    case incorrectScreen(message: String)           // we're on the wrong screen
     //case IndeterminateState(message: String)        // the saved state doesn't make sense
-    case VerificationFailed(message: String)        // we wanted something that wasn't there
-    case DeveloperError(message: String)            // the writer of the test is using Illuminator incorrectly
-    case ElementNotReady(message: String)           // an element failed readiness check
-    case MultipleElementsFound(message: String)     // multiple elements exist
-    case ElementNotFound(message: String)           // no element exists
+    case verificationFailed(message: String)        // we wanted something that wasn't there
+    case developerError(message: String)            // the writer of the test is using Illuminator incorrectly
+    case elementNotReady(message: String)           // an element failed readiness check
+    case multipleElementsFound(message: String)     // multiple elements exist
+    case elementNotFound(message: String)           // no element exists
 }
 

@@ -13,7 +13,7 @@ import XCTest
 
 // Actions need the ability to push/pop the continueAfterFailure variable.
 // We don't care whose framework "owns" the base class, we just need to wrap it.
-public class IlluminatorTestcaseWrapper {
+open class IlluminatorTestcaseWrapper {
     let testCase: XCTestCase
     var continueAfterFailures = [Bool]()
 
@@ -27,13 +27,13 @@ public class IlluminatorTestcaseWrapper {
         sanityCheck()
     }
 
-    public func pushContinueAfterFailure(val: Bool) {
+    open func pushContinueAfterFailure(_ val: Bool) {
         sanityCheck()
         continueAfterFailures.append(val)
         testCase.continueAfterFailure = val
     }
 
-    public func popContinueAfterFailure() {
+    open func popContinueAfterFailure() {
         sanityCheck()
         continueAfterFailures.removeLast()
         testCase.continueAfterFailure = continueAfterFailures.last!
