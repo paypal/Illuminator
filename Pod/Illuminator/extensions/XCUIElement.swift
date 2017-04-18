@@ -169,6 +169,39 @@ extension XCUIElement {
     }
 
     /**
+         Drag a line (or rectangle select) within the element
+
+         - Parameters:
+             - startLocation: Starting coordinates with normalized offset
+             - endLocation: Ending coordinates with normalized offset
+             - holdDuration: amount of time to hold before dragging
+         - Returns: the element
+     */
+    func dragLine(startLocation: CGVector, endLocation: CGVector, holdDuration: NSTimeInterval = 0) -> XCUIElement {
+        let start = self.coordinateWithNormalizedOffset(startLocation)
+        let finish = self.coordinateWithNormalizedOffset(endLocation)
+        start.pressForDuration(holdDuration, thenDragToCoordinate: finish)
+        return self
+    }
+
+    /**
+         Drag a line (or rectangle select) within the element
+
+         - Parameters:
+             - x1: Start X coordinate with normalized offset
+             - y1: Start Y coordinate with normalized offset
+             - x2: End X coordinate with normalized offset
+             - y2: End Y coordinate with normalized offset
+             - holdDuration: amount of time to hold before dragging
+         - Returns: the element
+     */
+    func dragLine(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat, holdDuration: NSTimeInterval = 0) -> XCUIElement {
+        let start = CGVectorMake(x1, y1)
+        let end = CGVectorMake(x2, y2)
+        return dragLine(start, endLocation: end, holdDuration: holdDuration)
+    }
+
+    /**
         Check the rectangle of an element and see if it is in the main window.
      */
     var inMainWindow: Bool {
