@@ -26,9 +26,22 @@ extension String: WaitForible {
 }
 
 
-// guaranteed to run at least once (even if seconds == 0)
-// see http://stackoverflow.com/questions/31300372/uiautomation-and-xctestcase-how-to-wait-for-a-button-to-activate
-// and http://stackoverflow.com/questions/31182637/delay-wait-in-a-test-case-of-xcode-ui-testing
+/**
+    Assert that a closure returns a desired result within a time limit
+ 
+    Guaranteed to run at least once (even if seconds == 0)
+ 
+    See also
+    - http://stackoverflow.com/questions/31300372/uiautomation-and-xctestcase-how-to-wait-for-a-button-to-activate
+    - http://stackoverflow.com/questions/31182637/delay-wait-in-a-test-case-of-xcode-ui-testing
+
+    - Parameters:
+        - seconds: The amount of time to wait before failing
+        - desired: The value needed for successful exit
+        - what: A description of what is being waited for, for logging
+        - getResult: A function that returns the value that will be compared with the desired value
+    - Throws: `IlluminatorError.VerificationFailed` if the desired and actual values do not become equal before the time limit has passed
+ */
 public func waitForResult <T: WaitForible> (seconds: Double, desired: T, what: String, getResult: () -> T) throws {
     let startTime = NSDate()
     var lastResult: T
@@ -40,6 +53,5 @@ public func waitForResult <T: WaitForible> (seconds: Double, desired: T, what: S
         _ = XCUIApplication().navigationBars.count
 
     } while (0 - startTime.timeIntervalSinceNow) < seconds
-    throw IlluminatorExceptions.VerificationFailed(
-        message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
+        throw IlluminatorError.VerificationFailed(message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
 }

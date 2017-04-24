@@ -8,11 +8,13 @@
 
 import XCTest
 
-// this may not work
-// see http://stackoverflow.com/questions/20998788/failing-a-xctestcase-with-assert-without-the-test-continuing-to-run-but-without
+/**
+    This class may be unnecessary, but it provides a way to separate Illuminator's concerns regarding the XCTestCase class from any site-specific extensions to this class
 
-// Actions need the ability to push/pop the continueAfterFailure variable.
-// We don't care whose framework "owns" the base class, we just need to wrap it.
+    There was also a possibly misguided attempt to wrap continueAfterFailure in a push/pop-able operation, see 
+    http://stackoverflow.com/questions/20998788/failing-a-xctestcase-with-assert-without-the-test-continuing-to-run-but-without
+
+*/
 public class IlluminatorTestcaseWrapper {
     let testCase: XCTestCase
     var continueAfterFailures = [Bool]()

@@ -9,15 +9,22 @@
 import XCTest
 @available(iOS 9.0, *)
 
-
-// string-representable optionset
-// pattern via http://www.swift-studies.com/blog/2015/6/17/exploring-swift-20-optionsettypes
+/**
+    A string-representable optionset for testing element readiness
+    
+    pattern via http://www.swift-studies.com/blog/2015/6/17/exploring-swift-20-optionsettypes
+ */
 public struct IlluminatorElementReadiness: OptionSetType, CustomStringConvertible {
     private enum Readiness: Int, CustomStringConvertible {
         case Exists       = 1
         case InMainWindow = 2
         case Hittable     = 4
 
+        /**
+             Implementation for CustomStringConvertible
+
+             - Returns: A string describing the option
+         */
         var description : String {
             var shift = 0
             while (rawValue >> shift != 1) { shift = shift + 1 } // TODO: probably a better way to do this
@@ -33,6 +40,11 @@ public struct IlluminatorElementReadiness: OptionSetType, CustomStringConvertibl
     static let InMainWindow  = IlluminatorElementReadiness(Readiness.InMainWindow)
     static let Hittable      = IlluminatorElementReadiness(Readiness.Hittable)
 
+    /**
+        Implementation for CustomStringConvertible
+
+        - Returns: A string describing which options have been sent
+     */
     public var description : String{
         var result = [String]()
         var shift = 0
@@ -52,10 +64,15 @@ public struct IlluminatorElementReadiness: OptionSetType, CustomStringConvertibl
 let defaultReadiness: IlluminatorElementReadiness = [.Exists, .Hittable]
 
 extension XCUIElement {
-    
-    // best effort
-    // this code was adapted from the original javascript implementation of Illuminator
-    // and it may no longer be relevant.  It is here until we can find a more relevant equality operation
+
+    /**
+        Best effort equality test
+        
+        this code was adapted from the original javascript implementation of Illuminator
+        and it may no longer be relevant.  It is here until we can find a more relevant equality operation
+        - Parameter e: The element to compare to this element
+        - Returns: Whether the elements are deemed equal
+     */
     func equals(e: XCUIElement) -> Bool {
         
         // nonexistent elements can't be equal to anything
@@ -79,10 +96,21 @@ extension XCUIElement {
         return result
     }
 
-    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws {
+    /**
+        Swipe in a specified direction until an element is hittable
+
+         - Parameters:
+            - target: the element being searched for
+            - direction: the swipe direction (the reverse of the scroll direction)
+            - failMessage: Text to append to the failure message, indicating the exit condition
+            - giveUpCondition: Closure that returns true when the swipe operations should terminate (indicating a failure)
+        - Returns: the target element
+        - Throws: `IlluminatorError.ElementNotReady` If the target is not found
+     */
+    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws -> XCUIElement  {
         repeat {
             if element.exists {
-                if element.hittable { return }
+                if element.hittable { return element }
             }
 
             switch direction {
@@ -100,26 +128,82 @@ extension XCUIElement {
         } while !giveUpCondition(self, element)
 
         if !element.inMainWindow {
-            throw IlluminatorExceptions.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
+            throw IlluminatorError.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
         }
+        return element
     }
 
-    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws {
+    /**
+        Swipe in a specified direction until an element is hittable or a timeout is reached
+
+        - Parameters:
+            - target: the element being searched for
+            - direction: the swipe direction (the reverse of the scroll direction)
+            - withTimeout: the number of seconds to wait before failing
+        - Returns: the target element
+        - Throws: `IlluminatorError.ElementNotReady` If the target is not found
+     */
+    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws -> XCUIElement {
         let startTime = NSDate()
-        try swipeTo(target: element, direction: direction, failMessage: "scrolling for \(seconds) seconds") { (_, _) in
+        return try swipeTo(target: element, direction: direction, failMessage: "scrolling for \(seconds) seconds") { (_, _) in
             return (0 - startTime.timeIntervalSinceNow) > seconds
         }
     }
 
-    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, maxSwipes: UInt) throws {
+    /**
+        Swipe in a specified direction until an element is hittable or a maxiumum number of swipes has been reached
+
+        - Parameters:
+            - target: the element being searched for
+            - direction: the swipe direction (the reverse of the scroll direction)
+            - maxSwipes: the number of times to swipe before failing
+        - Returns: the target element
+        - Throws: `IlluminatorError.ElementNotReady` If the target is not found
+     */
+    func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, maxSwipes: UInt) throws -> XCUIElement {
         var totalSwipes: UInt = 0
-        try swipeTo(target: element, direction: direction, failMessage: "swiping \(maxSwipes) times") { (_, _) in
+        return try swipeTo(target: element, direction: direction, failMessage: "swiping \(maxSwipes) times") { (_, _) in
             totalSwipes = totalSwipes + 1
             return totalSwipes > maxSwipes
         }
     }
 
-    // check the rectangle of an element and see if it is in the main window.
+    /**
+         Drag a line (or rectangle select) within the element
+
+         - Parameters:
+             - startLocation: Starting coordinates with normalized offset
+             - endLocation: Ending coordinates with normalized offset
+             - holdDuration: amount of time to hold before dragging
+         - Returns: the element
+     */
+    func dragLine(startLocation: CGVector, endLocation: CGVector, holdDuration: NSTimeInterval = 0) -> XCUIElement {
+        let start = self.coordinateWithNormalizedOffset(startLocation)
+        let finish = self.coordinateWithNormalizedOffset(endLocation)
+        start.pressForDuration(holdDuration, thenDragToCoordinate: finish)
+        return self
+    }
+
+    /**
+         Drag a line (or rectangle select) within the element
+
+         - Parameters:
+             - x1: Start X coordinate with normalized offset
+             - y1: Start Y coordinate with normalized offset
+             - x2: End X coordinate with normalized offset
+             - y2: End Y coordinate with normalized offset
+             - holdDuration: amount of time to hold before dragging
+         - Returns: the element
+     */
+    func dragLine(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat, holdDuration: NSTimeInterval = 0) -> XCUIElement {
+        let start = CGVectorMake(x1, y1)
+        let end = CGVectorMake(x2, y2)
+        return dragLine(start, endLocation: end, holdDuration: holdDuration)
+    }
+
+    /**
+        Check the rectangle of an element and see if it is in the main window.
+     */
     var inMainWindow: Bool {
         get {
             guard exists else { return false }
@@ -128,34 +212,65 @@ extension XCUIElement {
         }
     }
 
-    // general purpose function for checking that an element is ready for an action
-    // in order to throw an illuminator error instead of simply XCTFailing with no info
+    /**
+        Throw an exception if an element is not ready for an action
+     
+        This is an alternative to an XCTFail
+
+        - Parameters:
+            - usingCriteria: the readiness criteria to check
+            - otherwiseFailWith: text to annotate the exception on failure
+        - Returns: the element
+        - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
+     */
     func ready(usingCriteria desired: IlluminatorElementReadiness, otherwiseFailWith description: String) throws -> XCUIElement {
         let failMessage = { (message: String) -> String in "\(description); element not ready: \(message)" }
         if desired.contains(.Exists) && !exists {
-            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element does not exist"))
+            throw IlluminatorError.ElementNotReady(message: failMessage("element does not exist"))
         }
 
         if desired.contains(.InMainWindow) && !inMainWindow {
-            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element is not within the bounds of the main window"))
+            throw IlluminatorError.ElementNotReady(message: failMessage("element is not within the bounds of the main window"))
         }
 
         if desired.contains(.Hittable) && !hittable {
-            throw IlluminatorExceptions.ElementNotReady(message: failMessage("element is not hittable"))
+            throw IlluminatorError.ElementNotReady(message: failMessage("element is not hittable"))
         }
 
         return self
     }
 
+    /**
+        Throw an exception if an element is not ready for an action, using default description
+
+         - Parameters:
+            - usingCriteria: the readiness criteria to check
+         - Returns: the element
+         - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
+     */
     func ready(usingCriteria desired: IlluminatorElementReadiness) throws -> XCUIElement {
         return try ready(usingCriteria: desired, otherwiseFailWith: "Failed readiness check")
     }
 
+    /**
+     Throw an exception if an element is not ready for an action, using default description and criteria
+
+     - Returns: the element
+     - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
+     */
     func ready() throws -> XCUIElement {
         return try ready(usingCriteria: defaultReadiness)
     }
 
-    // wait for readiness condition for a given number of seconds; throw or return self
+    /**
+         Wait a given number of seconds for a readiness condition
+
+         - Parameters:
+             - usingCriteria: the readiness criteria to check
+             - withTimeout: the number of seconds to wait
+         - Returns: the element
+         - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
+     */
     func whenReady(usingCriteria desired: IlluminatorElementReadiness, withTimeout seconds: Double) throws -> XCUIElement {
         var lastMessage: String? = nil
         // this flow looks strange, but basically we're working around waitForResult()'s exception -- it throws
@@ -165,7 +280,7 @@ extension XCUIElement {
                 do {
                     try $0.ready(usingCriteria: desired)
                     return true
-                } catch IlluminatorExceptions.ElementNotReady(let message) {
+                } catch IlluminatorError.ElementNotReady(let message) {
                     lastMessage = message
                     return false
                 } catch {
@@ -173,19 +288,55 @@ extension XCUIElement {
                 }
             }
             return self
-        } catch IlluminatorExceptions.VerificationFailed(let failMessage) {
-            throw IlluminatorExceptions.ElementNotReady(message: (lastMessage ?? failMessage))
+        } catch IlluminatorError.VerificationFailed(let failMessage) {
+            throw IlluminatorError.ElementNotReady(message: lastMessage ?? failMessage)
         }
     }
 
+    /**
+         Wait a given number of seconds for a readiness condition
+
+         - Parameters:
+             - secondsToWait: the number of seconds to wait
+         - Returns: the element
+         - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
+     */
     func whenReady(secondsToWait: Double = 3.0) throws -> XCUIElement {
         return try whenReady(usingCriteria: defaultReadiness, withTimeout: secondsToWait)
     }
 
-    public func waitForProperty<T: WaitForible>(seconds: Double, desired: T, getProperty: (XCUIElement) -> T) throws {
+    /**
+        Wait until an element property reaches a specific value or a timeout is reached
+
+         - Parameters:
+             - seconds: the number of seconds to wait
+             - desired: the desired value
+             - getProperty: a closure that returns the property, given the element
+         - Returns: the element
+         - Throws: `VerificationFailed` If the property fails to attains the desired value before the timeout is reached
+     */
+    public func waitForProperty<T: WaitForible>(seconds: Double, desired: T, getProperty: (XCUIElement) -> T) throws -> XCUIElement {
         try waitForResult(seconds, desired: desired, what: "waitForProperty") { () -> T in
             return getProperty(self)
         }
+        return self
+    }
+
+    /**
+         Wait until an element property reaches a specific value or a timeout is reached
+
+         - Parameters:
+             - desired: the desired value
+             - getProperty: a closure that returns the property, given the element
+         - Returns: the element
+         - Throws: `VerificationFailed` If the property is not equal to the desired value
+     */
+    public func assertProperty<T: WaitForible>(desired: T, getProperty: (XCUIElement) -> T) throws -> XCUIElement {
+        let actual = getProperty(self)
+        if desired != actual {
+            throw IlluminatorError.VerificationFailed(message: "Expected property to be '\(desired)', got '\(actual)'")
+         }
+        return self
     }
 }
 
