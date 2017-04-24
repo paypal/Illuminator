@@ -14,7 +14,7 @@ import XCTest
  */
 public protocol IlluminatorTestResultHandler {
     associatedtype AbstractStateType: CustomStringConvertible
-    func handleTestResult(progress: IlluminatorTestProgress<AbstractStateType>) -> ()
+    func handleTestResult(_ progress: IlluminatorTestProgress<AbstractStateType>) -> ()
 }
 
 
@@ -27,15 +27,15 @@ struct IlluminatorTestResultHandlerThunk<T: CustomStringConvertible> : Illuminat
     typealias AbstractStateType = T
     
     // closure which will be used to implement `handleTestResult()` as declared in the protocol
-    private let _handleTestResult : (IlluminatorTestProgress<T>) -> ()
+    fileprivate let _handleTestResult : (IlluminatorTestProgress<T>) -> ()
     
     // `T` is effectively a handle for `AbstractStateType` in the protocol
-    init<P : IlluminatorTestResultHandler where P.AbstractStateType == T>(_ dep : P) {
+    init<P : IlluminatorTestResultHandler>(_ dep : P) where P.AbstractStateType == T {
         // requires Swift 2, otherwise create explicit closure
         _handleTestResult = dep.handleTestResult
     }
     
-    func handleTestResult(progress: IlluminatorTestProgress<AbstractStateType>) -> () {
+    func handleTestResult(_ progress: IlluminatorTestProgress<AbstractStateType>) -> () {
         // any protocol methods are implemented by forwarding
         return _handleTestResult(progress)
     }
@@ -64,9 +64,9 @@ public struct IlluminatorErrorInfo: CustomStringConvertible {
  */
 @available(iOS 9.0, *)
 public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringConvertible {
-    case Passing(T)
-    case Flagging(T, [IlluminatorErrorInfo])
-    case Failing(T, [IlluminatorErrorInfo])
+    case passing(T)
+    case flagging(T, [IlluminatorErrorInfo])
+    case failing(T, [IlluminatorErrorInfo])
 
     /**
         A description of an action, with the screen if that exists
@@ -75,7 +75,7 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
             - action: the action to render
         - Returns: The description
      */
-    func actionDescription(action: IlluminatorActionGeneric<T>) -> String {
+    func actionDescription(_ action: IlluminatorActionGeneric<T>) -> String {
         guard let screen = action.screen else {
             return "<screenless> \(action.description)"
         }
@@ -92,18 +92,18 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
             - line: The line on which the action was applied
         - Returns: A new test progress state, according to the result of the action
      */
-    func applyAction(action: IlluminatorActionGeneric<T>, checkScreen: Bool, file: StaticString, line: UInt) -> IlluminatorTestProgress<T> {
+    func applyAction(_ action: IlluminatorActionGeneric<T>, checkScreen: Bool, file: StaticString, line: UInt) -> IlluminatorTestProgress<T> {
         var myState: T!
         var myErrors: [IlluminatorErrorInfo]!
         
         // fall-through fail, or pick up state and strings
         switch self {
-        case .Failing:
+        case .failing:
             return self
-        case .Flagging(let state, let errInfos):
+        case .flagging(let state, let errInfos):
             myState = state
             myErrors = errInfos
-        case .Passing(let state):
+        case .passing(let state):
             myState = state
             myErrors = []
         }
@@ -115,16 +115,16 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
             if let s = action.screen {
                 do {
                     try s.becomesActive()
-                } catch IlluminatorError.IncorrectScreen(let message) {
+                } catch IlluminatorError.incorrectScreen(let message) {
                     // for incorrect screen, show the IDE error at the action application
                     let errInfo = IlluminatorErrorInfo(message: "Incorrect screen for \(actionDescription(action)): \(message)", file: file, line: line)
                     myErrors.append(errInfo)
-                    return .Failing(myState, myErrors)
+                    return .failing(myState, myErrors)
                 } catch let unknownError {
                     // for all other errors, show the IDE error at the action implementation
                     let errInfo = IlluminatorErrorInfo(message: "Error applying \(actionDescription(action)): \(unknownError)", file: action.file, line: action.line)
                     myErrors.append(errInfo)
-                    return .Failing(myState, myErrors)
+                    return .failing(myState, myErrors)
                 }
             }
         }
@@ -139,16 +139,16 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
         do {
             let newState = try action.task(myState)
             if myErrors.isEmpty {
-                return .Passing(newState)
+                return .passing(newState)
             } else {
-                return .Flagging(newState, myErrors)
+                return .flagging(newState, myErrors)
             }
-        } catch IlluminatorError.Warning(let message) {
+        } catch IlluminatorError.warning(let message) {
             myErrors.append(decorate("Warning", message))
-            return .Flagging(myState, myErrors)
+            return .flagging(myState, myErrors)
         } catch let unknownError {
             myErrors.append(decorate("Error", "\(unknownError)"))
-            return .Failing(myState, myErrors)
+            return .failing(myState, myErrors)
         }
     }
     
@@ -163,7 +163,7 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
             - line: The line on which the action was applied
         - Returns: The progress state as a result of the action
      */
-    public func apply(action: IlluminatorActionGeneric<T>, file: StaticString = #file, line: UInt = #line) -> IlluminatorTestProgress<T> {
+    public func apply(_ action: IlluminatorActionGeneric<T>, file: StaticString = #file, line: UInt = #line) -> IlluminatorTestProgress<T> {
         return applyAction(action, checkScreen: true, file: file, line: line)
     }
     
@@ -178,7 +178,7 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
             - line: The line on which the action was applied
         - Returns: The progress state as a result of the action
      */
-    public func blindly(action: IlluminatorActionGeneric<T>, file: StaticString = #file, line: UInt = #line) -> IlluminatorTestProgress<T> {
+    public func blindly(_ action: IlluminatorActionGeneric<T>, file: StaticString = #file, line: UInt = #line) -> IlluminatorTestProgress<T> {
         return applyAction(action, checkScreen: false, file: file, line: line)
     }
     
@@ -188,7 +188,7 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
         - Parameters:
             - handler: The protocol-conformant object that will handle the test result
      */
-    public func finish<P: IlluminatorTestResultHandler where P.AbstractStateType == T>(handler: P) {
+    public func finish<P: IlluminatorTestResultHandler>(_ handler: P) where P.AbstractStateType == T {
         let genericHandler: IlluminatorTestResultHandlerThunk<T> = IlluminatorTestResultHandlerThunk(handler)
         genericHandler.handleTestResult(self)
         
@@ -202,7 +202,7 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
         - Parameters:
             - handler: The closure that will handle the test result
      */
-    public func finish(handler: (IlluminatorTestProgress<T>) -> ()) {
+    public func finish(_ handler: (IlluminatorTestProgress<T>) -> ()) {
         handler(self)
         finish()
     }
@@ -222,11 +222,11 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
     public var description: String {
         get {
             switch self {
-            case .Failing(let state, let messages):
+            case .failing(let state, let messages):
                 return "Failing: \(messages); App state: \(state)"
-            case .Flagging(let state, let messages):
+            case .flagging(let state, let messages):
                 return "Flagging: \(messages); App state: \(state)"
-            case .Passing(let state):
+            case .passing(let state):
                 return "Passing; App state: \(state)"
             }
         }
@@ -240,15 +240,15 @@ public enum IlluminatorTestProgress<T: CustomStringConvertible>: CustomStringCon
     - Parameters:
         - progress: The state of an Illuminator test
  */
-public func XCTAssert<T>(progress: IlluminatorTestProgress<T>) {
+public func XCTAssert<T>(_ progress: IlluminatorTestProgress<T>) {
     switch progress {
-    case .Failing(_, let errInfos):
+    case .failing(_, let errInfos):
         let info = errInfos[0]
-        XCTFail("Illuminator Failure: \(errInfos.map({$0.message}).joinWithSeparator("; "))", file: info.file, line: info.line)
-    case .Flagging(_, let errInfos):
+        XCTFail("Illuminator Failure: \(errInfos.map({$0.message}).joined(separator: "; "))", file: info.file, line: info.line)
+    case .flagging(_, let errInfos):
         let info = errInfos[0]
-        XCTFail("Illuminator Deferred Failure: \(errInfos.map({$0.message}).joinWithSeparator("; "))", file: info.file, line: info.line)
-    case .Passing:
+        XCTFail("Illuminator Deferred Failure: \(errInfos.map({$0.message}).joined(separator: "; "))", file: info.file, line: info.line)
+    case .passing:
         return
     }
 }

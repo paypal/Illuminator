@@ -16,17 +16,17 @@ class IlluminatorTestCase: XCTestCase, IlluminatorTestResultHandler {
     // across all your test classes by ending tests with `.finish(self)`
     // as opposed to supplying a closure each time
     typealias AbstractStateType = AppTestState
-    func handleTestResult(progress: IlluminatorTestProgress<AbstractStateType>) -> (){
+    func handleTestResult(_ progress: IlluminatorTestProgress<AbstractStateType>) -> (){
 
         switch progress {
-        case .Failing(let state):
+        case .failing(let state):
             print("Failing state was \(state)")
             // on failure, print out what was on the screen when things failed
             for line in IlluminatorElement.accessorDump("app", appDebugDescription: app.debugDescription) {
                 print(line)
             }
             print("(set breakpoint here")
-        case .Flagging(let state):
+        case .flagging(let state):
             print("Flagging state was \(state)")
             // on failure, print out what was on the screen when things failed
             for line in IlluminatorElement.accessorDump("app", appDebugDescription: app.debugDescription) {
@@ -50,7 +50,7 @@ class IlluminatorTestCase: XCTestCase, IlluminatorTestResultHandler {
         app.launch()
 
         interface = ExampleTestApp(testCase: self)
-        initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
+        initialState = IlluminatorTestProgress<AppTestState>.passing(AppTestState(didSomething: false))
     }
 
 

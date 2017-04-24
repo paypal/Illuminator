@@ -15,34 +15,35 @@ private let instance = XCTUIBridge()
 
 private class XCTUIBridgeCallbackContainer {
     let completion:XCTUIBridgeCallback
-    init(completion: XCTUIBridgeCallback) {
+    init(completion: @escaping XCTUIBridgeCallback) {
         self.completion = completion
     }
 }
 
-public class XCTUIBridge: NSObject {
+open class XCTUIBridge: NSObject {
     
-    private var clientListeners = [String: NSMutableArray]();
+    fileprivate var clientListeners = [String: NSMutableArray]();
     
-    func notificationRecieved(name:String) {
+    func notificationRecieved(_ name:String) {
         if let listeners = clientListeners[name] {
             for i in 0..<listeners.count {
-                (listeners.objectAtIndex(i) as? XCTUIBridgeCallbackContainer)?.completion()
+                (listeners.object(at: i) as? XCTUIBridgeCallbackContainer)?.completion()
             }
         }
     }
     
-    static public func sendNotification(identifier: String) {
-        CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), identifier as CFString, nil, nil, true)
+    static open func sendNotification(_ identifier: String) {
+        let notificationName = CFNotificationName(rawValue: identifier as CFString)
+        CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), notificationName, nil, nil, true)
     }
     
     
-    static public func register(identifier: String, completion: XCTUIBridgeCallback) -> XCTUIBridgeRemover {
+    static open func register(_ identifier: String, completion: @escaping XCTUIBridgeCallback) -> XCTUIBridgeRemover {
         if let _ = instance.clientListeners[identifier] {
             let container = XCTUIBridgeCallbackContainer(completion: completion)
-            instance.clientListeners[identifier]!.addObject(container)
+            instance.clientListeners[identifier]!.add(container)
             let remover:XCTUIBridgeRemover = {
-                instance.clientListeners[identifier]!.removeObject(container)
+                instance.clientListeners[identifier]!.remove(container)
             }
             return remover
         } else {
@@ -52,16 +53,16 @@ public class XCTUIBridge: NSObject {
         }
     }
     
-    static private func registerForDarwinNotification(identifier: String) {
-        let callback: @convention(block) (CFNotificationCenter!, UnsafeMutablePointer<Void>, CFString!, UnsafePointer<Void>, CFDictionary!) -> Void = { (center, observer, name, object, userInfo) in
+    static fileprivate func registerForDarwinNotification(_ identifier: String) {
+        let callback: @convention(block) (CFNotificationCenter?, UnsafeMutableRawPointer, CFString?, UnsafeRawPointer, CFDictionary?) -> Void = { (center, observer, name, object, userInfo) in
             instance.notificationRecieved(identifier)
         }
         
-        let imp: COpaquePointer = imp_implementationWithBlock(unsafeBitCast(callback, AnyObject.self))
-        let notificationCallback = unsafeBitCast(imp, CFNotificationCallback.self)
+        let imp: OpaquePointer = imp_implementationWithBlock(unsafeBitCast(callback, to: AnyObject.self))
+        let notificationCallback = unsafeBitCast(imp, to: CFNotificationCallback.self)
         
         
-        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), unsafeAddressOf(self), notificationCallback, identifier, nil, .DeliverImmediately)
+        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), Unmanaged<AnyObject>.passUnretained(self).toOpaque(), notificationCallback, identifier as CFString, nil, .deliverImmediately)
     }
     
 }

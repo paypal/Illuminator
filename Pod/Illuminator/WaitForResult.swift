@@ -42,8 +42,8 @@ extension String: WaitForible {
         - getResult: A function that returns the value that will be compared with the desired value
     - Throws: `IlluminatorError.VerificationFailed` if the desired and actual values do not become equal before the time limit has passed
  */
-public func waitForResult <T: WaitForible> (seconds: Double, desired: T, what: String, getResult: () -> T) throws {
-    let startTime = NSDate()
+public func waitForResult <T: WaitForible> (_ seconds: Double, desired: T, what: String, getResult: () -> T) throws {
+    let startTime = Date()
     var lastResult: T
     repeat {
         lastResult = getResult()
@@ -53,5 +53,5 @@ public func waitForResult <T: WaitForible> (seconds: Double, desired: T, what: S
         _ = XCUIApplication().navigationBars.count
 
     } while (0 - startTime.timeIntervalSinceNow) < seconds
-        throw IlluminatorError.VerificationFailed(message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
+        throw IlluminatorError.verificationFailed(message: "Waiting for \(what) to become \(desired) failed after \(seconds) seconds; got \(lastResult)")
 }
