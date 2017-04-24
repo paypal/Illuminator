@@ -46,10 +46,10 @@ public extension IlluminatorScreen {
     The base screen is the most basic concept of a screen -- one that is always available (for which the actions might invole a shake gesture, waiting a number of seconds, printing debugging information, or taking a screenshot).
  */
 @available(iOS 9.0, *)
-public class IlluminatorBaseScreen<T>: IlluminatorScreen {
-    public let testCaseWrapper: IlluminatorTestcaseWrapper
-    public let label: String
-    public let app = XCUIApplication() // seems like the appropriate place to set this up
+open class IlluminatorBaseScreen<T>: IlluminatorScreen {
+    open let testCaseWrapper: IlluminatorTestcaseWrapper
+    open let label: String
+    open let app = XCUIApplication() // seems like the appropriate place to set this up
 
     /**
         Instantiate a screen
@@ -71,7 +71,7 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
      
         - Returns: Whether the screen is currently visible to the user
      */
-    public var isActive: Bool {
+    open var isActive: Bool {
         return true
     }
     
@@ -80,7 +80,7 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
 
         - Throws: nothing; this base class will never throw.
      */
-    public func becomesActive() throws {
+    open func becomesActive() throws {
         // Since basic screens are always active, we don't need to waste time
         return
     }
@@ -92,7 +92,7 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
      
         - Returns: an empty action
      */
-    public func verifyIsActive() -> IlluminatorActionGeneric<T> {
+    open func verifyIsActive() -> IlluminatorActionGeneric<T> {
         return makeAction(label: #function) { }
     }
     
@@ -101,10 +101,10 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
 
         - Returns: an action that always fails, because base screens are always active
      */
-    public func verifyNotActive() -> IlluminatorActionGeneric<T> {
+    open func verifyNotActive() -> IlluminatorActionGeneric<T> {
         let nullScreen = IlluminatorBaseScreen<T>(label: "null screen", testCaseWrapper: self.testCaseWrapper)
         return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen, file: #file, line: #line) { state in
-            throw IlluminatorError.IncorrectScreen(message: "IlluminatorBaseScreen instances are always active")
+            throw IlluminatorError.incorrectScreen(message: "IlluminatorBaseScreen instances are always active")
         }
     }
     
@@ -118,7 +118,7 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
             - task: The action's actual action
         - Returns: an action that, when applied, executes the supplied closure
      */
-    public func makeAction(label l: String = #function, file: StaticString = #file, line: UInt = #line, task: (T) throws -> T) -> IlluminatorActionGeneric<T> {
+    open func makeAction(label l: String = #function, file: StaticString = #file, line: UInt = #line, task: @escaping (T) throws -> T) -> IlluminatorActionGeneric<T> {
         return IlluminatorActionGeneric(label: l, testCaseWrapper: self.testCaseWrapper, screen: self, file: file, line: line, task: task)
     }
     
@@ -132,7 +132,7 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
             - task: The action's actual action
         - Returns: an action that, when applied, executes the supplied closure
      */
-    public func makeAction(label l: String = #function, file: StaticString = #file, line: UInt = #line, task: () throws -> ()) -> IlluminatorActionGeneric<T> {
+    open func makeAction(label l: String = #function, file: StaticString = #file, line: UInt = #line, task: @escaping () throws -> ()) -> IlluminatorActionGeneric<T> {
         return makeAction(label: l, file: file, line: line) { (state: T) in
             try task()
             return state
@@ -150,7 +150,7 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
             - label: The action's name -- by default, taken as the name of the function that calls `makeAction`
         - Returns: an action that, when applied, executes the supplied closure
      */
-    public func makeAction(firstAction: IlluminatorActionGeneric<T>, secondAction: IlluminatorActionGeneric<T>, label l: String = #function, file: StaticString = #file, line: UInt = #line) -> IlluminatorActionGeneric<T> {
+    open func makeAction(_ firstAction: IlluminatorActionGeneric<T>, secondAction: IlluminatorActionGeneric<T>, label l: String = #function, file: StaticString = #file, line: UInt = #line) -> IlluminatorActionGeneric<T> {
         return makeAction(label: l, file: file, line: line) { (state: T) in
             return try secondAction.task(try firstAction.task(state))
         }
@@ -166,11 +166,11 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
             - label: The action's name -- by default, taken as the name of the function that calls `makeAction`
         - Returns: an action that, when applied, executes the supplied closure
      */
-    public func makeAction(actions: [IlluminatorActionGeneric<T>], label l: String = #function, file: StaticString = #file, line: UInt = #line) -> IlluminatorActionGeneric<T> {
+    open func makeAction(_ actions: [IlluminatorActionGeneric<T>], label l: String = #function, file: StaticString = #file, line: UInt = #line) -> IlluminatorActionGeneric<T> {
         // need 2 actions to do anything useful
         guard actions.count > 0 else {
             return makeAction() {
-                throw IlluminatorError.DeveloperError(message: "Trying to make a composite Illuminator action from none")
+                throw IlluminatorError.developerError(message: "Trying to make a composite Illuminator action from none")
             }
         }
         guard actions.count > 1 else { return actions[0] }
@@ -185,7 +185,7 @@ public class IlluminatorBaseScreen<T>: IlluminatorScreen {
     The timeout can be overridden on a case-by-case basis, after which the default timeout will resume.
  */
 @available(iOS 9.0, *)
-public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
+open class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
     let screenTimeout: Double
     var nextTimeout: Double // For setting temporarily
     
@@ -208,13 +208,13 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
         Wait for the screen to become active; return if it does, throw if it times out.
         - Throws: `IlluminatorError.IncorrectScreen` if the screen does not become active
      */
-    override public func becomesActive() throws {
+    override open func becomesActive() throws {
         defer { nextTimeout = screenTimeout }  // reset the timeout after we run
         do {
             try waitForResult(nextTimeout, desired: true, what: "[\(self) isActive]", getResult: { self.isActive })
-        } catch IlluminatorError.VerificationFailed(let message) {
+        } catch IlluminatorError.verificationFailed(let message) {
             // convert error type, for accuracy
-            throw IlluminatorError.IncorrectScreen(message: message)
+            throw IlluminatorError.incorrectScreen(message: message)
         }
     }
     
@@ -223,19 +223,19 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
 
         - Returns: an action
      */
-    override public func verifyNotActive() -> IlluminatorActionGeneric<T> {
+    override open func verifyNotActive() -> IlluminatorActionGeneric<T> {
         let nullScreen = IlluminatorBaseScreen<T>(label: "null screen", testCaseWrapper: self.testCaseWrapper)
         return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen, file: #file, line: #line) { state in
             var stillActive: Bool
             do {
                 try waitForResult(self.nextTimeout, desired: false, what: "[\(self) isActive]", getResult: { self.isActive })
                 stillActive = false
-            } catch IlluminatorError.VerificationFailed {
+            } catch IlluminatorError.verificationFailed {
                 stillActive = true
             }
             
             if stillActive {
-                throw IlluminatorError.IncorrectScreen(message: "\(self) failed to become inactive")
+                throw IlluminatorError.incorrectScreen(message: "\(self) failed to become inactive")
             }
             return state
         }
@@ -248,7 +248,7 @@ public class IlluminatorDelayedScreen<T>: IlluminatorBaseScreen<T> {
 
  */
 @available(iOS 9.0, *)
-public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
+open class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
     let screenTimeoutSoft: Double   // how long we'd wait if we didn't see the transient
     let screenTimeoutHard: Double   // how long we'd wait if we DID see the transient
     
@@ -280,7 +280,7 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
  
         - Returns: Whether the transient is active
      */
-    public var transientIsActive: Bool {
+    open var transientIsActive: Bool {
         return false;
     }
     
@@ -288,7 +288,7 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
         Wait for the screen to become active; return if it does, throw if it times out.
         - Throws: `IlluminatorError.IncorrectScreen` if the screen does not become active
      */
-    override public func becomesActive() throws {
+    override open func becomesActive() throws {
         defer {
             nextTimeoutSoft = screenTimeoutSoft
             nextTimeoutHard = screenTimeoutHard
@@ -306,7 +306,7 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
                     try waitForResult(self.nextTimeoutSoft, desired: true, what: "[\(self) isActive]") {
                         self.isActive
                     }
-                } catch IlluminatorError.VerificationFailed {
+                } catch IlluminatorError.verificationFailed {
                     // dont worry about it; if transient is active, we go around again
                     // if transient is not active,
                 } catch {
@@ -315,13 +315,13 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
                 
                 return self.transientIsActive
             }
-        } catch IlluminatorError.VerificationFailed {
-            throw IlluminatorError.IncorrectScreen(message: "\(self) failed to become active (and transient inactive) before hard timeout \(nextTimeoutHard)")
+        } catch IlluminatorError.verificationFailed {
+            throw IlluminatorError.incorrectScreen(message: "\(self) failed to become active (and transient inactive) before hard timeout \(nextTimeoutHard)")
         }
 
 
         if !isActive {
-            throw IlluminatorError.IncorrectScreen(message: "\(self) failed to become active (after transient inactive) before soft timeout \(nextTimeoutSoft)")
+            throw IlluminatorError.incorrectScreen(message: "\(self) failed to become active (after transient inactive) before soft timeout \(nextTimeoutSoft)")
         }
     }
     
@@ -332,22 +332,22 @@ public class IlluminatorScreenWithTransient<T>: IlluminatorBaseScreen<T> {
 
          - Returns: an action that fails if the screen does not become inactive
      */
-   override public func verifyNotActive() -> IlluminatorActionGeneric<T> {
+   override open func verifyNotActive() -> IlluminatorActionGeneric<T> {
         let nullScreen = IlluminatorBaseScreen<T>(label: "null screen", testCaseWrapper: self.testCaseWrapper)
     return IlluminatorActionGeneric(label: #function, testCaseWrapper: self.testCaseWrapper, screen: nullScreen, file: #file, line: #line) { state in
             
-            let hardTime = NSDate()
-            var softTime = NSDate()
+            let hardTime = Date()
+            var softTime = Date()
             repeat {
                 if self.transientIsActive {
-                    softTime = NSDate()
+                    softTime = Date()
                 } else if !self.isActive {
                     return state
                 }
             } while (0 - hardTime.timeIntervalSinceNow) < self.nextTimeoutHard && (0 - softTime.timeIntervalSinceNow) < self.nextTimeoutSoft
             
             if self.isActive {
-                throw IlluminatorError.IncorrectScreen(message: "\(self) failed to become inactive")
+                throw IlluminatorError.incorrectScreen(message: "\(self) failed to become inactive")
             }
             return state
         }

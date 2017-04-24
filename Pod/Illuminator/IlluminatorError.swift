@@ -16,28 +16,28 @@ import XCTest
     https://appventure.me/2016/04/23/associated-types-enum-raw-value-initializers/
 
  */
-public enum IlluminatorError: ErrorType, CustomStringConvertible {
+public enum IlluminatorError: Error, CustomStringConvertible {
 
     // non-fatal error; can be deferred. doesn't interrupt flow
-    case Warning(message: String)
+    case warning(message: String)
 
     // we're on the wrong screen
-    case IncorrectScreen(message: String)
+    case incorrectScreen(message: String)
 
     // we wanted something that wasn't there
-    case VerificationFailed(message: String)
+    case verificationFailed(message: String)
 
     // the writer of the test is using Illuminator incorrectly
-    case DeveloperError(message: String)
+    case developerError(message: String)
 
     // an element failed readiness check
-    case ElementNotReady(message: String)
+    case elementNotReady(message: String)
 
     // multiple elements exist
-    case MultipleElementsFound(message: String)
+    case multipleElementsFound(message: String)
 
     // no element exists
-    case ElementNotFound(message: String)
+    case elementNotFound(message: String)
 
     /**
         A human-readable description of the error
@@ -46,13 +46,13 @@ public enum IlluminatorError: ErrorType, CustomStringConvertible {
     */
     public var description: String {
         switch (self) {
-        case .Warning(let message):               return "IlluminatorError.Warning: \(message)"
-        case .IncorrectScreen(let message):       return "IlluminatorError.IncorrectScreen: \(message)"
-        case .VerificationFailed(let message):    return "IlluminatorError.VerificationFailed: \(message)"
-        case .DeveloperError(let message):        return "IlluminatorError.DeveloperError: \(message)"
-        case .ElementNotReady(let message):       return "IlluminatorError.ElementNotReady: \(message)"
-        case .MultipleElementsFound(let message): return "IlluminatorError.MultipleElementsFound: \(message)"
-        case .ElementNotFound(let message):       return "IlluminatorError.ElementNotFound: \(message)"
+        case .warning(let message):               return "IlluminatorError.Warning: \(message)"
+        case .incorrectScreen(let message):       return "IlluminatorError.IncorrectScreen: \(message)"
+        case .verificationFailed(let message):    return "IlluminatorError.VerificationFailed: \(message)"
+        case .developerError(let message):        return "IlluminatorError.DeveloperError: \(message)"
+        case .elementNotReady(let message):       return "IlluminatorError.ElementNotReady: \(message)"
+        case .multipleElementsFound(let message): return "IlluminatorError.MultipleElementsFound: \(message)"
+        case .elementNotFound(let message):       return "IlluminatorError.ElementNotFound: \(message)"
         }
     }
 }
