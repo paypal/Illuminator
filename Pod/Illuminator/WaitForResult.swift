@@ -5,6 +5,8 @@
 //  Created by Ian Katz on 2017-01-05.
 //
 
+import XCTest
+
 public protocol WaitForible: Equatable, CustomStringConvertible {}
 
 extension Bool: WaitForible {

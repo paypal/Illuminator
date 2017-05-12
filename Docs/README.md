@@ -72,7 +72,7 @@ try myElement.ready().tap()   // Good
 
 ## Anything Async, Like `expectationForPredicate` or `waitForExpectationsWithTimeout`
 
-Async would be great if it resulted in exceptions instead of test failures, but as of this writing it doesn't.  Generally, the need for these functions implies that the app is busy doing something that you need to wait for.  Illuminator is, at its core, designed to wait patiently.  
+Async would be great if it resulted in exceptions instead of test failures, but as of this writing it doesn't.  Generally, the need for these functions implies that the app is busy doing something that you need to wait for.  Illuminator is, at its core, designed to wait patiently.
 
 
 ### What to Use Instead
@@ -133,8 +133,6 @@ guard let myButton = matches[safe: 0] else {                         //
     throw IlluminatorError.VerificationFailed(message: "None")       // Good
 }                                                                    //
 myButton.tap()                                                       //
-
-let matches = app.buttons〚"Delete"〛                                 // Experimental unicode operator
 ```
 
 Or, perhaps you expect one and only one match.  Illuminator has an operator for that as well.
@@ -144,8 +142,6 @@ Or, perhaps you expect one and only one match.  Illuminator has an operator for 
 app.buttons["Delete"].tap()                     // Bad
 
 try app.buttons.hardSubscript("Delete").tap()   // Good
-
-try app.buttons⁅"Delete"⁆.tap()                 // Experimental unicode operator
 ```
 
 
