@@ -7,7 +7,7 @@ target 'Illuminator_Example' do
   pod "IlluminatorBridge", :path => "../"
 end
 
-target 'IlluminatorUITests' do
+target 'Illuminator-ExampleUITests' do
   pod "Illuminator", :path => "../"
   pod "IlluminatorBridge", :path => "../"
 end

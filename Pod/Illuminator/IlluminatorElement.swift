@@ -5,7 +5,7 @@
 //  Created by Ian Katz on 2016-12-12.
 //
 
-
+import XCTest
 
 /**
     These errors control the parsing behavior to generate the element tree

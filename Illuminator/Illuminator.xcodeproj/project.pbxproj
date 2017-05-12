@@ -1,0 +1,380 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		51DBF7DF1EC63B9900826F6F /* Illuminator.h in Headers */ = {isa = PBXBuildFile; fileRef = 51DBF7DD1EC63B9900826F6F /* Illuminator.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		51DBF7F31EC63BAD00826F6F /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7E61EC63BAD00826F6F /* Array.swift */; };
+		51DBF7F41EC63BAD00826F6F /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7E71EC63BAD00826F6F /* String.swift */; };
+		51DBF7F51EC63BAD00826F6F /* XCUIElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7E81EC63BAD00826F6F /* XCUIElement.swift */; };
+		51DBF7F61EC63BAD00826F6F /* XCUIElementQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7E91EC63BAD00826F6F /* XCUIElementQuery.swift */; };
+		51DBF7F71EC63BAD00826F6F /* XCUIElementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7EA1EC63BAD00826F6F /* XCUIElementType.swift */; };
+		51DBF7F81EC63BAD00826F6F /* IlluminatorAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7EB1EC63BAD00826F6F /* IlluminatorAction.swift */; };
+		51DBF7F91EC63BAD00826F6F /* IlluminatorApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7EC1EC63BAD00826F6F /* IlluminatorApplication.swift */; };
+		51DBF7FA1EC63BAD00826F6F /* IlluminatorElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7ED1EC63BAD00826F6F /* IlluminatorElement.swift */; };
+		51DBF7FB1EC63BAD00826F6F /* IlluminatorError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7EE1EC63BAD00826F6F /* IlluminatorError.swift */; };
+		51DBF7FC1EC63BAD00826F6F /* IlluminatorScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7EF1EC63BAD00826F6F /* IlluminatorScreen.swift */; };
+		51DBF7FD1EC63BAD00826F6F /* IlluminatorTestCaseWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7F01EC63BAD00826F6F /* IlluminatorTestCaseWrapper.swift */; };
+		51DBF7FE1EC63BAD00826F6F /* IlluminatorTestProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7F11EC63BAD00826F6F /* IlluminatorTestProgress.swift */; };
+		51DBF7FF1EC63BAD00826F6F /* WaitForResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DBF7F21EC63BAD00826F6F /* WaitForResult.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		51DBF7DA1EC63B9900826F6F /* Illuminator.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Illuminator.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		51DBF7DD1EC63B9900826F6F /* Illuminator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Illuminator.h; sourceTree = "<group>"; };
+		51DBF7DE1EC63B9900826F6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		51DBF7E61EC63BAD00826F6F /* Array.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
+		51DBF7E71EC63BAD00826F6F /* String.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
+		51DBF7E81EC63BAD00826F6F /* XCUIElement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XCUIElement.swift; sourceTree = "<group>"; };
+		51DBF7E91EC63BAD00826F6F /* XCUIElementQuery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XCUIElementQuery.swift; sourceTree = "<group>"; };
+		51DBF7EA1EC63BAD00826F6F /* XCUIElementType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XCUIElementType.swift; sourceTree = "<group>"; };
+		51DBF7EB1EC63BAD00826F6F /* IlluminatorAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IlluminatorAction.swift; path = ../../Pod/Illuminator/IlluminatorAction.swift; sourceTree = "<group>"; };
+		51DBF7EC1EC63BAD00826F6F /* IlluminatorApplication.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IlluminatorApplication.swift; path = ../../Pod/Illuminator/IlluminatorApplication.swift; sourceTree = "<group>"; };
+		51DBF7ED1EC63BAD00826F6F /* IlluminatorElement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IlluminatorElement.swift; path = ../../Pod/Illuminator/IlluminatorElement.swift; sourceTree = "<group>"; };
+		51DBF7EE1EC63BAD00826F6F /* IlluminatorError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IlluminatorError.swift; path = ../../Pod/Illuminator/IlluminatorError.swift; sourceTree = "<group>"; };
+		51DBF7EF1EC63BAD00826F6F /* IlluminatorScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IlluminatorScreen.swift; path = ../../Pod/Illuminator/IlluminatorScreen.swift; sourceTree = "<group>"; };
+		51DBF7F01EC63BAD00826F6F /* IlluminatorTestCaseWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IlluminatorTestCaseWrapper.swift; path = ../../Pod/Illuminator/IlluminatorTestCaseWrapper.swift; sourceTree = "<group>"; };
+		51DBF7F11EC63BAD00826F6F /* IlluminatorTestProgress.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IlluminatorTestProgress.swift; path = ../../Pod/Illuminator/IlluminatorTestProgress.swift; sourceTree = "<group>"; };
+		51DBF7F21EC63BAD00826F6F /* WaitForResult.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WaitForResult.swift; path = ../../Pod/Illuminator/WaitForResult.swift; sourceTree = "<group>"; };
+		51DBF8011EC63BB800826F6F /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		51DBF7D61EC63B9800826F6F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		51DBF7D01EC63B9800826F6F = {
+			isa = PBXGroup;
+			children = (
+				51DBF7DC1EC63B9900826F6F /* Illuminator */,
+				51DBF7DB1EC63B9900826F6F /* Products */,
+				51DBF8001EC63BB800826F6F /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		51DBF7DB1EC63B9900826F6F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				51DBF7DA1EC63B9900826F6F /* Illuminator.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		51DBF7DC1EC63B9900826F6F /* Illuminator */ = {
+			isa = PBXGroup;
+			children = (
+				51DBF7E51EC63BAD00826F6F /* extensions */,
+				51DBF7EB1EC63BAD00826F6F /* IlluminatorAction.swift */,
+				51DBF7EC1EC63BAD00826F6F /* IlluminatorApplication.swift */,
+				51DBF7ED1EC63BAD00826F6F /* IlluminatorElement.swift */,
+				51DBF7EE1EC63BAD00826F6F /* IlluminatorError.swift */,
+				51DBF7EF1EC63BAD00826F6F /* IlluminatorScreen.swift */,
+				51DBF7F01EC63BAD00826F6F /* IlluminatorTestCaseWrapper.swift */,
+				51DBF7F11EC63BAD00826F6F /* IlluminatorTestProgress.swift */,
+				51DBF7F21EC63BAD00826F6F /* WaitForResult.swift */,
+				51DBF7DD1EC63B9900826F6F /* Illuminator.h */,
+				51DBF7DE1EC63B9900826F6F /* Info.plist */,
+			);
+			path = Illuminator;
+			sourceTree = "<group>";
+		};
+		51DBF7E51EC63BAD00826F6F /* extensions */ = {
+			isa = PBXGroup;
+			children = (
+				51DBF7E61EC63BAD00826F6F /* Array.swift */,
+				51DBF7E71EC63BAD00826F6F /* String.swift */,
+				51DBF7E81EC63BAD00826F6F /* XCUIElement.swift */,
+				51DBF7E91EC63BAD00826F6F /* XCUIElementQuery.swift */,
+				51DBF7EA1EC63BAD00826F6F /* XCUIElementType.swift */,
+			);
+			name = extensions;
+			path = ../../Pod/Illuminator/extensions;
+			sourceTree = "<group>";
+		};
+		51DBF8001EC63BB800826F6F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				51DBF8011EC63BB800826F6F /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		51DBF7D71EC63B9800826F6F /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				51DBF7DF1EC63B9900826F6F /* Illuminator.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		51DBF7D91EC63B9800826F6F /* Illuminator */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 51DBF7E21EC63B9900826F6F /* Build configuration list for PBXNativeTarget "Illuminator" */;
+			buildPhases = (
+				51DBF7D51EC63B9800826F6F /* Sources */,
+				51DBF7D61EC63B9800826F6F /* Frameworks */,
+				51DBF7D71EC63B9800826F6F /* Headers */,
+				51DBF7D81EC63B9800826F6F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Illuminator;
+			productName = Illuminator;
+			productReference = 51DBF7DA1EC63B9900826F6F /* Illuminator.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		51DBF7D11EC63B9800826F6F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0820;
+				ORGANIZATIONNAME = PayPal;
+				TargetAttributes = {
+					51DBF7D91EC63B9800826F6F = {
+						CreatedOnToolsVersion = 8.2.1;
+						LastSwiftMigration = 0820;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 51DBF7D41EC63B9800826F6F /* Build configuration list for PBXProject "Illuminator" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 51DBF7D01EC63B9800826F6F;
+			productRefGroup = 51DBF7DB1EC63B9900826F6F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				51DBF7D91EC63B9800826F6F /* Illuminator */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		51DBF7D81EC63B9800826F6F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		51DBF7D51EC63B9800826F6F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				51DBF7FC1EC63BAD00826F6F /* IlluminatorScreen.swift in Sources */,
+				51DBF7F81EC63BAD00826F6F /* IlluminatorAction.swift in Sources */,
+				51DBF7F41EC63BAD00826F6F /* String.swift in Sources */,
+				51DBF7F91EC63BAD00826F6F /* IlluminatorApplication.swift in Sources */,
+				51DBF7FD1EC63BAD00826F6F /* IlluminatorTestCaseWrapper.swift in Sources */,
+				51DBF7FE1EC63BAD00826F6F /* IlluminatorTestProgress.swift in Sources */,
+				51DBF7FB1EC63BAD00826F6F /* IlluminatorError.swift in Sources */,
+				51DBF7F71EC63BAD00826F6F /* XCUIElementType.swift in Sources */,
+				51DBF7FF1EC63BAD00826F6F /* WaitForResult.swift in Sources */,
+				51DBF7F51EC63BAD00826F6F /* XCUIElement.swift in Sources */,
+				51DBF7FA1EC63BAD00826F6F /* IlluminatorElement.swift in Sources */,
+				51DBF7F61EC63BAD00826F6F /* XCUIElementQuery.swift in Sources */,
+				51DBF7F31EC63BAD00826F6F /* Array.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		51DBF7E01EC63B9900826F6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_BITCODE = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.2;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "-fembed-bitcode";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		51DBF7E11EC63B9900826F6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_BITCODE = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_CFLAGS = "-fembed-bitcode";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		51DBF7E31EC63B9900826F6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(PLATFORM_DIR)/Developer/Library/Frameworks";
+				INFOPLIST_FILE = Illuminator/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.paypal.Illuminator;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		51DBF7E41EC63B9900826F6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(PLATFORM_DIR)/Developer/Library/Frameworks";
+				INFOPLIST_FILE = Illuminator/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.paypal.Illuminator;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		51DBF7D41EC63B9800826F6F /* Build configuration list for PBXProject "Illuminator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				51DBF7E01EC63B9900826F6F /* Debug */,
+				51DBF7E11EC63B9900826F6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		51DBF7E21EC63B9900826F6F /* Build configuration list for PBXNativeTarget "Illuminator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				51DBF7E31EC63B9900826F6F /* Debug */,
+				51DBF7E41EC63B9900826F6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 51DBF7D11EC63B9800826F6F /* Project object */;
+}

@@ -10,7 +10,7 @@ extension String {
     /**
         Get the capture groups from an applied regular expression
 
-        SWIFT 3 version here: http://stackoverflow.com/a/40040472/2063546
+        via http://stackoverflow.com/a/40040472/2063546
 
         - Parameters:
             - regex: the regex to apply
