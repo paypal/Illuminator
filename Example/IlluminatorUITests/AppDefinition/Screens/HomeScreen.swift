@@ -20,18 +20,18 @@ class HomeScreen: IlluminatorDelayedScreen<AppTestState> {
         return app.buttons["Button"].exists
     }
     
-    func enterText(what: String) -> IlluminatorActionGeneric<AppTestState> {
+    func enterText(_ what: String) -> IlluminatorActionGeneric<AppTestState> {
         return makeAction() {
-            let textField = self.app.otherElements.containingType(.Button,
-                identifier:"Button").childrenMatchingType(.TextField).element
+            let textField = self.app.otherElements.containing(.button,
+                identifier:"Button").children(matching: .textField).element
             textField.tap()
             textField.typeText(what)
         }
     }
 
-    func verifyText(expected: String) -> IlluminatorActionGeneric<AppTestState> {
+    func verifyText(_ expected: String) -> IlluminatorActionGeneric<AppTestState> {
         return makeAction() {
-            let textField = self.app.otherElements.containingType(.Button, identifier:"Button").childrenMatchingType(.TextField).element
+            let textField = self.app.otherElements.containing(.button, identifier:"Button").children(matching: .textField).element
             try textField.assertProperty(expected) {
                 guard let value = $0.value else { return "" }
                 guard let valString = value as? String else { return "" }
@@ -40,14 +40,14 @@ class HomeScreen: IlluminatorDelayedScreen<AppTestState> {
         }
     }
 
-    func doSomething(thing: Bool) -> IlluminatorActionGeneric<AppTestState> {
+    func doSomething(_ thing: Bool) -> IlluminatorActionGeneric<AppTestState> {
         return makeAction() { (state: AppTestState) in
             let newState = AppTestState(didSomething: thing)
             return newState
         }
     }
 
-    func enterAndVerifyText(what: String) -> IlluminatorActionGeneric<AppTestState> {
+    func enterAndVerifyText(_ what: String) -> IlluminatorActionGeneric<AppTestState> {
         return makeAction([
             enterText(what),
             verifyText(what)

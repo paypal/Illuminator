@@ -33,8 +33,8 @@ extension Array {
         let empty = { self[self.startIndex..<self.startIndex] }
         // swift 3 let lb = bounds.lowerBound
         // swift 3 let ub = bounds.upperBound
-        let lb = bounds.startIndex
-        let ub = bounds.endIndex
+        let lb = bounds.lowerBound
+        let ub = bounds.upperBound
         guard lb < endIndex else { return empty() }
         guard ub >= startIndex else { return empty() }
         

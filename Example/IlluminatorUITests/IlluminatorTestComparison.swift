@@ -24,7 +24,7 @@ class IlluminatorTestComparison: XCTestCase {
     // An example of how a very basic test looks without Illuminator
     func test_basicWithoutIlluminator() {
 
-        let textField = app.otherElements.containingType(.Button, identifier:"Button").childrenMatchingType(.TextField).element
+        let textField = app.otherElements.containing(.button, identifier:"Button").children(matching: .textField).element
 
         // enter text
         textField.tap()
@@ -40,7 +40,7 @@ class IlluminatorTestComparison: XCTestCase {
         // boilerplate setup code that is typically placed in setUp()
         // shown here for overall clarity
         let interface = ExampleTestApp(testCase: self)
-        let initialState = IlluminatorTestProgress<AppTestState>.Passing(AppTestState(didSomething: false))
+        let initialState = IlluminatorTestProgress<AppTestState>.passing(AppTestState(didSomething: false))
 
         // Factor out data that will be used in multiple places
         let myExampleText = "test123"

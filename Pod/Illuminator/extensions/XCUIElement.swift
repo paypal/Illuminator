@@ -14,11 +14,11 @@ import XCTest
     
     pattern via http://www.swift-studies.com/blog/2015/6/17/exploring-swift-20-optionsettypes
  */
-public struct IlluminatorElementReadiness: OptionSetType, CustomStringConvertible {
-    private enum Readiness: Int, CustomStringConvertible {
-        case Exists       = 1
-        case InMainWindow = 2
-        case Hittable     = 4
+public struct IlluminatorElementReadiness: OptionSet, CustomStringConvertible {
+    fileprivate enum Readiness: Int, CustomStringConvertible {
+        case exists       = 1
+        case inMainWindow = 2
+        case hittable     = 4
 
         /**
              Implementation for CustomStringConvertible
@@ -34,11 +34,11 @@ public struct IlluminatorElementReadiness: OptionSetType, CustomStringConvertibl
 
     public  let rawValue: Int
     public  init(rawValue: Int) { self.rawValue = rawValue}
-    private init(_ readiness: Readiness) { self.rawValue = readiness.rawValue }
+    fileprivate init(_ readiness: Readiness) { self.rawValue = readiness.rawValue }
 
-    static let Exists        = IlluminatorElementReadiness(Readiness.Exists)
-    static let InMainWindow  = IlluminatorElementReadiness(Readiness.InMainWindow)
-    static let Hittable      = IlluminatorElementReadiness(Readiness.Hittable)
+    static let Exists        = IlluminatorElementReadiness(Readiness.exists)
+    static let InMainWindow  = IlluminatorElementReadiness(Readiness.inMainWindow)
+    static let Hittable      = IlluminatorElementReadiness(Readiness.hittable)
 
     /**
         Implementation for CustomStringConvertible
@@ -56,7 +56,7 @@ public struct IlluminatorElementReadiness: OptionSetType, CustomStringConvertibl
                 result.append("\(v)")
             }
         }
-        return "[\(result.joinWithSeparator(","))]"
+        return "[\(result.joined(separator: ","))]"
     }
 }
 
@@ -73,7 +73,7 @@ extension XCUIElement {
         - Parameter e: The element to compare to this element
         - Returns: Whether the elements are deemed equal
      */
-    func equals(e: XCUIElement) -> Bool {
+    func equals(_ e: XCUIElement) -> Bool {
         
         // nonexistent elements can't be equal to anything
         guard exists && e.exists else {
@@ -85,11 +85,11 @@ extension XCUIElement {
         let c1 = self.elementType == e.elementType
         let c2 = self.self.label == e.label
         let c3 = self.identifier == e.identifier
-        let c4 = self.hittable == e.hittable
+        let c4 = self.isHittable == e.isHittable
         let c5 = self.frame == e.frame
-        let c6 = self.enabled == e.enabled
+        let c6 = self.isEnabled == e.isEnabled
         let c7 = self.accessibilityLabel == e.accessibilityLabel
-        let c8 = self.selected == e.selected
+        let c8 = self.isSelected == e.isSelected
         
         result = c1 && c2 && c3 && c4 && c5 && c6 && c7 && c8
         
@@ -110,17 +110,17 @@ extension XCUIElement {
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, failMessage: String, giveUpCondition: (XCUIElement, XCUIElement) -> Bool) throws -> XCUIElement  {
         repeat {
             if element.exists {
-                if element.hittable { return element }
+                if element.isHittable { return element }
             }
 
             switch direction {
-            case UISwipeGestureRecognizerDirection.Down:
+            case UISwipeGestureRecognizerDirection.down:
                 swipeDown()
-            case UISwipeGestureRecognizerDirection.Up:
+            case UISwipeGestureRecognizerDirection.up:
                 swipeUp()
-            case UISwipeGestureRecognizerDirection.Left:
+            case UISwipeGestureRecognizerDirection.left:
                 swipeLeft()
-            case UISwipeGestureRecognizerDirection.Right:
+            case UISwipeGestureRecognizerDirection.right:
                 swipeRight()
             default:
                 ()
@@ -128,7 +128,7 @@ extension XCUIElement {
         } while !giveUpCondition(self, element)
 
         if !element.inMainWindow {
-            throw IlluminatorError.ElementNotReady(message: "Couldn't find \(element) after \(failMessage)")
+            throw IlluminatorError.elementNotReady(message: "Couldn't find \(element) after \(failMessage)")
         }
         return element
     }
@@ -144,7 +144,7 @@ extension XCUIElement {
         - Throws: `IlluminatorError.ElementNotReady` If the target is not found
      */
     func swipeTo(target element: XCUIElement, direction: UISwipeGestureRecognizerDirection, withTimeout seconds: Double) throws -> XCUIElement {
-        let startTime = NSDate()
+        let startTime = Date()
         return try swipeTo(target: element, direction: direction, failMessage: "scrolling for \(seconds) seconds") { (_, _) in
             return (0 - startTime.timeIntervalSinceNow) > seconds
         }
@@ -177,10 +177,10 @@ extension XCUIElement {
              - holdDuration: amount of time to hold before dragging
          - Returns: the element
      */
-    func dragLine(startLocation: CGVector, endLocation: CGVector, holdDuration: NSTimeInterval = 0) -> XCUIElement {
-        let start = self.coordinateWithNormalizedOffset(startLocation)
-        let finish = self.coordinateWithNormalizedOffset(endLocation)
-        start.pressForDuration(holdDuration, thenDragToCoordinate: finish)
+    func dragLine(_ startLocation: CGVector, endLocation: CGVector, holdDuration: TimeInterval = 0) -> XCUIElement {
+        let start = self.coordinate(withNormalizedOffset: startLocation)
+        let finish = self.coordinate(withNormalizedOffset: endLocation)
+        start.press(forDuration: holdDuration, thenDragTo: finish)
         return self
     }
 
@@ -195,9 +195,9 @@ extension XCUIElement {
              - holdDuration: amount of time to hold before dragging
          - Returns: the element
      */
-    func dragLine(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat, holdDuration: NSTimeInterval = 0) -> XCUIElement {
-        let start = CGVectorMake(x1, y1)
-        let end = CGVectorMake(x2, y2)
+    func dragLine(_ x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat, holdDuration: TimeInterval = 0) -> XCUIElement {
+        let start = CGVector(dx: x1, dy: y1)
+        let end = CGVector(dx: x2, dy: y2)
         return dragLine(start, endLocation: end, holdDuration: holdDuration)
     }
 
@@ -207,8 +207,8 @@ extension XCUIElement {
     var inMainWindow: Bool {
         get {
             guard exists else { return false }
-            let window = XCUIApplication().windows.elementBoundByIndex(0)
-            return CGRectContainsRect(window.frame, self.frame)
+            let window = XCUIApplication().windows.element(boundBy: 0)
+            return window.frame.contains(self.frame)
         }
     }
 
@@ -226,15 +226,15 @@ extension XCUIElement {
     func ready(usingCriteria desired: IlluminatorElementReadiness, otherwiseFailWith description: String) throws -> XCUIElement {
         let failMessage = { (message: String) -> String in "\(description); element not ready: \(message)" }
         if desired.contains(.Exists) && !exists {
-            throw IlluminatorError.ElementNotReady(message: failMessage("element does not exist"))
+            throw IlluminatorError.elementNotReady(message: failMessage("element does not exist"))
         }
 
         if desired.contains(.InMainWindow) && !inMainWindow {
-            throw IlluminatorError.ElementNotReady(message: failMessage("element is not within the bounds of the main window"))
+            throw IlluminatorError.elementNotReady(message: failMessage("element is not within the bounds of the main window"))
         }
 
-        if desired.contains(.Hittable) && !hittable {
-            throw IlluminatorError.ElementNotReady(message: failMessage("element is not hittable"))
+        if desired.contains(.Hittable) && !isHittable {
+            throw IlluminatorError.elementNotReady(message: failMessage("element is not hittable"))
         }
 
         return self
@@ -248,6 +248,8 @@ extension XCUIElement {
          - Returns: the element
          - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
      */
+
+    @discardableResult
     func ready(usingCriteria desired: IlluminatorElementReadiness) throws -> XCUIElement {
         return try ready(usingCriteria: desired, otherwiseFailWith: "Failed readiness check")
     }
@@ -280,7 +282,7 @@ extension XCUIElement {
                 do {
                     try $0.ready(usingCriteria: desired)
                     return true
-                } catch IlluminatorError.ElementNotReady(let message) {
+                } catch IlluminatorError.elementNotReady(let message) {
                     lastMessage = message
                     return false
                 } catch {
@@ -288,8 +290,8 @@ extension XCUIElement {
                 }
             }
             return self
-        } catch IlluminatorError.VerificationFailed(let failMessage) {
-            throw IlluminatorError.ElementNotReady(message: lastMessage ?? failMessage)
+        } catch IlluminatorError.verificationFailed(let failMessage) {
+            throw IlluminatorError.elementNotReady(message: lastMessage ?? failMessage)
         }
     }
 
@@ -301,7 +303,7 @@ extension XCUIElement {
          - Returns: the element
          - Throws: `IlluminatorError.ElementNotReady` If the target is not ready
      */
-    func whenReady(secondsToWait: Double = 3.0) throws -> XCUIElement {
+    func whenReady(_ secondsToWait: Double = 3.0) throws -> XCUIElement {
         return try whenReady(usingCriteria: defaultReadiness, withTimeout: secondsToWait)
     }
 
@@ -315,7 +317,9 @@ extension XCUIElement {
          - Returns: the element
          - Throws: `VerificationFailed` If the property fails to attains the desired value before the timeout is reached
      */
-    public func waitForProperty<T: WaitForible>(seconds: Double, desired: T, getProperty: (XCUIElement) -> T) throws -> XCUIElement {
+
+    @discardableResult
+    public func waitForProperty<T: WaitForible>(_ seconds: Double, desired: T, getProperty: (XCUIElement) -> T) throws -> XCUIElement {
         try waitForResult(seconds, desired: desired, what: "waitForProperty") { () -> T in
             return getProperty(self)
         }
@@ -331,10 +335,12 @@ extension XCUIElement {
          - Returns: the element
          - Throws: `VerificationFailed` If the property is not equal to the desired value
      */
-    public func assertProperty<T: WaitForible>(desired: T, getProperty: (XCUIElement) -> T) throws -> XCUIElement {
+
+    @discardableResult
+    public func assertProperty<T: WaitForible>(_ desired: T, getProperty: (XCUIElement) -> T) throws -> XCUIElement {
         let actual = getProperty(self)
         if desired != actual {
-            throw IlluminatorError.VerificationFailed(message: "Expected property to be '\(desired)', got '\(actual)'")
+            throw IlluminatorError.verificationFailed(message: "Expected property to be '\(desired)', got '\(actual)'")
          }
         return self
     }
