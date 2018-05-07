@@ -1,6 +1,8 @@
 language: objective-c
 osx_image: xcode8.3
 install: bundle install --jobs=3 --retry=3 --gemfile Gemfile
+rvm:
+   - 2.2
 script:
    - xcodebuild -version
    - pod --version
