@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in illuminator.gemspec
-gemspec
+gem 'cocoapods', '~> 1.1.1'
+gem 'xcpretty', '~> 0.2.0'

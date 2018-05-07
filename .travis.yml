@@ -1,7 +1,19 @@
 language: objective-c
-install: bundle install --jobs=3 --retry=3 --gemfile SampleApp/Gemfile
+osx_image: xcode8.3
+install: bundle install --jobs=3 --retry=3 --gemfile Gemfile
+rvm:
+   - 2.2
 script:
-   - rubocop -D .
-   - cd SampleApp
-   - pod install
-   - ruby smokeTests.rb
+   - xcodebuild -version
+   - pod --version
+   - pod lib lint Illuminator.podspec --verbose
+   - pod lib lint IlluminatorBridge.podspec --verbose
+   - pushd Illuminator
+   - xcodebuild -list
+   - xcodebuild -project Illuminator.xcodeproj -scheme "Illuminator" clean build
+   - popd
+   - pushd Example
+   - bundle install --deployment
+   - bundle exec pod install
+   - xcodebuild -list
+   - travis_retry xcodebuild -workspace Illuminator-Example.xcworkspace -scheme "Illuminator-Example" -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 6,OS=9.1' test

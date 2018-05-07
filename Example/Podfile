@@ -1,0 +1,13 @@
+platform :ios, '9.1'
+use_frameworks!
+
+source 'https://github.com/CocoaPods/Specs'
+
+target 'Illuminator_Example' do
+  pod "IlluminatorBridge", :path => "../"
+end
+
+target 'Illuminator-ExampleUITests' do
+  pod "Illuminator", :path => "../"
+  pod "IlluminatorBridge", :path => "../"
+end

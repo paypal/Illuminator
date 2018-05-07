@@ -1,9 +1,0 @@
-xcodeproj 'AutomatorSampleApp/AutomatorSampleApp.xcodeproj/'
-
-# Uncomment this line to define a global platform for your project
-# platform :ios, '7.0'
-
-target 'AutomatorSampleApp' do
-pod 'Illuminator', :path => "../"
-end
-

@@ -1,0 +1,21 @@
+PODS:
+  - Illuminator (1.0.0)
+  - IlluminatorBridge (1.0.0)
+
+DEPENDENCIES:
+  - Illuminator (from `../`)
+  - IlluminatorBridge (from `../`)
+
+EXTERNAL SOURCES:
+  Illuminator:
+    :path: ../
+  IlluminatorBridge:
+    :path: ../
+
+SPEC CHECKSUMS:
+  Illuminator: 6d8f24058d2a8b1140416fba8f70f347c809d8e4
+  IlluminatorBridge: c49f2ba92abf8b499dbfd41abd8e0a364adbe5c8
+
+PODFILE CHECKSUM: 83700f35ea1c4129d3af3dcd2cfe241ced238ccb
+
+COCOAPODS: 1.2.0

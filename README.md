@@ -1,60 +1,127 @@
-[![Gem Version](https://badge.fury.io/rb/illuminator.svg)](https://rubygems.org/gems/illuminator)
-[![Build Status](https://travis-ci.org/paypal/Illuminator.svg)](https://travis-ci.org/paypal/Illuminator)
+# Illuminator
 
-ILLUMINATOR - the iOS Automator
-===============================
+[![CI Status](http://img.shields.io/travis/kviksilver/Illuminator.svg?style=flat)](https://travis-ci.org/kviksilver/Illuminator)
+[![Version](https://img.shields.io/cocoapods/v/Illuminator.svg?style=flat)](http://cocoapods.org/pods/Illuminator)
+[![License](https://img.shields.io/cocoapods/l/Illuminator.svg?style=flat)](http://cocoapods.org/pods/Illuminator)
+[![Platform](https://img.shields.io/cocoapods/p/Illuminator.svg?style=flat)](http://cocoapods.org/pods/Illuminator)
 
-Illuminator enables [continuous integration](http://en.wikipedia.org/wiki/Continuous_integration) for iOS apps.  It makes it easy (well, easier) to write and debug sophisticated app tests.  Additionally, it makes the entire UIAutomation apparatus more capable of handling high-volume automated testing -- providing features that are missing from Apple's "Instruments" application.
+# Illuminator makes your UI tests readable, reusable, and repairable
+
+## Readability
+
+Where XCUITest generates a sequence of low-level element interactions, Illuminator tests are expressed as sequences of aptly-named (according to you, the developer) actions.  A detailed picture of what the test accomplishes should be apparent from the action names alone.
+
+```swift
+    func testWithIlluminator() {
+
+        initialState
+            .apply(wf.welcome.continueAsGuest())
+            .apply(wf.pushNotificationPermissions.decline())
+            .apply(wf.home.searchFor("table"))
+            .apply(wf.browse.verifySubcategory("End tables", expected: true))
+            .apply(wf.browse.verifySubcategory("Bobby tables", expected: false))
+            .apply(wf.browse.openSubcategory("Coffee tables"))
+            .apply(wf.browse.openProduct(atIndex: 3))
+            .apply(wf.productPage.addToCart(quantity: 2))
+            .apply(wf.welcomePopup.signIn())
+            .apply(wf.signInModal.submitCredentials(testAccount, password: testAccountPassword))
+            .apply(wf.cart.verifyTotalItems(2))
+            .apply(wf.cart.submitOrder())
+            .apply(wf.orderConfirmation.verifyIsActive())
+            .finish(self)
+    }
+```
 
 
+## Reusability
 
-Top 3 features
---------------
+Your tests don't need to explicitly check whether they're on the right screen before every UI element interaction; Illuminator does it for you.  Illuminator provides a system for grouping actions into the "screens" where they are available, and centralizes the logic for indicating when that screen is visible.
 
-#### 1. Ease of accessing and interacting with UI elements
+In the example above, `welcome`, `pushNotificationPermissions`, `home`, `browse`, `productPage`, `welcomePopup`, `signInModal`, `cart`, and `orderConfirmation` are the screens.  
 
-Illuminator is inspired by [tuneup.js](https://github.com/alexvollmer/tuneup_js) (see the [migration guide](docs/MigratingFromTuneupJs.md)) and [mechanic.js](https://github.com/jaykz52/mechanic), combining and improving [the best features of both](docs/Extensions.md).  [Accessing UI elements](docs/Selectors.md) can be done relative to a root element, by a fuzzy search of the element tree (easily extensible for app-specific capabilities), or by some combination of the two -- even if the element has not yet appeared on the screen.
+A sample app definition would include the following code:
 
-#### 2. Ease of scripting and executing test scenarios across different target devices
+```swift
+public typealias AppTestState = [String: String]
 
-[Test scenarios in Illuminator](docs/Automator.md) are easy to create and easy to read (and if you need to generate hundreds of test cases, it can be done programmatically instead of manually).  Managing a large test bank is simple as well; Illuminator can run test scenarios by name or by tag, and (intelligently) on either iPad or iPhone targets.  Illuminator can even complete test runs in which the app crashes during one of the tests.
+public struct WayfairTestApp: IlluminatorApplication {
 
-#### 3. The ability to remote-control your app
+    var welcome: WelcomeScreen {
+        get {
+            return WelcomeScreen(testCaseWrapper: testCaseWrapper)
+        }
+    }
 
-There are some test actions that can't be done through screen interactions alone (e.g. events that would put your app into the background; anything involving the camera, microphone, or other external devices; triggering network events to happen at planned intervals).  Illuminator [provides an RPC channel](docs/Bridge.md) to expose these interactions -- enabling data to be passed betweent the app and the test script as appropriate.
+    /// snip
+```
+
+And the definition of the welcome screen would include:
+
+```swift
+public class WelcomeScreen: IlluminatorDelayedScreen<AppTestState> {
+        
+    public override var isActive: Bool {
+        return app.navigationBars["Welcome"].exists
+    }
+
+     public func continueAsGuest() -> IlluminatorActionGeneric<AppTestState> {
+        return makeAction() {
+            try self.app.buttons["Continue as Guest"].ready().tap()
+        }
+    }
+
+    /// snip
+```
 
 
-Other Features
---------------
+## Repairability
 
-* [JUnit](http://windyroad.com.au/2011/02/07/apache-ant-junit-xml-schema/)-formatted test reports
-* [Cobertura](http://cobertura.github.io/cobertura/)-formatted coverage reports
-* Screenshot comparison capability with the ability to mask certain screen areas
+Failing XCTestcase test functions indicate the file and line of the failure.  That's not good enough.  Illuminator tests can indicate the file and line of the failure as well as a detailed description of the app state at the time of the failure.  For example, here is a sample of copy-pastable swift code generated by Illuminator between a test failure and the actual `XCFail()` call:
+
+```
+app.tabBars.elementBoundByIndex(0).buttons["Home"]
+app.tabBars.elementBoundByIndex(0).buttons["Sales"]
+app.tabBars.elementBoundByIndex(0).buttons["My Boards"]
+app.tabBars.elementBoundByIndex(0).buttons["Account"]
+app.tabBars.elementBoundByIndex(0).buttons["Cart"]
+app.navigationBars["Welcome"]
+app.navigationBars["Welcome"].buttons["close"]
+app.navigationBars["Welcome"].staticTexts["Welcome"]
+app.images["UniformCanvasLogo-Wayfair_US.jpg"]
+app.staticTexts["Please Register or Sign In with your Wayfair.com account."]
+app.buttons["Register"]
+app.buttons["Sign In"]
+app.staticTexts["or"]
+```
+
+Of course, this is ordinarily impossible.  Illuminator accomplishes this by meticulously working around XCUIElement operations that trigger immediate test failures (like XCUIElementQuery operations that return multiple elements or XCUIElement operations on nonexistent elements).  In the previous example, this was accomplished by Illuminator's `.ready()` function, which throws a catchable exception rather than trigger a test failure.
+
+Bottom line?  In many cases you can repair broken CI tests without re-running the failing test in your IDE; just find the relevant element reference in the console output and copy/paste it into your screen or action as appropriate.
 
 
-Further Documentation
----------------------
-* [Installation](docs/Installation.md)
-* [Quick start guide](docs/README.md)
-* [Slow start guide - practical introduction](docs/PracticalIntroduction.md)
-* [Selecting elements](docs/Selectors.md)
-* [Working with elements](docs/Extensions.md)
-* [Defining screens](docs/AppMap.md)
-* [Writing tests](docs/Automator.md)
-* [Running tests via the command line with Ruby scripts](docs/Commandline.md)
-* [The RPC channel](docs/Bridge.md)
-* [Troubleshooting](docs/Troubleshooting.md)
+## Documentation
 
-Help
-----
+See [Docs/](Docs/).
 
-Where-to-post summary:
 
-* How do I? -- [StackExchange](http://stackoverflow.com/questions/ask?tags=illuminator,ios-ui-automation)
-* I got this error, why? -- [StackExchange](http://stackoverflow.com/questions/ask?tags=illuminator,ios-ui-automation)
-* I got this error and I'm sure it's a bug -- [file an issue](https://github.com/paypal/Illuminator/issues)
-* I have an idea/request -- [file an issue](https://github.com/paypal/Illuminator/issues)
-* Why do you? -- the [illuminator-dev mailing list](https://groups.google.com/forum/#!forum/illuminator-dev)
-* When will you? -- the [illuminator-users mailing list](https://groups.google.com/forum/#!forum/illuminator-users)
-* When did you? -- the [illuminator-users mailing list](https://groups.google.com/forum/#!forum/illuminator-announce)
-* Anything you want to share privately: [iakatz@paypal.com](mailto:iakatz@paypal.com)
+## Usage
+
+To run the example project, clone the repo, and run `pod install` from the Example directory first.
+
+## Installation
+
+Illuminator is available through [CocoaPods](http://cocoapods.org). To install
+it, simply add the following line to your Podfile:
+
+```ruby
+pod "Illuminator"
+```
+
+## Authors
+
+* Ian Katz, ifreecarve@gmail.com
+* kviksilver, berceg@paypal.com
+
+## License
+
+Illuminator is available under the Apache 2.0 license. See the LICENSE.txt file for more info.
